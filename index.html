@@ -7,539 +7,2291 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f7fa;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #1a5fb4 0%, #3584e4 100%);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .container {
-            display: flex;
-            height: calc(100vh - 80px);
-        }
-        
-        .sidebar {
-            width: 380px;
-            background: white;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-        }
-        
-        .summary-card {
-            padding: 20px;
-            border-bottom: 1px solid #e8e8e8;
-        }
-        
-        .summary-card h3 {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .stat-item {
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-item.severe {
-            background: linear-gradient(135deg, #613583 0%, #9141ac 100%);
-            color: white;
-        }
-        
-        .stat-item.moderate {
-            background: linear-gradient(135deg, #1c71d8 0%, #3584e4 100%);
-            color: white;
-        }
-        
-        .stat-item.light {
-            background: linear-gradient(135deg, #26a269 0%, #33d17a 100%);
-            color: white;
-        }
-        
-        .stat-item.safe {
-            background: linear-gradient(135deg, #5e5c64 0%, #77767b 100%);
-            color: white;
-        }
-        
-        .stat-number {
-            font-size: 28px;
-            font-weight: 700;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 4px;
-        }
-        
-        .legend {
-            padding: 20px;
-            border-bottom: 1px solid #e8e8e8;
-        }
-        
-        .legend h3 {
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 12px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            font-size: 13px;
-            color: #555;
-        }
-        
-        .legend-color {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        
-        .legend-color.severe { background: #9141ac; }
-        .legend-color.moderate { background: #3584e4; }
-        .legend-color.light { background: #33d17a; }
-        .legend-color.safe { background: #77767b; }
-        
-        .property-list {
-            padding: 15px 20px;
-        }
-        
-        .property-list h3 {
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .filter-tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        
-        .filter-tab {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #f0f0f0;
-            color: #555;
-        }
-        
-        .filter-tab:hover {
-            background: #e0e0e0;
-        }
-        
-        .filter-tab.active {
-            background: #3584e4;
-            color: white;
-        }
-        
-        .property-item {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 4px solid;
-        }
-        
-        .property-item:hover {
-            transform: translateX(5px);
-        }
-        
-        .property-item.severe {
-            background: #f8f0fc;
-            border-color: #9141ac;
-        }
-        
-        .property-item.moderate {
-            background: #f0f6ff;
-            border-color: #3584e4;
-        }
-        
-        .property-item.light {
-            background: #f0faf4;
-            border-color: #33d17a;
-        }
-        
-        .property-item.safe {
-            background: #f5f5f5;
-            border-color: #77767b;
-        }
-        
-        .property-address {
-            font-size: 13px;
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 6px;
-        }
-        
-        .property-warning {
-            font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        
-        .property-item.severe .property-warning {
-            background: #9141ac;
-            color: white;
-        }
-        
-        .property-item.moderate .property-warning {
-            background: #3584e4;
-            color: white;
-        }
-        
-        .property-item.light .property-warning {
-            background: #33d17a;
-            color: white;
-        }
-        
-        .property-item.safe .property-warning {
-            background: #77767b;
-            color: white;
-        }
-        
-        .property-actions {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #666;
-            line-height: 1.5;
-        }
-        
-        #map {
-            flex: 1;
-            height: 100%;
-        }
-        
-        .info-popup {
-            min-width: 250px;
-        }
-        
-        .info-popup h4 {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        
-        .info-popup .temp {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 10px 0;
-        }
-        
-        .info-popup .temp.severe { color: #9141ac; }
-        .info-popup .temp.moderate { color: #3584e4; }
-        .info-popup .temp.light { color: #33d17a; }
-        .info-popup .temp.safe { color: #77767b; }
-        
-        .info-popup .actions {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-        
-        .info-popup .actions strong {
-            color: #333;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: 40vh;
-            }
-            #map {
-                height: 60vh;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #1a5fb4 0%, #3584e4 100%); color: white; padding: 20px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 24px; font-weight: 600; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .container { display: flex; height: calc(100vh - 80px); }
+        .sidebar { width: 380px; background: white; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+        .summary-card { padding: 20px; border-bottom: 1px solid #e8e8e8; }
+        .summary-card h3 { font-size: 16px; color: #333; margin-bottom: 15px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-item { padding: 12px; border-radius: 8px; text-align: center; color: white; }
+        .stat-item.urgent { background: linear-gradient(135deg, #c01c28 0%, #e01b24 100%); }
+        .stat-item.severe { background: linear-gradient(135deg, #e66100 0%, #ff7800 100%); }
+        .stat-item.moderate { background: linear-gradient(135deg, #1c71d8 0%, #3584e4 100%); }
+        .stat-item.light { background: linear-gradient(135deg, #26a269 0%, #33d17a 100%); }
+        .stat-number { font-size: 28px; font-weight: 700; }
+        .stat-label { font-size: 12px; margin-top: 4px; opacity: 0.95; }
+        .property-list { padding: 15px; }
+        .property-item { padding: 12px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid; background: #f8f9fa; cursor: pointer; transition: all 0.2s; }
+        .property-item:hover { transform: translateX(5px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .property-item.urgent { border-left-color: #e01b24; }
+        .property-item.severe { border-left-color: #ff7800; }
+        .property-item.moderate { border-left-color: #3584e4; }
+        .property-item.light { border-left-color: #33d17a; }
+        .property-name { font-weight: 600; color: #333; margin-bottom: 4px; }
+        .property-address { font-size: 13px; color: #666; margin-bottom: 6px; }
+        .property-risk { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; color: white; }
+        .property-risk.urgent { background: #e01b24; }
+        .property-risk.severe { background: #ff7800; }
+        .property-risk.moderate { background: #3584e4; }
+        .property-risk.light { background: #33d17a; }
+        #map { flex: 1; height: 100%; }
+        .leaflet-popup-content { min-width: 280px; }
+        .popup-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px; }
+        .popup-section { margin-bottom: 12px; }
+        .popup-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .popup-value { font-size: 13px; color: #333; line-height: 1.5; }
+        .popup-link { display: inline-block; margin-top: 8px; padding: 6px 12px; background: #3584e4; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; }
+        .popup-link:hover { background: #1c71d8; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏠 Month2Month 房产极寒天气影响地图</h1>
-        <p>2026年1月23日 - 1月30日 冬季风暴影响分析（仅显示Active管理且合同未过期的房产）</p>
+        <h1>🌨️ Month2Month 房产极寒天气影响地图</h1>
+        <p>更新时间: 2026年01月25日 10:08 | 数据来源: National Weather Service</p>
     </div>
-    
     <div class="container">
         <div class="sidebar">
             <div class="summary-card">
-                <h3>📊 影响汇总</h3>
+                <h3>📊 风险统计概览</h3>
                 <div class="stat-grid">
-                    <div class="stat-item severe">
-                        <div class="stat-number">8</div>
-                        <div class="stat-label">严重影响</div>
-                    </div>
-                    <div class="stat-item moderate">
-                        <div class="stat-number">38</div>
-                        <div class="stat-label">中度影响</div>
-                    </div>
-                    <div class="stat-item light">
-                        <div class="stat-number">16</div>
-                        <div class="stat-label">轻度影响</div>
-                    </div>
-                    <div class="stat-item safe">
-                        <div class="stat-number">218</div>
-                        <div class="stat-label">不受影响</div>
-                    </div>
+                    <div class="stat-item urgent"><div class="stat-number">18</div><div class="stat-label">紧急高风险</div></div>
+                    <div class="stat-item severe"><div class="stat-number">13</div><div class="stat-label">高风险</div></div>
+                    <div class="stat-item moderate"><div class="stat-number">4</div><div class="stat-label">中等风险</div></div>
+                    <div class="stat-item light"><div class="stat-number">143</div><div class="stat-label">低风险</div></div>
                 </div>
             </div>
-            
-            <div class="legend">
-                <h3>图例说明</h3>
-                <div class="legend-item">
-                    <div class="legend-color severe"></div>
-                    <div>
-                        <strong>严重影响</strong> - 体感温度 &lt; -10°F<br>
-                        <small>需立即检查供暖和管道防冻</small>
-                    </div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color moderate"></div>
-                    <div>
-                        <strong>中度影响</strong> - 体感温度 0°F ~ 30°F<br>
-                        <small>需提醒租户注意保暖</small>
-                    </div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color light"></div>
-                    <div>
-                        <strong>轻度影响</strong> - 可能有冻雨<br>
-                        <small>需发送天气预警通知</small>
-                    </div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color safe"></div>
-                    <div>
-                        <strong>不受影响</strong> - 天气正常<br>
-                        <small>无需特别措施</small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="property-list">
-                <h3>
-                    房产列表
-                    <span id="property-count">280套</span>
-                </h3>
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">全部</button>
-                    <button class="filter-tab" data-filter="severe">严重</button>
-                    <button class="filter-tab" data-filter="moderate">中度</button>
-                    <button class="filter-tab" data-filter="light">轻度</button>
-                    <button class="filter-tab" data-filter="safe">安全</button>
-                </div>
-                <div id="property-list-content"></div>
-            </div>
+            <div class="property-list" id="propertyList"></div>
         </div>
-        
         <div id="map"></div>
     </div>
-    
     <script>
-        // 房产数据（基于CSV表格，仅包含Active管理且合同未过期的房产）
-        const properties = [{"address": "63 Secret Garden, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.723431496527986, "lng": -117.85323252822184}, {"address": "1125 Scholarship, Irvine, CA 92612, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.638859564740045, "lng": -117.77692674478126}, {"address": "5 Rockwood, Irvine, CA 92614, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.63460432544716, "lng": -117.86829509825765}, {"address": "2117 Scholarship, Irvine, CA 92612, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.64689188892203, "lng": -117.86356346075503}, {"address": "7901 Golden Pond Cir, Kissimmee, FL 34747, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2039-01-01", "lat": 28.26295464828352, "lng": -81.42257144555019}, {"address": "101 Thornhurst, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2028-09-30", "lat": 33.635976223717755, "lng": -117.84102400727522}, {"address": "75 Gardenstone Path, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2028-09-30", "lat": 33.67203444471142, "lng": -117.82354344917603}, {"address": "77 Hanging Garden, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2028-07-31", "lat": 33.635663133053995, "lng": -117.78227524545923}, {"address": "95 Hanging Garden, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2028-07-31", "lat": 33.6869002856097, "lng": -117.83914207548978}, {"address": "78 Talisman, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-28", "lat": 33.70828642150513, "lng": -117.84375145238185}, {"address": "21 Lakefront, Irvine, CA 92604, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.66588132932316, "lng": -117.79252897064808}, {"address": "8655 La Isla Dr, Kissimmee, FL 34747, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2039-01-01", "lat": 28.268046942829493, "lng": -81.44778226544882}, {"address": "9022 Rhodes St, Kissimmee, FL 34747, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2039-01-01", "lat": 28.31956312372641, "lng": -81.37363951905665}, {"address": "109 Bright Poppy, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.67795130185321, "lng": -117.78371678620292}, {"address": "104 Electra, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.694139859843986, "lng": -117.84689817956247}, {"address": "507 J St, Newport Beach, CA 92661, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.22646955366833, "lng": -119.14648304122105}, {"address": "20 Rockrose Way, Irvine, CA 92612, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.64732193132147, "lng": -117.78234809399949}, {"address": "64 Thornapple, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.65543723549293, "lng": -117.8105607970816}, {"address": "4731 Oceanridge Dr, Huntington Beach, CA 92649, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 37.35232757263815, "lng": -119.22416115010296}, {"address": "1550 Plunker Dr, Davenport, FL 33896, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2026-07-31", "lat": 26.937044238801814, "lng": -80.88331554000062}, {"address": "101 Ovation, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.661726136344896, "lng": -117.8003648847505}, {"address": "159 Terrapin, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.712048924035884, "lng": -117.79942649538138}, {"address": "231 Rodeo, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 33.665745443650756, "lng": -117.86015161288229}, {"address": "105 Cordial, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-31", "lat": 33.646397017738856, "lng": -117.8463277827709}, {"address": "61 Crestwick, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.6633031902271, "lng": -117.79041137312069}, {"address": "173 Terrapin, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-31", "lat": 33.72085323712334, "lng": -117.80187470517937}, {"address": "205 Cherrybrook Ln, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-02", "lat": 33.66485540102207, "lng": -117.81655372918283}, {"address": "8859 Geneve Ct, Kissimmee, FL 34747, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2039-01-01", "lat": 28.334881082337326, "lng": -81.39238257251698}, {"address": "2478 Dubai St, Kissimmee, FL 34747, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2039-01-01", "lat": 28.33315038285905, "lng": -81.4294580183696}, {"address": "5 La Canada, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.699731363281856, "lng": -117.79304380067128}, {"address": "14496 Meadowbrook Ln, Eastvale, CA 92880, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.78022602457266, "lng": -118.95726778521153}, {"address": "48 Bamboo, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 33.70734239473246, "lng": -117.81069934660754}, {"address": "8718 Myrtle Bend Dr, Missouri City, TX 77459, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 32.265538717567466, "lng": -99.96298542263501}, {"address": "8710 Crossing Oak Ln, Missouri City, TX 77459, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 31.073586519350517, "lng": -99.19225861034744}, {"address": "7143 Leighton Dr, Corona, CA 92880, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.7648211237856, "lng": -118.70007301604417}, {"address": "9021 NW Bartholomew Dr, Portland, OR 97229, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2039-01-01", "lat": 45.548903361987094, "lng": -122.68188250884307}, {"address": "6602 Sterling Shores Ln, Rosenberg, TX 77471, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-07-01", "lat": 31.79418280014196, "lng": -100.67988020917797}, {"address": "2142 Ironwood Pass Dr, Missouri City, TX 77459, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 32.29723037159602, "lng": -99.81239771991704}, {"address": "7026 Randado Ct, San Antonio, TX 78242, USA", "region": "San Antonio", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 29.42308996350149, "lng": -98.49851837557274}, {"address": "850 Sticks St, Championsgate, FL 33896, USA", "region": "Orlando", "state": "FL", "impact": "safe", "temp": "68°F", "expire_date": "2039-01-01", "lat": 28.031084328327328, "lng": -81.05850862436043}, {"address": "2617 Glamis Ct, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.751880710045356, "lng": -119.77048727944134}, {"address": "6203 Winona St, Chino, CA 91710, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 35.9617636842961, "lng": -119.37970377199811}, {"address": "820 Colorado Ave, Palo Alto, CA 94303, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 35.925818619295136, "lng": -119.85344938792596}, {"address": "546 Hilbar Ln, Palo Alto, CA 94303, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.378088434624274, "lng": -119.63559451523781}, {"address": "2151 Long Spring Dr, Sienna Plantation, TX 77459, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-07-01", "lat": 31.197532346410703, "lng": -99.99568739805551}, {"address": "129 Lavender, Lake Forest, CA 92630, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-07", "lat": 36.68163160445059, "lng": -119.53340509489561}, {"address": "3604 Beatriz Dr, Denton, TX 76207, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-08-31", "lat": 32.06782134873968, "lng": -100.7044117648072}, {"address": "8719 Fox Trail Dr, Missouri City, TX 77459, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 31.40704017616558, "lng": -99.16020921069541}, {"address": "3514 Booker Trl, San Antonio, TX 78223, USA", "region": "San Antonio", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 29.432710174599293, "lng": -98.48267663092415}, {"address": "19738 Tacoma Bluff Drive, Cypress, TX 77433, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 31.109703529015555, "lng": -100.60902679285014}, {"address": "138 Stallion, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-29", "lat": 33.72319952810996, "lng": -117.87155002224952}, {"address": "6411 Tea Tree Dr, Katy, TX 77494, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-03-17", "lat": 32.733303461589564, "lng": -99.65540322701672}, {"address": "613 Towergrove Dr, Corona, CA 92879, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.240731383867804, "lng": -119.90212204550708}, {"address": "863 Harvest Ave, Upland, CA 91786, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.33004780566122, "lng": -118.64716476149363}, {"address": "6429 McAbee Rd, San Jose, CA 95120, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-30", "lat": 37.37891002899246, "lng": -121.87350935152723}, {"address": "8049 Jamestown Cir, Fontana, CA 92336, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.53807880528083, "lng": -120.30292870343871}, {"address": "17 Riveroaks, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 33.68895491078977, "lng": -117.82409876715428}, {"address": "630 W Woodcrest St, Rialto, CA 92376, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.105021321994144, "lng": -119.15048428718471}, {"address": "5910 Sendero Ave, Eastvale, CA 92880, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-30", "lat": 36.40716718371202, "lng": -118.65280037502424}, {"address": "13479 Arbor Park Lane, Moreno Valley, CA 92551, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-01", "lat": 37.6187927926084, "lng": -119.9099352477919}, {"address": "197 Augustine, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-16", "lat": 33.66387410895849, "lng": -117.81325655047348}, {"address": "43130 62nd St W, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-14", "lat": 36.737598626506916, "lng": -119.87265084070378}, {"address": "5657 McCulloch Ave #106, Temple City, CA 91780, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-28", "lat": 37.25704718575253, "lng": -119.67202264793183}, {"address": "11466 Gower St, Loma Linda, CA 92354, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-14", "lat": 36.89698197446782, "lng": -119.54825016002987}, {"address": "14563 Gulfstream Lane, Moreno Valley, CA 92553, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.70925598068756, "lng": -119.25715529817641}, {"address": "3304 Sunny Gate Ln, Folsom, CA 95630, USA", "region": "Sacramento", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.525765368789045, "lng": -119.57049771015443}, {"address": "43341 Harbor St, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.09760430355896, "lng": -118.42876868198263}, {"address": "6599 Bryce Canyon Ct, Jurupa Valley, CA 92509, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-30", "lat": 36.43943180464009, "lng": -118.931531967664}, {"address": "5406 Elm Valley Dr, San Antonio, TX 78242, USA", "region": "San Antonio", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-03-31", "lat": 29.400243568385374, "lng": -98.51003098673452}, {"address": "5554 Pheasant Dr, Fontana, CA 92336, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.61157816304761, "lng": -120.37453707640117}, {"address": "4835 South Monarch Pl, Ontario, CA 91762, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-23", "lat": 36.05327813566164, "lng": -119.8352466533002}, {"address": "107 Waterman, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-15", "lat": 33.68152684986919, "lng": -117.84959237234571}, {"address": "1088 Wood Duck Ave, Santa Clara, CA 95051, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-11", "lat": 37.60294153831822, "lng": -119.32714002595424}, {"address": "1644 Coral Bells Pl, Upland, CA 91784, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-02", "lat": 35.90531365715578, "lng": -119.72560503170186}, {"address": "132 Stallion, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-31", "lat": 33.63528046556234, "lng": -117.80924669149753}, {"address": "126 Donati, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-30", "lat": 33.719258308229506, "lng": -117.79875221114813}, {"address": "300 Salsbury Dr, Santa Clara, CA 95051, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-14", "lat": 35.82816670550322, "lng": -118.7299430389281}, {"address": "782 Jancus St, Charleston, SC 29414, USA", "region": "South Carolina", "state": "SC", "impact": "light", "temp": "38°F", "expire_date": "2026-06-20", "lat": 33.727452656976084, "lng": -81.12879365322853}, {"address": "7473 Brahman Ln, Chino, CA 91708, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-15", "lat": 36.480209035141975, "lng": -118.97584629284376}, {"address": "108 Wild Horse, Rancho Santa Margarita, CA 92688, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.62232629385567, "lng": -118.81055387161621}, {"address": "2377 NW Birkendene St, Portland, OR 97229, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-11-03", "lat": 45.54841029099077, "lng": -122.70761769143185}, {"address": "13850 Bruyere Ct, San Diego, CA 92129, USA", "region": "San Diego", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-08-23", "lat": 32.71081519722186, "lng": -117.1706198164767}, {"address": "19907 Sunkissed Ridge Dr, Riverside, CA 92507, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 35.7837658349982, "lng": -119.95135868460522}, {"address": "10311 Penguin Ct, Moreno Valley, CA 92557, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-30", "lat": 35.85858459082101, "lng": -119.13655375043332}, {"address": "228 Siena, Lake Forest, CA 92630, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-31", "lat": 36.72788958688527, "lng": -119.66956009334737}, {"address": "5801 Fuder Dr, Mckinney, TX 75070, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-08-18", "lat": 31.653623714122006, "lng": -100.10820101346032}, {"address": "44149 Buckeye Ct, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-31", "lat": 37.0315332500925, "lng": -118.55338456844827}, {"address": "12675 Elmhurst Dr, Moreno Valley, CA 92555, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.28152564356475, "lng": -119.22463632648375}, {"address": "3200 Sunny Gate Ln, Folsom, CA 95630, USA", "region": "Sacramento", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.942443258298155, "lng": -120.26756599648802}, {"address": "21075 Blossom Way, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-14", "lat": 37.74857864171637, "lng": -119.70152944460324}, {"address": "46 Los Felis Dr, Pomona, CA 91767, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-30", "lat": 36.29963637283075, "lng": -118.455205469464}, {"address": "4065 Spinnaker Dr, Duluth, GA 30096, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-06-01", "lat": 33.06222975095271, "lng": -82.13997260304588}, {"address": "2510 W Big Oak St, Phoenix, AZ 85085, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2039-01-01", "lat": 33.47530445354337, "lng": -112.09075785646584}, {"address": "1210 N Country Hollow Dr, Walnut, CA 91789, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-03", "lat": 37.241845099560635, "lng": -119.09621807283654}, {"address": "3853 W Fallen Leaf Ln, Glendale, AZ 85310, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2026-05-19", "lat": 34.68856366977287, "lng": -110.25502783697921}, {"address": "4509 W Venture Ct, Anthem, AZ 85086, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2039-01-01", "lat": 34.7923491187932, "lng": -111.43083750890173}, {"address": "5414 W Straight Arrow Ln, Phoenix, AZ 85083, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2026-10-31", "lat": 33.45424163729608, "lng": -112.05170691461524}, {"address": "29223 Obsidian Ct, Nuevo, CA 92567, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2029-01-01", "lat": 37.028943960160234, "lng": -119.97966083985065}, {"address": "2519 W Desert Vista Trl, Phoenix, AZ 85085, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2026-04-01", "lat": 33.42668480517077, "lng": -112.0489950896523}, {"address": "5107 Linda Pl, Longmont, CO 80503, USA", "region": "Colorado", "state": "CO", "impact": "safe", "temp": "38°F", "expire_date": "2039-01-01", "lat": 39.151353130498784, "lng": -106.41238749668436}, {"address": "521 High Point Dr, Longmont, CO 80504, USA", "region": "Colorado", "state": "CO", "impact": "safe", "temp": "38°F", "expire_date": "2039-01-01", "lat": 39.46124217824931, "lng": -105.49842800291935}, {"address": "4715 Purple Fountain Drive, Rosenberg, TX 77469, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-05-25", "lat": 31.958174057145577, "lng": -100.35002347710538}, {"address": "3105 Honey Peach Way, Pflugerville, TX 78660, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-06-30", "lat": 31.522331323784133, "lng": -100.76105354776156}, {"address": "29914 Reagans Ranch Dr, Katy, TX 77494, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-07-31", "lat": 31.546499745254394, "lng": -99.57753422301855}, {"address": "917 S Easthills Dr, West Covina, CA 91791, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-30", "lat": 36.362347230955635, "lng": -118.70289071229504}, {"address": "6548 Sequoia Dr, Buena Park, CA 90620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-10", "lat": 36.41960733430755, "lng": -120.10211297861537}, {"address": "1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-01", "lat": 36.51857789748112, "lng": -119.49247188158117}, {"address": "945 E Wonder Ln, Glendora, CA 91740, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-20", "lat": 36.08201851451036, "lng": -120.07051685942909}, {"address": "6127 W Avenue J9, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-31", "lat": 37.392170205592066, "lng": -119.00567035671496}, {"address": "2137 Goliad Cir, Frisco, TX 75034, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-08-31", "lat": 31.736817797629254, "lng": -99.97552466413275}, {"address": "8493 NE Windstone St, Hillsboro, OR 97006, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-07-31", "lat": 43.10358568753151, "lng": -120.37943457793241}, {"address": "113 Baja, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-31", "lat": 33.72092810887767, "lng": -117.86844586375662}, {"address": "1603 SE 171st Pl, Vancouver, WA 98683, USA", "region": "Vancouver", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2039-01-01", "lat": 48.74500761968547, "lng": -121.47686097345192}, {"address": "181 Pin Ln, Lake Forest, CA 92630, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-19", "lat": 36.059727228803126, "lng": -119.71375747865854}, {"address": "15637 Curry Pl, Fontana, CA 92336, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-30", "lat": 36.47373165664068, "lng": -120.22537572531955}, {"address": "7030 W Ave L12, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-01", "lat": 36.112467371463545, "lng": -118.91692354631452}, {"address": "12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-23", "lat": 36.20010342348501, "lng": -119.00311507069969}, {"address": "246 Cater Ln, Libertyville, IL 60048, USA", "region": "Chicago and Nearby", "state": "IL", "impact": "severe", "temp": "-18°F", "expire_date": "2039-01-01", "lat": 42.315479141838786, "lng": -87.91661614711074}, {"address": "14033 Yorktown Ct, Fontana, CA 92336, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-31", "lat": 35.946572604376165, "lng": -119.22533319494505}, {"address": "9303 Alondra Blvd Apt 4, Bellflower, CA 90706, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-02-05", "lat": 36.6469981033455, "lng": -119.9125451366921}, {"address": "1690 S Lewis St, Anaheim, CA 92805, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-18", "lat": 37.01327181491665, "lng": -118.558375105244}, {"address": "1509 Granada Rd, Upland, CA 91786, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-31", "lat": 37.35831292855352, "lng": -119.80034426075144}, {"address": "4589 Brook Farms Dr, Duluth, GA 30096, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-08-22", "lat": 32.131549330437934, "lng": -83.8134098996433}, {"address": "1090 Wood Duck Ave, Santa Clara, CA 95051, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-15", "lat": 36.67556402643899, "lng": -118.8147674844328}, {"address": "606 Windsor Park Dr, Bakersfield, CA 93311, USA", "region": "Bakersfield", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.558366304815614, "lng": -120.10790860625045}, {"address": "3610 223rd Pl SE, Bothell, WA 98021, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-05-29", "lat": 46.94549799260495, "lng": -121.32426226207306}, {"address": "13711 117th Ave NE, Kirkland, WA 98034, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-06-30", "lat": 47.09506142879349, "lng": -120.19182028604743}, {"address": "3658 Silver Fox Path, Buford, GA 30519, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-05-28", "lat": 32.88387865404089, "lng": -83.05024643888325}, {"address": "3289 NW Kinsley Terrace, Portland, OR 97229, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-09-17", "lat": 45.55888573304437, "lng": -122.70235901092806}, {"address": "11843 Apple Grove Ln, Sylmar, CA 91342, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-30", "lat": 36.607789021195586, "lng": -120.0448396419941}, {"address": "37058 Alton Drive, Palmdale, CA 93550, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 36.221442429627494, "lng": -119.46912711368047}, {"address": "3743 Klamath Ln, Palo Alto, CA 94303, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 36.01568009677167, "lng": -119.58003157746997}, {"address": "6406 224th Ave NE, Redmond, WA 98053, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2039-01-01", "lat": 47.89822499985965, "lng": -121.43018032650622}, {"address": "50 Lansing St #407, San Francisco, CA 94105, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-17", "lat": 37.79280255339875, "lng": -122.39945613256612}, {"address": "22720 SE 101st Pl, Kent, WA 98031, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2039-01-01", "lat": 47.97717948170636, "lng": -120.01076409841939}, {"address": "2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.17726207102629, "lng": -119.87416504983197}, {"address": "10410 Bichester Ct, Bakersfield, CA 93311, USA", "region": "Bakersfield", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 37.621969459844486, "lng": -120.09207254031865}, {"address": "1775 Stoneoak Cir, Lawrenceville, GA 30043, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-10-22", "lat": 31.482814887629086, "lng": -82.24504935723867}, {"address": "11022 Alonda Ct, San Diego, CA 92126, USA", "region": "San Diego", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-07", "lat": 32.67050296299136, "lng": -117.20539012287625}, {"address": "487 NE 58th Ave, Hillsboro, OR 97124, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-04-26", "lat": 43.645873045099194, "lng": -120.62631925551018}, {"address": "427 Third Ave, Scottdale, GA 30079, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-09-30", "lat": 31.794115774987063, "lng": -82.92445426766778}, {"address": "5590 Cannonero Dr, Alpharetta, GA 30005, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-03-31", "lat": 33.01498645117838, "lng": -83.43229717784807}, {"address": "70 Echo Canyon Dr, Clayton, NC 27527, USA", "region": "North Carolina", "state": "NC", "impact": "light", "temp": "32°F", "expire_date": "2039-01-01", "lat": 36.31141672326399, "lng": -78.21248015616708}, {"address": "211 Clark Lake Ln, Grayson, GA 30017, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2039-01-31", "lat": 32.41646064045351, "lng": -82.633718593561}, {"address": "6211 N Malaya St, Aurora, CO 80019, USA", "region": "Colorado", "state": "CO", "impact": "safe", "temp": "38°F", "expire_date": "2026-04-16", "lat": 39.67021130853915, "lng": -105.94694377282353}, {"address": "7232 Cari Ct, Eastvale, CA 92880, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-13", "lat": 36.62126404133101, "lng": -118.49615247858972}, {"address": "12588 Carmel Creek Rd #27, San Diego, CA 92130, USA", "region": "San Diego", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 32.68339988523763, "lng": -117.12462235529426}, {"address": "2543 Wyntercrest Ln, Durham, NC 27713, USA", "region": "North Carolina", "state": "NC", "impact": "light", "temp": "32°F", "expire_date": "2027-01-08", "lat": 36.54124923830864, "lng": -79.88622764824892}, {"address": "4 Suncrest Ct, Durham, NC 27703, USA", "region": "North Carolina", "state": "NC", "impact": "light", "temp": "32°F", "expire_date": "2026-12-26", "lat": 35.84163338116317, "lng": -79.73753680911909}, {"address": "1618 Pagoda Lane, Sacramento, CA 95834, USA", "region": "Sacramento", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-30", "lat": 38.579216377685405, "lng": -121.48633899287465}, {"address": "5772 Williams Rd, Norcross, GA 30093, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-04-21", "lat": 32.41779119247807, "lng": -83.74115790697921}, {"address": "7401 NE 65th St, Vancouver, WA 98662, USA", "region": "Vancouver", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2039-01-01", "lat": 47.49339665980381, "lng": -120.96164729079152}, {"address": "6 Del Carlo, Irvine, CA 92606, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-27", "lat": 33.649645989194404, "lng": -117.86289116388629}, {"address": "4122 Fulson Dr, Lilburn, GA 30047, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-04-21", "lat": 32.72657589603515, "lng": -82.3967594190217}, {"address": "1345 Velvet Creek Way SW, Marietta, GA 30008, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-05-18", "lat": 32.90466780329383, "lng": -83.53147752121681}, {"address": "1207 NE 166th Ave, Vancouver, WA 98684, USA", "region": "Vancouver", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2039-01-01", "lat": 47.72706742265429, "lng": -120.31983870302757}, {"address": "7 Genoa, Laguna Niguel, CA 92677, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-14", "lat": 35.827674685675646, "lng": -118.48566977686278}, {"address": "8371 Attica Dr, Riverside, CA 92508, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-19", "lat": 37.13437400385202, "lng": -120.15370103164187}, {"address": "26074 Lugo Dr, Loma Linda, CA 92354, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-29", "lat": 36.6641581808307, "lng": -119.45485493606273}, {"address": "2101 Rio Grande, Pomona, CA 91766, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-09", "lat": 37.42765814687428, "lng": -120.16851656567377}, {"address": "20461 Vía Trovador, Yorba Linda, CA 92887, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-10", "lat": 36.08142101371336, "lng": -120.37584163728508}, {"address": "35 Glen Crossing Rd, Edgecliff Village, TX 76134, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-06-05", "lat": 32.38453808736249, "lng": -99.00010209026522}, {"address": "1424 W Winn Dr, Upland, CA 91786, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 36.838036162212134, "lng": -118.85499808221002}, {"address": "6511 E Eugie Terrace, Scottsdale, AZ 85254, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2026-04-15", "lat": 33.96964611522935, "lng": -111.03147465696571}, {"address": "9831 NW Bartholomew Dr, Portland, OR 97229, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2039-01-01", "lat": 45.563130941308295, "lng": -122.67051426325968}, {"address": "7907 Shannon Lakes Way, Indianapolis, IN 46217, USA", "region": "Indiana", "state": "IN", "impact": "severe", "temp": "-12°F", "expire_date": "2039-01-01", "lat": 39.778466445909594, "lng": -86.1678615793706}, {"address": "521 N Cook St, Portland, OR 97227, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2039-01-01", "lat": 45.53446227585536, "lng": -122.6331473603354}, {"address": "18214 NE 47th Ave, Vancouver, WA 98686, USA", "region": "Vancouver", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2039-01-01", "lat": 47.434370502305605, "lng": -120.47099841446115}, {"address": "1928 Beacon Way SE, Renton, WA 98058, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-04-18", "lat": 47.28439397205616, "lng": -120.76851728041446}, {"address": "1452 Lochner Dr, San Jose, CA 95127, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-02-01", "lat": 37.38503374068671, "lng": -121.85303335744165}, {"address": "18 Montrose Dr, Newark, DE 19713, USA", "region": "Delaware", "state": "DE", "impact": "moderate", "temp": "28°F", "expire_date": "2026-04-29", "lat": 39.87249109587735, "lng": -74.62623424097103}, {"address": "7033 Passons Blvd, Pico Rivera, CA 90660, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 37.57008900719454, "lng": -118.55625139354939}, {"address": "21585 Del Amo St, Moreno Valley, CA 92557, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-07", "lat": 36.611216136027835, "lng": -120.1002924661939}, {"address": "24282 Sunnybrook Cir, Lake Forest, CA 92630, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-29", "lat": 36.31167173817098, "lng": -119.2321139519077}, {"address": "4389 Maple Ln, Arcadia, CA 91006, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.580059365544805, "lng": -119.69195706976573}, {"address": "4397 Cadence Wy, Oceanside, CA 92057, USA", "region": "San Diego", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-01", "lat": 35.98329448832395, "lng": -119.86895850927702}, {"address": "16103 Wedgeworth Dr, Hacienda Heights, CA 91745, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 37.12532027006381, "lng": -119.64706544817415}, {"address": "6245 E Janice Wy, Scottsdale, AZ 85254, USA", "region": "Phoenix and Nearby", "state": "AZ", "impact": "safe", "temp": "58°F", "expire_date": "2026-05-10", "lat": 33.37895028107499, "lng": -111.10032593185329}, {"address": "4138 Club Vista Dr, Palmdale, CA 93551, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-30", "lat": 36.64762422202627, "lng": -118.56676383403368}, {"address": "16996 Torino Dr, Victorville, CA 92395, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-02", "lat": 37.36667024208177, "lng": -120.22193564602055}, {"address": "13001 Powderhorn St, Austin, TX 78727, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-09-22", "lat": 30.299143532449477, "lng": -97.78131484079842}, {"address": "1428 Spruce Tree Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-31", "lat": 37.77046796012467, "lng": -119.95596680755295}, {"address": "2858 Avella Cir, San Diego, CA 92108, USA", "region": "San Diego", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2039-01-01", "lat": 32.68969530309707, "lng": -117.21038282549895}, {"address": "6397 Peacock Ct, Eastvale, CA 91752, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-27", "lat": 37.22369564160476, "lng": -120.04071605561079}, {"address": "9 El Guiro, Rancho Santa Margarita, CA 92688, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-09", "lat": 36.46513064585113, "lng": -119.79158364021703}, {"address": "8105 Luckenwald Cv, Round Rock, TX 78681, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-09-30", "lat": 32.613985746346536, "lng": -98.94228395837553}, {"address": "11002 Getaway Dr, Rancho Cucamonga, CA 91730, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-31", "lat": 35.83839789200923, "lng": -118.78786583322255}, {"address": "9424 Morgan Creek Dr, Austin, TX 78717, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2039-01-01", "lat": 30.247879519485288, "lng": -97.74382465938372}, {"address": "688 Black Oak Cir, Corona, CA 92881, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-27", "lat": 37.29519055231586, "lng": -118.81939044199679}, {"address": "132 Canley Lp, Hutto, TX 78634, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-08-07", "lat": 32.56342876924645, "lng": -99.13310989143535}, {"address": "2920 Tweedy Trail, Pflugerville, TX 78660, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-11-27", "lat": 31.594959051617288, "lng": -100.16364891603773}, {"address": "2214 S Lakeline Blvd #108, Cedar Park, TX 78613, USA", "region": "Austin and Nearby", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-06-21", "lat": 32.0220980458419, "lng": -99.06807068156967}, {"address": "130 Cartier Aisle, Irvine, CA 92620, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-31", "lat": 33.63466170073643, "lng": -117.79254833512917}, {"address": "13 Wilkinson Terrace, Kearny, NJ 07032, USA", "region": "New Jersey", "state": "NJ", "impact": "severe", "temp": "22°F", "expire_date": "2026-08-08", "lat": 40.799340597134496, "lng": -74.15260451015199}, {"address": "18244 Cumulus Ct, Santa Clarita, CA 91350, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-03", "lat": 37.63047646729242, "lng": -120.0201248547739}, {"address": "2770 Silo Dr, Saline Township, MI 48176, USA", "region": "Michigan", "state": "MI", "impact": "severe", "temp": "-15°F", "expire_date": "2026-11-12", "lat": 44.33726049119401, "lng": -85.26917383667804}, {"address": "16804 NE 12th St, Vancouver, WA 98684, USA", "region": "Vancouver", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-06-30", "lat": 46.808384082707505, "lng": -121.22176166060167}, {"address": "3423 Racquet Ln, Palmdale, CA 93551, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-10", "lat": 36.70722951729189, "lng": -118.72623673860551}, {"address": "1717 River Birch Way, Libertyville, IL 60048, USA", "region": "Chicago and Nearby", "state": "IL", "impact": "severe", "temp": "-18°F", "expire_date": "2039-01-01", "lat": 42.28274593248732, "lng": -87.91086760095266}, {"address": "29626 Yorkton Rd, Murrieta, CA 92563, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-22", "lat": 36.8702777555789, "lng": -118.82484947056703}, {"address": "4519 Sterling Heights Ln, Sugar Land, TX 77479, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-08-24", "lat": 31.196810193894475, "lng": -100.73577950727727}, {"address": "6 Saddleridge, Aliso Viejo, CA 92656, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-21", "lat": 37.5258378369812, "lng": -119.83032110422943}, {"address": "17274 SW Arborcrest Way lot 34, Beaverton, OR 97003, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-09-20", "lat": 43.05598964176913, "lng": -119.65501424576544}, {"address": "137 W Winnie Way, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-08", "lat": 36.73051543613124, "lng": -119.11511160001074}, {"address": "49 Aria St, South El Monte, CA 91733, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-10", "lat": 36.87507252637527, "lng": -119.08863829251918}, {"address": "3750 Forest Glen Rd, Yorba Linda, CA 92886, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-02", "lat": 36.170970582683914, "lng": -119.42543258551406}, {"address": "28651 Placida Ave, Laguna Niguel, CA 92677, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-01", "lat": 36.24317498284804, "lng": -118.5412805701928}, {"address": "5330 Johnson St, Arvada, CO 80002, USA", "region": "Colorado", "state": "CO", "impact": "safe", "temp": "38°F", "expire_date": "2026-03-31", "lat": 40.478788630971, "lng": -106.34717026373713}, {"address": "20 Coldbrook, Irvine, CA 92604, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-31", "lat": 33.67875385179385, "lng": -117.80967712131938}, {"address": "1894 211th Ave SE, Sammamish, WA 98075, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2027-02-08", "lat": 47.52687717462879, "lng": -119.88357689366093}, {"address": "1620 NW Barnsley Ct, Portland, OR 97229, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-10-31", "lat": 45.56303853678165, "lng": -122.63232601154505}, {"address": "8317 Hunters Grv Rd, Union City, GA 30291, USA", "region": "Georgia", "state": "GA", "impact": "light", "temp": "35°F", "expire_date": "2026-09-24", "lat": 33.06810067613867, "lng": -82.2049920266661}, {"address": "1705 Parkplace Ln, Riverside, CA 92501, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-09", "lat": 37.50172577971052, "lng": -119.53021158879119}, {"address": "2008 SE 134th Ave, Vancouver, WA 98683, USA", "region": "Vancouver", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-12-07", "lat": 48.046006511693086, "lng": -120.24608268341845}, {"address": "1407 S 281st St, Des Moines, WA 98003, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-05-13", "lat": 46.811758347716115, "lng": -120.19878970179306}, {"address": "136 Sentosa, Irvine, CA 92618, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-31", "lat": 33.720479842253496, "lng": -117.84204038207521}, {"address": "527 W Victor Ave, Anaheim, CA 92801, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-13", "lat": 36.151687717963924, "lng": -118.79594935210278}, {"address": "5124 Reed Dr, The Colony, TX 75056, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2027-01-15", "lat": 31.662684927768595, "lng": -100.5398095866211}, {"address": "6518 Portuguese Bend Dr, Missouri City, TX 77459, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-06-06", "lat": 31.224951292551523, "lng": -99.16105610552947}, {"address": "370 Riesling Ave unit 20, Milpitas, CA 95035, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-11-18", "lat": 35.88048615591741, "lng": -119.8397723763626}, {"address": "29635 Burcreek Ln, Fulshear, TX 77441, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-11-20", "lat": 31.060662838111345, "lng": -100.35087434694584}, {"address": "39 Meadow Valley, Irvine, CA 92602, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-30", "lat": 33.72553728712114, "lng": -117.87375018081312}, {"address": "15410 Rosehill Summit Ln, Houston, TX 77044, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-07-09", "lat": 29.807050390835556, "lng": -95.38216027372845}, {"address": "15333 Lemay St, Van Nuys, CA 91406, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-13", "lat": 37.60027599028313, "lng": -120.10907191727827}, {"address": "15335 Lemay St, Van Nuys, CA 91406, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-13", "lat": 35.95092762216433, "lng": -119.07253099569503}, {"address": "26707 Beartown Ln, Valencia, CA 91381, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-11", "lat": 36.52985094451311, "lng": -120.10441440949691}, {"address": "12632 S Talbot Cir, Plainfield, IL 60585, USA", "region": "Chicago and Nearby", "state": "IL", "impact": "severe", "temp": "-18°F", "expire_date": "2026-10-31", "lat": 41.59909476990165, "lng": -88.25897930700471}, {"address": "5406 Tomas Cir, San Antonio, TX 78240, USA", "region": "San Antonio", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-04-30", "lat": 29.38160524602977, "lng": -98.49037678370489}, {"address": "3622 Brideveil Ct, Raleigh, NC 27610, USA", "region": "North Carolina", "state": "NC", "impact": "light", "temp": "32°F", "expire_date": "2027-01-12", "lat": 36.195655008674414, "lng": -79.16611210253129}, {"address": "1376 Klamath Dr, San Jose, CA 95130, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-08", "lat": 37.31514547947746, "lng": -121.90759900135582}, {"address": "224 Melrose Ave, Monrovia, CA 91016, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-26", "lat": 36.65675110103902, "lng": -119.29831737427953}, {"address": "2011 Stearns Dr, Los Angeles, CA 90034, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-01-31", "lat": 34.02876819703664, "lng": -118.2453148477912}, {"address": "9042 El Oro Plaza Dr, Elk Grove, CA 95624, USA", "region": "Sacramento", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-22", "lat": 36.12139772878795, "lng": -119.42030842503605}, {"address": "6242 Walleye Pl, New Market, MD 21774, USA", "region": "Maryland", "state": "MD", "impact": "moderate", "temp": "28°F", "expire_date": "2027-03-07", "lat": 38.998859848488145, "lng": -76.65405719532589}, {"address": "7476 Peppertree Ln, Fontana, CA 92336, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-01", "lat": 35.93458769561268, "lng": -118.72554300303992}, {"address": "15501 Diamond Head Rd, Lake Oswego, OR 97034, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-04-15", "lat": 44.80068024294456, "lng": -120.48614189682655}, {"address": "122 Brisbane St, Monrovia, CA 91016, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-03-27", "lat": 36.967860836720334, "lng": -118.5933852747408}, {"address": "114 Decathlon Cir, Sacramento, CA 95823, USA", "region": "Sacramento", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-04-26", "lat": 38.6226243953117, "lng": -121.50114510517604}, {"address": "12099 SW Aspen Ridge Dr, Tigard, OR 97224, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-06-16", "lat": 43.85217411201971, "lng": -119.58066348497826}, {"address": "9867 Big Window St, Las Vegas, NV 89178, USA", "region": "Las Vegas", "state": "NV", "impact": "safe", "temp": "52°F", "expire_date": "2026-08-28", "lat": 39.763365422964355, "lng": -117.29933394788925}, {"address": "258 Homeward Way, Henderson, NV 89011, USA", "region": "Las Vegas", "state": "NV", "impact": "safe", "temp": "52°F", "expire_date": "2026-06-16", "lat": 38.806888338715666, "lng": -116.21974356549786}, {"address": "3410 Pepper Tree Ln, San Jose, CA 95127, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-01", "lat": 37.33694252760412, "lng": -121.875376939564}, {"address": "761 Lewis St, Pomona, CA 91768, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-03", "lat": 36.3913503423445, "lng": -119.98315092712451}, {"address": "12543 SE 72nd St, Newcastle, WA 98056, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-05-26", "lat": 47.663100650764854, "lng": -121.73983819400853}, {"address": "850 Arcadia Ave unit 4, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-01", "lat": 37.21144680098399, "lng": -119.581315077484}, {"address": "3834 Evans St W, Los Angeles, CA 90027, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-05-02", "lat": 34.044493506874595, "lng": -118.2539461952656}, {"address": "14527 Addison St, Sherman Oaks, CA 91403, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-08", "lat": 37.56990314295833, "lng": -119.07579932788488}, {"address": "3520 Osage River Trail, Prosper, TX 75078, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2027-06-24", "lat": 32.9645786863236, "lng": -99.41499716997895}, {"address": "31097 Linden Flower Rd, Winchester, CA 92596, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-06-24", "lat": 35.87123378644014, "lng": -118.81022393387688}, {"address": "14833 Maywood Dr, Chino Hills, CA 91709, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-14", "lat": 36.691790420390326, "lng": -118.97106194244721}, {"address": "8594 Exposition St, Chino, CA 91708, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-22", "lat": 36.438544440439465, "lng": -119.92718448540906}, {"address": "306 Ashton Ave, San Francisco, CA 94112, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-16", "lat": 37.81090037606895, "lng": -122.38795328236488}, {"address": "2634 E Scarlett Ln, Ontario, CA 91762, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-07-03", "lat": 37.11392984229419, "lng": -118.46149971129476}, {"address": "4301 Jenkins Dr, Plano, TX 75024, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-08-27", "lat": 32.576813063472436, "lng": -99.11557336739816}, {"address": "10512 Cara Cara Dr, San Diego, CA 92126, USA", "region": "San Diego", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-08-04", "lat": 32.70986514915758, "lng": -117.1605846251976}, {"address": "2205 Grand Canyon Ct, Carrollton, TX 75006, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-09-10", "lat": 32.36690267520548, "lng": -99.90210894336525}, {"address": "270 Davenport Rd unit 5, Toronto, ON M5R 1J8, Canada", "region": "Toronto", "state": "ON", "impact": "safe", "temp": "25°F", "expire_date": "2026-10-01", "lat": 51.23866099668945, "lng": -86.11574388285413}, {"address": "3002 E Oak Knoll Loop, Ontario, CA 91761, USA", "region": "San Bernardino", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-30", "lat": 37.749793220417175, "lng": -120.34934721093474}, {"address": "14255 SW Compass Dr, Beaverton, OR 97005, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-09-26", "lat": 44.209091609153084, "lng": -120.37066907456855}, {"address": "131 Ruby Rd, Mission Viejo, CA 92694, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-30", "lat": 36.52522047144244, "lng": -120.17977169868087}, {"address": "26877 Chance Dr, Menifee, CA 92585, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-10-23", "lat": 36.827681048770884, "lng": -120.29384834168447}, {"address": "1417 Marengo Court, West Covina, CA 91790, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-05", "lat": 36.28045229116082, "lng": -119.19171082245266}, {"address": "9986 Aspen Meadows Ct, Sacramento, CA 95829, USA", "region": "Sacramento", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-04", "lat": 38.601784521710925, "lng": -121.44965211769886}, {"address": "2602 Rivington, Irvine, CA 92612, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-09-26", "lat": 33.66147981553445, "lng": -117.87004277899013}, {"address": "416 Camaritas Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-04", "lat": 37.71915355954697, "lng": -119.59674571315642}, {"address": "116 Johnson Rd, Keller, TX 76248, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-12-28", "lat": 32.84944810566385, "lng": -99.81004179818768}, {"address": "639 8th Ave, Kirkland, WA 98033, USA", "region": "Seattle and Nearby", "state": "WA", "impact": "safe", "temp": "42°F", "expire_date": "2026-11-23", "lat": 47.03666224076459, "lng": -119.78800345767318}, {"address": "21318 Monterrico Bay Dr, Cypress, TX 77433, USA", "region": "Houston", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2027-01-06", "lat": 32.43389894012605, "lng": -99.69537288369347}, {"address": "583 Bradley Dr, Rockwall, TX 75087, USA", "region": "Dallas", "state": "TX", "impact": "moderate", "temp": "30°F", "expire_date": "2026-11-25", "lat": 32.2666785623667, "lng": -99.19956371011337}, {"address": "13247 Campolina Dr, Corona, CA 92880, USA", "region": "Riverside", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-10", "lat": 36.54296364898669, "lng": -118.64005951339357}, {"address": "478 E Yale Loop #16, Irvine, CA 92614, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-25", "lat": 33.69121008439169, "lng": -117.82459377869337}, {"address": "1615 California Pl, Pomona, CA 91768, USA", "region": "Los Angeles and Nearby", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-20", "lat": 37.060672304624966, "lng": -119.50397507515146}, {"address": "436 Baypointe #436, Newport Beach, CA 92660, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-11-17", "lat": 37.61975587437303, "lng": -119.7504529804977}, {"address": "685 NW Falling Waters Ln unit 103, Portland, OR 97229, USA", "region": "Portland and Nearby", "state": "OR", "impact": "safe", "temp": "40°F", "expire_date": "2026-11-26", "lat": 45.532790369799415, "lng": -122.70879477168116}, {"address": "415 Oak Ave, Redwood City, CA 94061, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2026-12-07", "lat": 37.5847239958512, "lng": -119.56698954039477}, {"address": "14222 Bellevue Dr, Minnetonka, MN 55345, USA", "region": "Minnesota", "state": "MN", "impact": "severe", "temp": "-26°F", "expire_date": "2026-12-18", "lat": 44.87127919289223, "lng": -93.51489411587255}, {"address": "437 Norfolk Dr, Pacifica, CA 94044, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-17", "lat": 35.86279630519716, "lng": -118.94499681562037}, {"address": "5912 Bartlett Blvd, Mound, MN 55364, USA", "region": "Minnesota", "state": "MN", "impact": "severe", "temp": "-26°F", "expire_date": "2026-12-19", "lat": 44.90039151361006, "lng": -93.63785120367129}, {"address": "9 Goldfinch, Irvine, CA 92603, USA", "region": "Orange County", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-31", "lat": 33.70366395966465, "lng": -117.79628055365016}, {"address": "1497 Shinn Ct, Fremont, CA 94536, USA", "region": "Bay Area", "state": "CA", "impact": "safe", "temp": "55°F", "expire_date": "2027-01-19", "lat": 37.302667272758875, "lng": -120.11482264685363}];
-        
-        // 初始化地图
-        const map = L.map('map').setView([39.8283, -98.5795], 4);
-        
+        const propertiesData = [
+        {
+                "name": "41022",
+                "city": "Championsgate",
+                "state": "FL",
+                "address": "850 Sticks St, Championsgate, FL 33896",
+                "link": "https://month2month.com/41022",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "7020",
+                "city": "Davenport",
+                "state": "FL",
+                "address": "1550 Plunker Dr, Davenport, FL 33896",
+                "link": "https://month2month.com/7020",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "40650",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "2411 Dubai St, Kissimmee, FL 34747",
+                "link": "https://month2month.com/40650",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "10560",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "2478 Dubai St, Kissimmee, FL 34747",
+                "link": "https://month2month.com/10560",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "22",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "7901 Golden Pond Cir, Kissimmee, FL 34747",
+                "link": "https://month2month.com/22",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "202",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "8655 La Isla Dr, Kissimmee, FL 34747",
+                "link": "https://month2month.com/202",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "10155",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "8859 Geneve Ct, Kissimmee, FL 34747",
+                "link": "https://month2month.com/10155",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "10383",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "8927 Sydney Ave, Kissimmee, FL 34747",
+                "link": "https://month2month.com/10383",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "205",
+                "city": "Kissimmee",
+                "state": "FL",
+                "address": "9022 Rhodes St, Kissimmee, FL 34747",
+                "link": "https://month2month.com/205",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冻结警告, 霜冻警告, 罕见低温, 管道冻结风险",
+                "temperature": "温度降至32°F以下，持续数天",
+                "actions": "检查管道保温; 确保供暖正常; 监控室内温度; 防止管道冻裂"
+        },
+        {
+                "name": "41547",
+                "city": "Alpharetta",
+                "state": "GA",
+                "address": "3580 Waters Cove Way, Alpharetta, GA 30022",
+                "link": "https://month2month.com/41547",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冬季风暴警告, 冰冻警告, 停电风险, 道路结冰",
+                "temperature": "极寒天气，体感温度接近0°F",
+                "actions": "检查防冻措施; 准备应对停电; 监控房产状况; 确保供暖运行"
+        },
+        {
+                "name": "41655",
+                "city": "Stone Mountain",
+                "state": "GA",
+                "address": "4091 Big Valley Trail, Stone Mountain, GA 30083",
+                "link": "https://month2month.com/41655",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冬季风暴警告, 冰冻警告, 停电风险, 道路结冰",
+                "temperature": "极寒天气，体感温度接近0°F",
+                "actions": "检查防冻措施; 准备应对停电; 监控房产状况; 确保供暖运行"
+        },
+        {
+                "name": "41544",
+                "city": "Durham",
+                "state": "NC",
+                "address": "1202 Homecoming Wy, Durham, NC 27703",
+                "link": "https://month2month.com/41544",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冬季风暴警告, 冰冻警告, 大雪预警（12+英寸）, 停电风险",
+                "temperature": "极寒温度，持续至1月31日",
+                "actions": "检查屋顶积雪承重; 防止管道冻结; 准备应对停电; 监控房产"
+        },
+        {
+                "name": "41505",
+                "city": "Charleston",
+                "state": "SC",
+                "address": "782 Jancus St, Charleston, SC",
+                "link": "https://month2month.com/41505",
+                "riskLevel": "高风险",
+                "severity": 3,
+                "threats": "冬季风暴警告, 冰冻警告, 冰层积累, 停电风险",
+                "temperature": "冻结温度，持续多天",
+                "actions": "检查防冻措施; 准备应对停电; 监控房产状况; 确保供暖"
+        },
+        {
+                "name": "41228",
+                "city": "Cypress",
+                "state": "TX",
+                "address": "19738 Tacoma Bluff Drive, Cypress, TX 77433",
+                "link": "https://month2month.com/41228",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41174",
+                "city": "Denton",
+                "state": "TX",
+                "address": "3604 Beatriz Dr, Denton, TX 76207",
+                "link": "https://month2month.com/41174",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41577",
+                "city": "Houston",
+                "state": "TX",
+                "address": "1206 Matthews St, Houston, TX 77019",
+                "link": "https://month2month.com41577",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41586",
+                "city": "Jersey Village",
+                "state": "TX",
+                "address": "76 Cherry Hills Dr, Jersey Village, TX 77433",
+                "link": "https://month2month.com/41586",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41493",
+                "city": "Katy",
+                "state": "TX",
+                "address": "29207 Pikes Peak Dr, Katy TX",
+                "link": "https://month2month.com/41493",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41267",
+                "city": "Katy",
+                "state": "TX",
+                "address": "6411 Tea Tree Dr, Katy, TX 77494",
+                "link": "https://month2month.com/41267",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41574",
+                "city": "Mckinney",
+                "state": "TX",
+                "address": "5801 Fuder Dr, Mckinney, TX 75070",
+                "link": "https://month2month.com/41574",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41357",
+                "city": "Missouri City",
+                "state": "TX",
+                "address": "1915 Meadow Trail, Missouri City, TX 77459",
+                "link": "https://month2month.com/41357",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41016",
+                "city": "Missouri City",
+                "state": "TX",
+                "address": "2142 Ironwood Pass Dr, Missouri City, TX 77459",
+                "link": "https://month2month.com/41016",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "40872",
+                "city": "Missouri City",
+                "state": "TX",
+                "address": "8710 Crossing Oak Ln, Missouri City, TX 77459",
+                "link": "https://month2month.com/40872",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "40860",
+                "city": "Missouri City",
+                "state": "TX",
+                "address": "8718 Myrtle Bend Dr, Missouri City, TX 77459",
+                "link": "https://month2month.com/40860",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41189",
+                "city": "Missouri City",
+                "state": "TX",
+                "address": "8719 Fox Trail Dr, Missouri City, TX 77459",
+                "link": "https://month2month.com/41189",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41144",
+                "city": "Missouri City",
+                "state": "TX",
+                "address": "8723 Arbor Trail Dr, Missouri City, TX 77459",
+                "link": "https://month2month.com/41144",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41010",
+                "city": "Rosenberg",
+                "state": "TX",
+                "address": "6602 Sterling Shores Ln, Rosenberg, TX 77471",
+                "link": "https://month2month.com/41010",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41225",
+                "city": "San Antonio",
+                "state": "TX",
+                "address": "3514 Booker Trail, San Antonio, TX 78222",
+                "link": "https://month2month.com/41225",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41399",
+                "city": "San Antonio",
+                "state": "TX",
+                "address": "5406 Elm Valley Dr, San Antonio, TX 78242",
+                "link": "https://month2month.com/41399",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41019",
+                "city": "San Antonio",
+                "state": "TX",
+                "address": "7026 Randado Ct, San Antonio, TX 78242",
+                "link": "https://month2month.com/41019",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41138",
+                "city": "Sienna Plantation",
+                "state": "TX",
+                "address": "2151 Long Spring Dr, Sienna Plantation, TX 77459",
+                "link": "https://month2month.com/41138",
+                "riskLevel": "高风险 - 紧急",
+                "severity": 3,
+                "threats": "冰冻警告, 冬季风暴警告, 极寒温度（低于0°F）, 停电风险高",
+                "temperature": "体感温度低于0°F，持续至1月31日",
+                "actions": "立即检查管道防冻; 确保供暖系统运行; 准备应对停电; 24小时监控"
+        },
+        {
+                "name": "41592",
+                "city": "Beaverton",
+                "state": "OR",
+                "address": "14330 SW Burlwood Ln Beaverton, OR 97005",
+                "link": "https://month2month.com/41592",
+                "riskLevel": "中等风险",
+                "severity": 2,
+                "threats": "降雪可能, 寒冷天气, 道路结冰",
+                "temperature": "低温天气",
+                "actions": "检查供暖系统; 关注天气更新; 准备基本应急措施"
+        },
+        {
+                "name": "41568",
+                "city": "Portland",
+                "state": "OR",
+                "address": "10026 NW Priscilla Ct, Portland, OR 97229",
+                "link": "https://month2month.com/41568",
+                "riskLevel": "中等风险",
+                "severity": 2,
+                "threats": "降雪可能, 寒冷天气, 道路结冰",
+                "temperature": "低温天气",
+                "actions": "检查供暖系统; 关注天气更新; 准备基本应急措施"
+        },
+        {
+                "name": "41532",
+                "city": "Portland",
+                "state": "OR",
+                "address": "2377 NW Birkendene St, Portland, Portland, OR 97229",
+                "link": "https://month2month.com/41532",
+                "riskLevel": "中等风险",
+                "severity": 2,
+                "threats": "降雪可能, 寒冷天气, 道路结冰",
+                "temperature": "低温天气",
+                "actions": "检查供暖系统; 关注天气更新; 准备基本应急措施"
+        },
+        {
+                "name": "41001",
+                "city": "Portland",
+                "state": "OR",
+                "address": "9021 NW Bartholomew Dr, Portland, OR 97229",
+                "link": "https://month2month.com/41001",
+                "riskLevel": "中等风险",
+                "severity": 2,
+                "threats": "降雪可能, 寒冷天气, 道路结冰",
+                "temperature": "低温天气",
+                "actions": "检查供暖系统; 关注天气更新; 准备基本应急措施"
+        },
+        {
+                "name": "41649",
+                "city": "Phoenix",
+                "state": "AZ",
+                "address": "2510 W Big Oak St, Phoenix, AZ 85085",
+                "link": "https://month2month.com/41649",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "寒冷天气",
+                "temperature": "温度偏低",
+                "actions": "关注温度变化; 确保供暖可用"
+        },
+        {
+                "name": "41595",
+                "city": "Anaheim",
+                "state": "CA",
+                "address": "943 E Mason Ln #64, Anaheim, CA 92805",
+                "link": "https://month2month.com/41595",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41034",
+                "city": "Arcadia",
+                "state": "CA",
+                "address": "2617 Glamis Ct, Arcadia, CA 91007",
+                "link": "https://month2month.com/41034",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41219",
+                "city": "Azusa",
+                "state": "CA",
+                "address": "5765 N Traymore Ave, Azusa, CA 91702",
+                "link": "https://month2month.com/41219",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41571",
+                "city": "Bakersfield",
+                "state": "CA",
+                "address": "430 Jefferson St, Bakersfield, CA 93305",
+                "link": "https://month2month.com/41571",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41049",
+                "city": "Chino",
+                "state": "CA",
+                "address": "6203 Winona St, Chino, CA 91710",
+                "link": "https://month2month.com/41049",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41511",
+                "city": "Chino",
+                "state": "CA",
+                "address": "7473 Brahman Ln, Chino, CA 91708",
+                "link": "https://month2month.com/41511",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41405",
+                "city": "Chino",
+                "state": "CA",
+                "address": "8254 Traveller St, Chino, CA 91708",
+                "link": "https://month2month.com/41405",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41142",
+                "city": "Chino",
+                "state": "CA",
+                "address": "8682 Festival St, Chino, CA 91708",
+                "link": "https://month2month.com/41142",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41162",
+                "city": "Chino Hills",
+                "state": "CA",
+                "address": "17201 Guarda Dr, Chino Hills, CA 91709",
+                "link": "https://month2month.com/41162",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40926",
+                "city": "Chino Hills",
+                "state": "CA",
+                "address": "4441 Foxrun Dr, Chino Hills, CA 91709",
+                "link": "https://month2month.com/40926",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41276",
+                "city": "Corona",
+                "state": "CA",
+                "address": "613 Towergrove Dr, Corona, CA 92879",
+                "link": "https://month2month.com/41276",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41396",
+                "city": "Diamond Bar",
+                "state": "CA",
+                "address": "1823 Cliffbranch Dr, Diamond Bar, CA 91765",
+                "link": "https://month2month.com/41396",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41628",
+                "city": "Diamond Bar",
+                "state": "CA",
+                "address": "21075 Blossom Way, Diamond Bar, CA 91765",
+                "link": "https://month2month.com/41628",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40848",
+                "city": "Eastvale",
+                "state": "CA",
+                "address": "13078 Irisbend Ave, Eastvale, CA 92880",
+                "link": "https://month2month.com/40848",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40809",
+                "city": "Eastvale",
+                "state": "CA",
+                "address": "14496 Meadowbrook Ln, Eastvale, CA 92880",
+                "link": "https://month2month.com/40809",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41426",
+                "city": "Eastvale",
+                "state": "CA",
+                "address": "4687 Vanderham Way, Eastvale, CA 91752",
+                "link": "https://month2month.com/41426",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41351",
+                "city": "Eastvale",
+                "state": "CA",
+                "address": "5910 Sendero Ave, Eastvale, CA 92880",
+                "link": "https://month2month.com/41351",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41457",
+                "city": "Eastvale",
+                "state": "CA",
+                "address": "6600 Harrow St, Eastvale, CA 91752",
+                "link": "https://month2month.com/41457",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40938",
+                "city": "Eastvale",
+                "state": "CA",
+                "address": "7143 Leighton Dr, Eastvale, CA 92880",
+                "link": "https://month2month.com/40938",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41348",
+                "city": "El Monte",
+                "state": "CA",
+                "address": "12311 Deana St, El Monte, CA 91732",
+                "link": "https://month2month.com/41348",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41517",
+                "city": "El Monte",
+                "state": "CA",
+                "address": "2516 Edwards Ave Unit E, El Monte, CA 91733",
+                "link": "https://month2month.com/41517",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41384",
+                "city": "Folsom",
+                "state": "CA",
+                "address": "3304 Sunny Gate Ln, Folsom, CA 95630",
+                "link": "https://month2month.com/41384",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41616",
+                "city": "Folsom",
+                "state": "CA",
+                "address": "3200 Sunny Gate Lane, Folsom, CA 95630",
+                "link": "https://month2month.com/41616",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "155",
+                "city": "Fontana",
+                "state": "CA",
+                "address": "14230 Point Reyes St, Fontana, CA 92336",
+                "link": "https://month2month.com/155",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41210",
+                "city": "Fontana",
+                "state": "CA",
+                "address": "16438 Gala Ave, Fontana, CA 92337",
+                "link": "https://month2month.com/41210",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41402",
+                "city": "Fontana",
+                "state": "CA",
+                "address": "5554 Pheasant Dr, Fontana, CA 92336",
+                "link": "https://month2month.com/41402",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41327",
+                "city": "Fontana",
+                "state": "CA",
+                "address": "8049 Jamestown Cir, Fontana, CA 92336",
+                "link": "https://month2month.com/41327",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41270",
+                "city": "Glendora",
+                "state": "CA",
+                "address": "1770 Mountain Ln, Glendora, CA 91741",
+                "link": "https://month2month.com/41270",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41631",
+                "city": "Glendora",
+                "state": "CA",
+                "address": "422 W Route# 66 Glendora, CA 91740",
+                "link": "https://month2month.com/41631",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7002",
+                "city": "Huntington Beach",
+                "state": "CA",
+                "address": "4731 Oceanridge Dr, Huntington Beach, CA 92649",
+                "link": "https://month2month.com/7002",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "8961",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "1 Avignon, Irvine, CA 92606",
+                "link": "https://month2month.com/8961",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7101",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "101 Ovation, Irvine, CA 92620",
+                "link": "https://month2month.com/7101",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "25",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "101 Thornhurst, Irvine, CA 92620",
+                "link": "https://month2month.com/25",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "3276",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "104 Electra, Irvine, CA 92618",
+                "link": "https://month2month.com/3276",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7122",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "104 Tartan, Irvine, CA 92620",
+                "link": "https://month2month.com/7122",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7341",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "105 Cordial, Irvine, CA 92620",
+                "link": "https://month2month.com/7341",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41417",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "107 Waterman, Irvine, CA 92602",
+                "link": "https://month2month.com/41417",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41178",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "108 Baja, Irvine, CA 92602",
+                "link": "https://month2month.com/41178",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "9966",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "108 Retreat, Irvine, CA 92603",
+                "link": "https://month2month.com/9966",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "2943",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "109 Bright Poppy, Irvine, CA 92618",
+                "link": "https://month2month.com/2943",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "10416",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "109 Swift, Irvine, CA 92618",
+                "link": "https://month2month.com/10416",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41255",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "111 Cordial, Irvine, CA 92620",
+                "link": "https://month2month.com/41255",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "17",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "1125 Scholarship, Irvine, CA 92612",
+                "link": "https://month2month.com/17",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "6930",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "119 Landover, Irvine, CA 92620",
+                "link": "https://month2month.com/6930",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7944",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "125 Alumroot, Irvine, CA 92602",
+                "link": "https://month2month.com/7944",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "2934",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "125 Straw, Irvine, CA 92618",
+                "link": "https://month2month.com/2934",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41460",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "126 Donati, Irvine, CA 92620",
+                "link": "https://month2month.com/41460",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41139",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "127 Stepping Stone, Irvine, CA 92603",
+                "link": "https://month2month.com/41139",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41429",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "132 Stallion, Irvine, CA 92602",
+                "link": "https://month2month.com/41429",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "194",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "137 Kempton, Irvine, CA 92620",
+                "link": "https://month2month.com/194",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41252",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "138 Stallion, Irvine, CA 92602",
+                "link": "https://month2month.com/41252",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7134",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "147 Terrapin, Irvine, CA 92618",
+                "link": "https://month2month.com/7134",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7104",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "159 Terrapin, Irvine, CA 92618",
+                "link": "https://month2month.com/7104",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41333",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "17 Riveroaks, Irvine, CA 92602",
+                "link": "https://month2month.com/41333",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "9441",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "173 Terrapin, Irvine, CA 92618",
+                "link": "https://month2month.com/9441",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41478",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "189 Oceano, Irvine, CA 92602",
+                "link": "https://month2month.com/41478",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41363",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "197 Augustine, Irvine, CA 92618",
+                "link": "https://month2month.com/41363",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "10140",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "205 Cherrybrook Ln, Irvine, CA 92618",
+                "link": "https://month2month.com/10140",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41553",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "21 Cedarlake, Irvine, CA， 92614",
+                "link": "https://month2month.com/41553",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "185",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "21 Lakefront, Irvine, CA 92604",
+                "link": "https://month2month.com/185",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "19",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "2117 Scholarship, Irvine, CA 92612",
+                "link": "https://month2month.com/19",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41565",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "228 Siena, Lake Forest, CA 92630",
+                "link": "https://month2month.com/41565",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7110",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "231 Rodeo, Irvine, CA 92620",
+                "link": "https://month2month.com/7110",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "158",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "250 Overbrook, Irvine, CA 92620",
+                "link": "https://month2month.com/158",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "214",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "41 Trailwood, Irvine, CA 92620",
+                "link": "https://month2month.com/214",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40818",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "48 Bamboo, Irvine, CA 92620",
+                "link": "https://month2month.com/40818",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "9261",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "48 Desert Willow, Irvine, CA 92606",
+                "link": "https://month2month.com/9261",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40704",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "5 La Canada, Irvine, CA 92602",
+                "link": "https://month2month.com/40704",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "18",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "5 Rockwood, Irvine, CA 92614",
+                "link": "https://month2month.com/18",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "6747",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "52 Cummings, Irvine, CA 92620",
+                "link": "https://month2month.com/6747",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40836",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "60 Maple Ash, Irvine, CA 92618",
+                "link": "https://month2month.com/40836",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7572",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "61 Crestwick, Irvine, CA 92620",
+                "link": "https://month2month.com/7572",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "10464",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "61 Dunmore, Irvine, CA 92620",
+                "link": "https://month2month.com/10464",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7656",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "61 Jade Flower, Irvine, CA 92620",
+                "link": "https://month2month.com/7656",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "14",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "63 Secret Garden, Irvine, CA 92620",
+                "link": "https://month2month.com/14",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "6964",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "64 Thornapple, Irvine, CA 92620",
+                "link": "https://month2month.com/6964",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7014",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "67 Rexford, Irvine, CA 92620",
+                "link": "https://month2month.com/7014",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "28",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "75 Gardenstone Path, Irvine, CA 92620",
+                "link": "https://month2month.com/28",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "58",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "77 Hanging Garden, Irvine, CA 92618",
+                "link": "https://month2month.com/58",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "174",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "78 Talisman, Irvine, CA 92620",
+                "link": "https://month2month.com/174",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "110",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "95 Hanging Garden, Irvine, CA 92618",
+                "link": "https://month2month.com/110",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "10365",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "95 Overbrook, Irvine, CA 92620",
+                "link": "https://month2month.com/10365",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41610",
+                "city": "Irvine",
+                "state": "CA",
+                "address": "69 Clover, Lake Forest, CA 92630",
+                "link": "https://month2month.com/41610",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41336",
+                "city": "Jurupa Valley",
+                "state": "CA",
+                "address": "6410 June Mountain Way, Jurupa Valley, CA 92509",
+                "link": "https://month2month.com/41336",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41243",
+                "city": "Jurupa Valley",
+                "state": "CA",
+                "address": "6506 Zion Way, Jurupa Valley, CA 92509",
+                "link": "https://month2month.com/41243",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41393",
+                "city": "Jurupa Valley",
+                "state": "CA",
+                "address": "6599 Bryce Canyon Ct, Jurupa Valley, CA 92509",
+                "link": "https://month2month.com/41393",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41153",
+                "city": "Lake Forest",
+                "state": "CA",
+                "address": "129 Lavender, Lake Forest, CA 92630",
+                "link": "https://month2month.com/41153",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40833",
+                "city": "Lake Forest",
+                "state": "CA",
+                "address": "21792 Tahoe Ln, Lake Forest, CA 92630",
+                "link": "https://month2month.com/40833",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "7089",
+                "city": "Lake Forest",
+                "state": "CA",
+                "address": "30 Prominence, Lake Forest, CA 92610",
+                "link": "https://month2month.com/7089",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41496",
+                "city": "Lake Forest",
+                "state": "CA",
+                "address": "38 Torosa, Lake Forest, CA 92630",
+                "link": "https://month2month.com/41496",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41565",
+                "city": "Lake Forest",
+                "state": "CA",
+                "address": "228 Siena, Lake Forest, CA 92630",
+                "link": "https://month2month.com/41565",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41610",
+                "city": "Lake Forest",
+                "state": "CA",
+                "address": "69 Clover, Lake Forest, CA 92630",
+                "link": "https://month2month.com/41610",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41369",
+                "city": "Lancaster",
+                "state": "CA",
+                "address": "43130 62nd St W, Lancaster, CA 93536",
+                "link": "https://month2month.com/41369",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41390",
+                "city": "Lancaster",
+                "state": "CA",
+                "address": "43341 Harbor St, Lancaster, CA 93536",
+                "link": "https://month2month.com/41390",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41589",
+                "city": "Lancaster",
+                "state": "CA",
+                "address": "44149 Buckeye Ct, Lancaster, CA 93536",
+                "link": "https://month2month.com/41589",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41375",
+                "city": "Loma Linda",
+                "state": "CA",
+                "address": "11466 Gower St, Loma Linda, CA 92354",
+                "link": "https://month2month.com/41375",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41562",
+                "city": "Moreno Valley",
+                "state": "CA",
+                "address": "10311 Penguin Ct, Moreno Valley, CA 92557",
+                "link": "https://month2month.com/41562",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41354",
+                "city": "Moreno Valley",
+                "state": "CA",
+                "address": "13479 Arbor Park Lane, Moreno Valley, CA 92551",
+                "link": "https://month2month.com/41354",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41378",
+                "city": "Moreno Valley",
+                "state": "CA",
+                "address": "14563 Gulfstream Lane, Moreno Valley, CA 92553",
+                "link": "https://month2month.com/41378",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41324",
+                "city": "Moreno Valley",
+                "state": "CA",
+                "address": "15426 Black Shadow Dr, Moreno Valley, CA 92551",
+                "link": "https://month2month.com/41324",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41535",
+                "city": "Moreno Valley",
+                "state": "CA",
+                "address": "24911 Gossamer Ct, Moreno Valley, CA 92553",
+                "link": "https://month2month.com/41535",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41613",
+                "city": "Moreno Valley",
+                "state": "CA",
+                "address": "12675 Elmhurst Dr, Moreno Valley, CA 92555",
+                "link": "https://month2month.com/41613",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41487",
+                "city": "Murrieta",
+                "state": "CA",
+                "address": "38135 Sevilla Ave, Murrieta, CA 92563",
+                "link": "https://month2month.com/41487",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41082",
+                "city": "Napa",
+                "state": "CA",
+                "address": "4088 Atlas Peak Rd, Napa, CA 94558",
+                "link": "https://month2month.com/41082",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "3474",
+                "city": "Newport Beach",
+                "state": "CA",
+                "address": "507 J St, Newport Beach, CA 92661",
+                "link": "https://month2month.com/3474",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41282",
+                "city": "Ontario",
+                "state": "CA",
+                "address": "2465 E Bennington St, Ontario, CA 91761",
+                "link": "https://month2month.com/41282",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41475",
+                "city": "Ontario",
+                "state": "CA",
+                "address": "3342 S Newton Ave, Ontario, CA 91761",
+                "link": "https://month2month.com/41475",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41414",
+                "city": "Ontario",
+                "state": "CA",
+                "address": "4835 South Monarch Pl, Ontario, CA 91762",
+                "link": "https://month2month.com/41414",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41366",
+                "city": "Ontario",
+                "state": "CA",
+                "address": "5052 S Heritage Paseo, Ontario, CA 91762",
+                "link": "https://month2month.com/41366",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41640",
+                "city": "Ontario",
+                "state": "CA",
+                "address": "5090 S Centennial Cir,Ontario, CA 91762",
+                "link": "https://month2month.com/41640",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41381",
+                "city": "Palmdale",
+                "state": "CA",
+                "address": "39314 Clear View Ct, Palmdale, CA 93551",
+                "link": "https://month2month.com/41381",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41100",
+                "city": "Palo Alto",
+                "state": "CA",
+                "address": "546 Hilbar Ln, Palo Alto, CA 94303",
+                "link": "https://month2month.com/41100",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41091",
+                "city": "Palo Alto",
+                "state": "CA",
+                "address": "820 Colorado Ave, Palo Alto, CA 94303",
+                "link": "https://month2month.com/41091",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41408",
+                "city": "Perris",
+                "state": "CA",
+                "address": "3308 Jack Rabbit Ct, Perris, CA 92570",
+                "link": "https://month2month.com/41408",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41432",
+                "city": "Pomona",
+                "state": "CA",
+                "address": "565 Alderberry Ln, Pomona, CA 91767",
+                "link": "https://month2month.com/41432",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41637",
+                "city": "Pomona",
+                "state": "CA",
+                "address": "46 Los Felis Dr,Phillips Ranch, CA 91766",
+                "link": "https://month2month.com/41637",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41345",
+                "city": "Rancho Cucamonga",
+                "state": "CA",
+                "address": "13042 Chestnut Ave, Rancho Cucamonga, CA 91739",
+                "link": "https://month2month.com/41345",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "140",
+                "city": "Rancho Cucamonga",
+                "state": "CA",
+                "address": "13215 River Oaks Dr, Rancho Cucamonga, CA 91739",
+                "link": "https://month2month.com/140",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "40845",
+                "city": "Rancho Cucamonga",
+                "state": "CA",
+                "address": "6872 Landriano Place, Rancho Cucamonga, CA 91701",
+                "link": "https://month2month.com/40845",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41523",
+                "city": "Rancho Santa Margarita",
+                "state": "CA",
+                "address": "108 Wild Horse #6, Rancho Santa Margarita, CA 92688",
+                "link": "https://month2month.com/41523",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41514",
+                "city": "Rialto",
+                "state": "CA",
+                "address": "460 N Pinewood Ave, Rialto, CA 92376 ",
+                "link": "https://month2month.com/41514",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41339",
+                "city": "Rialto",
+                "state": "CA",
+                "address": "630 W Woodcrest St, Rialto, CA 92376",
+                "link": "https://month2month.com/41339",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41387",
+                "city": "Sacramento",
+                "state": "CA",
+                "address": "4431 Natomas Central Dr, Sacramento, CA 95834",
+                "link": "https://month2month.com/41387",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41607",
+                "city": "San Clemente",
+                "state": "CA",
+                "address": "105 Via Salamanca, San Clemente, CA 92672",
+                "link": "https://month2month.com/41607",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41469",
+                "city": "San Diego",
+                "state": "CA",
+                "address": "10776 Mira Lago Terrace, San Diego, CA 92131",
+                "link": "https://month2month.com/41469",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41538",
+                "city": "San Diego",
+                "state": "CA",
+                "address": "13850 Bruyere Ct, San Diego, CA 92129",
+                "link": "https://month2month.com/41538",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41472",
+                "city": "San Diego",
+                "state": "CA",
+                "address": "8286 Torrey Park Terrace, San Diego, CA 92129",
+                "link": "https://month2month.com/41472",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41318",
+                "city": "San Jose",
+                "state": "CA",
+                "address": "6429 McAbee Rd, San Jose, CA 95120",
+                "link": "https://month2month.com/41318",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41181",
+                "city": "San Marino",
+                "state": "CA",
+                "address": "2510 Lorain Rd, San Marino, CA 91108",
+                "link": "https://month2month.com/41181",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41420",
+                "city": "Santa Clara",
+                "state": "CA",
+                "address": "1088 Wood Duck Ave, Santa Clara, CA 95051",
+                "link": "https://month2month.com/41420",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41481",
+                "city": "Santa Clara",
+                "state": "CA",
+                "address": "300 Salsbury Dr, Santa Clara, CA 95050",
+                "link": "https://month2month.com/41481",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41484",
+                "city": "Sunnyvale",
+                "state": "CA",
+                "address": "1010 Colusa Ave, Sunnyvale, CA 94085",
+                "link": "https://month2month.com/41484",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41261",
+                "city": "Sunnyvale",
+                "state": "CA",
+                "address": "932 Kintyre Way, Sunnyvale, CA 94087",
+                "link": "https://month2month.com/41261",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41372",
+                "city": "Temple City",
+                "state": "CA",
+                "address": "5657 McCulloch Ave #106, Temple City, CA 91780",
+                "link": "https://month2month.com/41372",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41550",
+                "city": "Temple City",
+                "state": "CA",
+                "address": "9715 Val St, Temple City, CA 91780",
+                "link": "https://month2month.com/41550",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41360",
+                "city": "Tustin",
+                "state": "CA",
+                "address": "17964 Irvine Blvd, Tustin, CA 92780",
+                "link": "https://month2month.com/41360",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41423",
+                "city": "Upland",
+                "state": "CA",
+                "address": "1644 Coral Bells Pl, Upland, CA 91784",
+                "link": "https://month2month.com/4142",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41279",
+                "city": "Upland",
+                "state": "CA",
+                "address": "863 Harvest Ave, Upland, CA 91786",
+                "link": "https://month2month.com/41279",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41682",
+                "city": "Walnut",
+                "state": "CA",
+                "address": "1210 N Country Hollow Dr, Walnut, CA 91789",
+                "link": "https://month2month.com/41682",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41601",
+                "city": "Yorba Linda",
+                "state": "CA",
+                "address": "21730 Thistledown Cir, Yorba Linda, CA 92887",
+                "link": "https://month2month.com/41601",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41652",
+                "city": "pasadena",
+                "state": "CA",
+                "address": "1888 Kaweah Dr, Pasadena, CA 91105",
+                "link": "https://month2month.com/41652",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "轻微寒冷天气",
+                "temperature": "温度正常，轻微降温",
+                "actions": "保持警惕; 关注温度变化"
+        },
+        {
+                "name": "41273",
+                "city": "Henderson",
+                "state": "NV",
+                "address": "708 Saratoga Springs St, Henderson, NV 89015",
+                "link": "https://month2month.com/41273",
+                "riskLevel": "低风险",
+                "severity": 1,
+                "threats": "寒冷天气",
+                "temperature": "温度偏低",
+                "actions": "关注温度变化"
+        }
+];
+        const map = L.map('map').setView([37.0902, -95.7129], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
         }).addTo(map);
         
-        // 定义影响区域的颜色（使用蓝色系，避免红色）
-        const impactColors = {
-            severe: '#9141ac',   // 紫色
-            moderate: '#3584e4', // 蓝色
-            light: '#33d17a',    // 绿色
-            safe: '#77767b'      // 灰色
+        const colorMap = {
+            '高风险 - 紧急': '#e01b24',
+            '高风险': '#ff7800',
+            '中等风险': '#3584e4',
+            '低风险': '#33d17a'
         };
         
-        // 创建自定义图标
-        function createIcon(impact) {
-            return L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="
-                    width: 24px;
-                    height: 24px;
-                    background: ${impactColors[impact]};
-                    border: 3px solid white;
-                    border-radius: 50%;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                "></div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-        }
+        const classMap = {
+            '高风险 - 紧急': 'urgent',
+            '高风险': 'severe',
+            '中等风险': 'moderate',
+            '低风险': 'light'
+        };
         
-        // 获取注意事项
-        function getActions(impact) {
-            const actions = {
-                severe: `<strong>⚠️ 紧急措施：</strong><br>
-                    • 立即联系租户确认供暖正常<br>
-                    • 检查管道防冻措施<br>
-                    • 提醒储备应急物资<br>
-                    • 准备应急维修联系方式`,
-                moderate: `<strong>⚡ 建议措施：</strong><br>
-                    • 提醒租户注意保暖<br>
-                    • 检查供暖系统状态<br>
-                    • 关注当地天气预警<br>
-                    • 确保紧急联系方式畅通`,
-                light: `<strong>📢 提醒事项：</strong><br>
-                    • 发送天气预警通知<br>
-                    • 提醒注意道路结冰<br>
-                    • 建议减少外出`,
-                safe: `<strong>✅ 状态正常：</strong><br>
-                    • 天气状况良好<br>
-                    • 无需特别措施`
-            };
-            return actions[impact];
-        }
-        
-        // 获取简短注意事项
-        function getShortActions(impact) {
-            const actions = {
-                severe: '检查供暖、管道防冻、联系租户',
-                moderate: '提醒保暖、检查供暖系统',
-                light: '发送天气预警通知',
-                safe: '无需特别措施'
-            };
-            return actions[impact];
-        }
-        
-        // 获取影响级别标签
-        function getImpactLabel(impact) {
-            const labels = {
-                severe: '严重影响 - 需立即行动',
-                moderate: '中度影响 - 需关注',
-                light: '轻度影响 - 需提醒',
-                safe: '不受影响'
-            };
-            return labels[impact];
-        }
-        
-        // 添加房产标记
         const markers = [];
-        properties.forEach((prop, index) => {
-            if (prop.lat && prop.lng) {
-                const marker = L.marker([prop.lat, prop.lng], {
-                    icon: createIcon(prop.impact)
-                }).addTo(map);
-                
-                marker.bindPopup(`
-                    <div class="info-popup">
-                        <h4>🏠 ${prop.address}</h4>
-                        <p style="font-size: 12px; color: #666;">地区: ${prop.region}</p>
-                        <div class="temp ${prop.impact}">
-                            体感温度: ${prop.temp}
-                        </div>
-                        <p><strong>影响级别:</strong> ${getImpactLabel(prop.impact)}</p>
-                        <div class="actions">
-                            ${getActions(prop.impact)}
-                        </div>
-                    </div>
-                `);
-                
-                markers.push({marker, prop, index});
-            }
-        });
         
-        // 生成房产列表
-        function renderPropertyList(filter = 'all') {
-            const listContainer = document.getElementById('property-list-content');
-            listContainer.innerHTML = '';
-            
-            let filteredProps = properties;
-            if (filter !== 'all') {
-                filteredProps = properties.filter(p => p.impact === filter);
+        async function geocodeAddress(address) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                }
+            } catch (e) {
+                console.error('Geocoding error:', e);
             }
-            
-            // 按影响级别排序
-            const impactOrder = {'severe': 0, 'moderate': 1, 'light': 2, 'safe': 3};
-            filteredProps.sort((a, b) => impactOrder[a.impact] - impactOrder[b.impact]);
-            
-            filteredProps.forEach((prop, idx) => {
-                const item = document.createElement('div');
-                item.className = `property-item ${prop.impact}`;
-                item.innerHTML = `
-                    <div class="property-address">${prop.address}</div>
-                    <span class="property-warning">${getImpactLabel(prop.impact)} | ${prop.temp}</span>
-                    <div class="property-actions">📋 ${getShortActions(prop.impact)}</div>
-                `;
-                
-                item.addEventListener('click', () => {
-                    const markerData = markers.find(m => m.prop.address === prop.address);
-                    if (markerData) {
-                        map.setView([prop.lat, prop.lng], 10);
-                        markerData.marker.openPopup();
-                    }
-                });
-                
-                listContainer.appendChild(item);
-            });
-            
-            document.getElementById('property-count').textContent = filteredProps.length + '套';
+            return null;
         }
         
-        // 筛选标签点击事件
-        document.querySelectorAll('.filter-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                renderPropertyList(tab.dataset.filter);
-            });
+        async function addMarkers() {
+            for (const property of propertiesData) {
+                const coords = await geocodeAddress(property.address);
+                if (coords) {
+                    const color = colorMap[property.riskLevel] || '#999';
+                    const marker = L.circleMarker(coords, {
+                        radius: 8,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    const popupContent = `
+                        <div class="popup-title">${property.name} - ${property.city}, ${property.state}</div>
+                        <div class="popup-section"><div class="popup-label">地址</div><div class="popup-value">${property.address}</div></div>
+                        <div class="popup-section"><div class="popup-label">风险等级</div><div class="popup-value" style="color: ${color}; font-weight: 600;">${property.riskLevel}</div></div>
+                        <div class="popup-section"><div class="popup-label">天气威胁</div><div class="popup-value">${property.threats}</div></div>
+                        <div class="popup-section"><div class="popup-label">温度预报</div><div class="popup-value">${property.temperature}</div></div>
+                        <div class="popup-section"><div class="popup-label">建议措施</div><div class="popup-value">${property.actions}</div></div>
+                        <a href="${property.link}" target="_blank" class="popup-link">查看房产详情</a>
+                    `;
+                    marker.bindPopup(popupContent);
+                    markers.push({ marker, property });
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        const propertyList = document.getElementById('propertyList');
+        propertiesData.forEach((property, index) => {
+            const item = document.createElement('div');
+            item.className = `property-item ${classMap[property.riskLevel]}`;
+            item.innerHTML = `
+                <div class="property-name">${property.name} - ${property.city}, ${property.state}</div>
+                <div class="property-address">${property.address}</div>
+                <span class="property-risk ${classMap[property.riskLevel]}">${property.riskLevel}</span>
+            `;
+            item.onclick = () => {
+                const markerData = markers.find(m => m.property.name === property.name);
+                if (markerData) {
+                    map.setView(markerData.marker.getLatLng(), 12);
+                    markerData.marker.openPopup();
+                }
+            };
+            propertyList.appendChild(item);
         });
         
-        // 初始渲染
-        renderPropertyList();
+        addMarkers();
     </script>
 </body>
 </html>
