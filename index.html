@@ -132,7 +132,7 @@
     
     <div class="info-panel">
         <h2>🌨️ M2M 天气预警地图</h2>
-        <p><strong>更新时间:</strong><br>2026-01-28 23:21 UTC</p>
+        <p><strong>更新时间:</strong><br>2026-01-29 01:38 UTC</p>
         <p><strong>监控房产:</strong> 279 处</p>
         <p><strong>受影响区域:</strong> 18 个州</p>
         
@@ -195,20 +195,16 @@
     </div>
     
     <script>
-        // Initialize map
         var map = L.map('map').setView([39.8283, -98.5795], 4);
         
-        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
         
-        // Create layer groups
         var weatherZones = L.layerGroup().addTo(map);
         var propertyMarkers = L.layerGroup().addTo(map);
         
-        // Add weather zones
 
         L.circle([44.299782, -99.438828], {
             radius: 150000,
@@ -269,7 +265,7 @@
                     <strong>活跃警报:</strong> 11 个<br>
                     <strong>警报类型:</strong><br>
                     <div style="font-size: 11px; margin-top: 4px; line-height: 1.4;">
-                        Winter Weather Advisory<br>Winter Storm Warning<br>Cold Weather Advisory
+                        Winter Weather Advisory<br>Cold Weather Advisory<br>Winter Storm Warning
                     </div>
                 </div>
             </div>
@@ -577,7 +573,7 @@
                     <strong>活跃警报:</strong> 3 个<br>
                     <strong>警报类型:</strong><br>
                     <div style="font-size: 11px; margin-top: 4px; line-height: 1.4;">
-                        Blizzard Warning<br>Winter Storm Warning
+                        Winter Storm Warning<br>Blizzard Warning
                     </div>
                 </div>
             </div>
@@ -605,10 +601,9 @@
             </div>
         `);
         
-        
-        // Add property markers
 
-        L.circleMarker([36.25562979845788, -120.15655324477733], {
+
+        L.circleMarker([33.690177071938315, -117.84549956979109], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -628,7 +623,7 @@
         `);
         
 
-        L.circleMarker([35.89123231836912, -119.95835326185117], {
+        L.circleMarker([33.675601172734765, -117.83757157047404], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -648,7 +643,7 @@
         `);
         
 
-        L.circleMarker([36.35267421416401, -119.50486451257709], {
+        L.circleMarker([33.69405884856656, -117.81943202050309], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -668,7 +663,7 @@
         `);
         
 
-        L.circleMarker([36.50838256770484, -120.09462516737058], {
+        L.circleMarker([33.700287182708195, -117.84302244669482], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -688,7 +683,7 @@
         `);
         
 
-        L.circleMarker([27.68820081968527, -82.15698578056194], {
+        L.circleMarker([28.288876872787412, -81.42640811122249], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -708,7 +703,7 @@
         `);
         
 
-        L.circleMarker([35.834840974803605, -119.67620871189663], {
+        L.circleMarker([33.67334551899215, -117.82628578847586], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -728,7 +723,7 @@
         `);
         
 
-        L.circleMarker([35.64273896968386, -119.98272634931335], {
+        L.circleMarker([33.66566143878736, -117.83854649397253], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -748,7 +743,7 @@
         `);
         
 
-        L.circleMarker([36.266087437779525, -119.63662251939678], {
+        L.circleMarker([33.69059537751119, -117.82470234077587], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -768,7 +763,7 @@
         `);
         
 
-        L.circleMarker([35.8366436220407, -119.59229831612409], {
+        L.circleMarker([33.67341762488163, -117.82292937264496], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -788,7 +783,7 @@
         `);
         
 
-        L.circleMarker([36.42563345667782, -120.17506524032193], {
+        L.circleMarker([33.696977218267115, -117.84624004961287], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -808,7 +803,7 @@
         `);
         
 
-        L.circleMarker([36.42202225183281, -119.48342460501176], {
+        L.circleMarker([33.696832770073314, -117.81857442420046], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -828,7 +823,7 @@
         `);
         
 
-        L.circleMarker([27.60652951651799, -82.03130350018823], {
+        L.circleMarker([28.28561002066072, -81.42138082000753], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -848,7 +843,7 @@
         `);
         
 
-        L.circleMarker([28.22349207220678, -81.85018845488737], {
+        L.circleMarker([28.31028852288827, -81.4141362181955], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -868,7 +863,7 @@
         `);
         
 
-        L.circleMarker([35.70894884338015, -120.08484762316652], {
+        L.circleMarker([33.66830983373521, -117.84263134492666], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -888,7 +883,7 @@
         `);
         
 
-        L.circleMarker([36.46369736634746, -119.5778379686331], {
+        L.circleMarker([33.698499774653904, -117.82235095874532], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -908,7 +903,7 @@
         `);
         
 
-        L.circleMarker([36.42333127327438, -119.45183221330618], {
+        L.circleMarker([33.63118513093097, -117.91971072853225], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -928,7 +923,7 @@
         `);
         
 
-        L.circleMarker([36.1524310914547, -119.20844823602063], {
+        L.circleMarker([33.686049123658194, -117.80757536944083], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -948,7 +943,7 @@
         `);
         
 
-        L.circleMarker([35.99473737720835, -119.62952336872677], {
+        L.circleMarker([33.67974137508834, -117.82441837474907], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -968,7 +963,7 @@
         `);
         
 
-        L.circleMarker([36.445607664253, -119.56304424763574], {
+        L.circleMarker([33.67347618657012, -117.99525920990543], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -988,7 +983,7 @@
         `);
         
 
-        L.circleMarker([28.12798590031078, -81.60943085474324], {
+        L.circleMarker([28.17586827601243, -81.59920591418972], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1008,7 +1003,7 @@
         `);
         
 
-        L.circleMarker([36.32077483621492, -120.13573961634434], {
+        L.circleMarker([33.6927828734486, -117.84466702465377], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1028,7 +1023,7 @@
         `);
         
 
-        L.circleMarker([35.844101275651546, -119.89217603639788], {
+        L.circleMarker([33.67371593102607, -117.83492448145591], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1048,7 +1043,7 @@
         `);
         
 
-        L.circleMarker([35.69599497692363, -119.94877311363896], {
+        L.circleMarker([33.66779167907695, -117.83718836454555], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1068,7 +1063,7 @@
         `);
         
 
-        L.circleMarker([35.717204429409726, -119.9035903968899], {
+        L.circleMarker([33.66864005717639, -117.83538105587559], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1088,7 +1083,7 @@
         `);
         
 
-        L.circleMarker([36.2518874442644, -119.8167318210299], {
+        L.circleMarker([33.690027377770576, -117.83190671284119], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1108,7 +1103,7 @@
         `);
         
 
-        L.circleMarker([35.98638396711688, -119.9720569692285], {
+        L.circleMarker([33.679407238684675, -117.83811971876914], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1128,7 +1123,7 @@
         `);
         
 
-        L.circleMarker([35.88318082204911, -119.2449094122875], {
+        L.circleMarker([33.67527911288197, -117.80903381649149], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1148,7 +1143,7 @@
         `);
         
 
-        L.circleMarker([27.914314385246595, -81.57765199433302], {
+        L.circleMarker([28.297921415409867, -81.40323475977333], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1168,7 +1163,7 @@
         `);
         
 
-        L.circleMarker([27.4374176481981, -81.45765620204966], {
+        L.circleMarker([28.278845545927926, -81.39843492808198], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1188,7 +1183,7 @@
         `);
         
 
-        L.circleMarker([35.77960549376193, -119.80210855824235], {
+        L.circleMarker([33.67113609975048, -117.8313217823297], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1208,7 +1203,7 @@
         `);
         
 
-        L.circleMarker([36.605726350636594, -119.5415642401459], {
+        L.circleMarker([33.972380934025466, -117.57920000960584], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1228,7 +1223,7 @@
         `);
         
 
-        L.circleMarker([36.173152743774644, -119.49694974901011], {
+        L.circleMarker([33.68687798975099, -117.8191154299604], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1248,7 +1243,7 @@
         `);
         
 
-        L.circleMarker([31.39733892018981, -97.28746108845375], {
+        L.circleMarker([29.632214076807593, -95.52666000353815], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1268,7 +1263,7 @@
         `);
         
 
-        L.circleMarker([30.783535071964106, -98.03136075609596], {
+        L.circleMarker([29.607661922878567, -95.55641599024383], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1288,7 +1283,7 @@
         `);
         
 
-        L.circleMarker([35.93165604805908, -119.91382312402429], {
+        L.circleMarker([33.867918121922365, -117.57569036496098], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1308,7 +1303,7 @@
         `);
         
 
-        L.circleMarker([44.28300384358633, -121.62802828566494], {
+        L.circleMarker([45.503639313743456, -122.66068361142659], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1328,7 +1323,7 @@
         `);
         
 
-        L.circleMarker([31.43085462647267, -97.74878311920152], {
+        L.circleMarker([29.57225470505891, -95.81591288476805], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1348,7 +1343,7 @@
         `);
         
 
-        L.circleMarker([31.209925665294882, -97.66782909893934], {
+        L.circleMarker([29.624717546611794, -95.54187472395758], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1368,7 +1363,7 @@
         `);
         
 
-        L.circleMarker([31.469034589740545, -97.6046091474126], {
+        L.circleMarker([29.44068190358962, -98.4952459258965], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1388,7 +1383,7 @@
         `);
         
 
-        L.circleMarker([27.531159166498053, -81.94015549230602], {
+        L.circleMarker([28.326995206659923, -81.64713489969225], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1408,7 +1403,7 @@
         `);
         
 
-        L.circleMarker([36.17757113416315, -119.91882239147706], {
+        L.circleMarker([34.142154725366524, -118.04489033565908], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1428,7 +1423,7 @@
         `);
         
 
-        L.circleMarker([36.200788990223536, -119.28374111639752], {
+        L.circleMarker([34.01558343960894, -117.6729870846559], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1448,7 +1443,7 @@
         `);
         
 
-        L.circleMarker([36.0156035051404, -119.96224324084271], {
+        L.circleMarker([37.437876020205614, -122.15422716963371], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1468,7 +1463,7 @@
         `);
         
 
-        L.circleMarker([36.61374060649511, -119.67203770632354], {
+        L.circleMarker([37.4618015042598, -122.14261894825295], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1488,7 +1483,7 @@
         `);
         
 
-        L.circleMarker([30.645396412173795, -98.01634462457527], {
+        L.circleMarker([30.809032647304278, -97.83519117474516], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1508,7 +1503,7 @@
         `);
         
 
-        L.circleMarker([35.72585213035066, -119.5541179582969], {
+        L.circleMarker([33.631285965214026, -117.68410215833188], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1528,7 +1523,7 @@
         `);
         
 
-        L.circleMarker([31.346566364362968, -97.64130103320032], {
+        L.circleMarker([33.22648317457452, -97.13621360132801], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1548,7 +1543,7 @@
         `);
         
 
-        L.circleMarker([30.61801470615196, -97.68184171349347], {
+        L.circleMarker([29.60104110824608, -95.54243522853974], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1568,7 +1563,7 @@
         `);
         
 
-        L.circleMarker([31.5506083802401, -97.53434665490087], {
+        L.circleMarker([29.443944855209605, -98.49243542619604], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1588,7 +1583,7 @@
         `);
         
 
-        L.circleMarker([31.52556537761362, -97.20268129776551], {
+        L.circleMarker([29.987943135104544, -95.68276881191062], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1608,7 +1603,7 @@
         `);
         
 
-        L.circleMarker([35.62768402194282, -119.4608421806398], {
+        L.circleMarker([33.66505924087772, -117.8176711272256], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1628,7 +1623,7 @@
         `);
         
 
-        L.circleMarker([31.236197369026577, -97.52649066959121], {
+        L.circleMarker([31.163513221415947, -97.54127880175473], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1648,7 +1643,7 @@
         `);
         
 
-        L.circleMarker([35.88302818995254, -119.54060220142019], {
+        L.circleMarker([33.86597300759811, -117.56076152805682], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1668,7 +1663,7 @@
         `);
         
 
-        L.circleMarker([35.727755173595874, -119.74679874933089], {
+        L.circleMarker([35.88313430415752, -119.72070484959853], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1688,7 +1683,7 @@
         `);
         
 
-        L.circleMarker([36.069926706329206, -119.22774807247892], {
+        L.circleMarker([37.33634894825317, -121.86814736289917], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1708,7 +1703,7 @@
         `);
         
 
-        L.circleMarker([36.492055940378194, -119.91817494924891], {
+        L.circleMarker([34.10723411761513, -117.44446443796996], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1728,7 +1723,7 @@
         `);
         
 
-        L.circleMarker([36.116789113050295, -120.00291211946987], {
+        L.circleMarker([33.68462344452202, -117.83935392477879], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1748,7 +1743,7 @@
         `);
         
 
-        L.circleMarker([36.52883083934482, -119.31104543016323], {
+        L.circleMarker([36.36377970360689, -119.45925285809794], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1768,7 +1763,7 @@
         `);
         
 
-        L.circleMarker([35.91464779144863, -119.54261450513398], {
+        L.circleMarker([33.94473779165795, -117.57924202020536], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1788,7 +1783,7 @@
         `);
         
 
-        L.circleMarker([36.22517321143817, -120.02872473145035], {
+        L.circleMarker([33.94685880845753, -117.243586429258], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1808,7 +1803,7 @@
         `);
         
 
-        L.circleMarker([36.37871380007515, -119.64218496988038], {
+        L.circleMarker([33.69510043200301, -117.82492483879521], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1828,7 +1823,7 @@
         `);
         
 
-        L.circleMarker([36.394829478630555, -119.65121032780482], {
+        L.circleMarker([36.28337888717834, -119.66335179668289], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1848,7 +1843,7 @@
         `);
         
 
-        L.circleMarker([35.61677489612794, -119.85740794299532], {
+        L.circleMarker([35.81654613767677, -119.78707036579719], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1868,7 +1863,7 @@
         `);
         
 
-        L.circleMarker([35.63567974238583, -119.25246538373538], {
+        L.circleMarker([35.8278890454315, -119.42410483024122], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1888,7 +1883,7 @@
         `);
         
 
-        L.circleMarker([36.49492487782318, -119.34989847063882], {
+        L.circleMarker([33.95764887511293, -117.21643337882554], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1908,7 +1903,7 @@
         `);
         
 
-        L.circleMarker([35.92371712540266, -120.12363883350581], {
+        L.circleMarker([36.000711475241594, -119.94680890010348], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1928,7 +1923,7 @@
         `);
         
 
-        L.circleMarker([36.49421259920404, -119.234614554702], {
+        L.circleMarker([36.34300875952243, -119.4133943328212], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1948,7 +1943,7 @@
         `);
         
 
-        L.circleMarker([35.70185645206788, -119.69557353668338], {
+        L.circleMarker([35.86759507124073, -119.68996972201002], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1968,7 +1963,7 @@
         `);
         
 
-        L.circleMarker([30.623699518468385, -97.30285883474278], {
+        L.circleMarker([29.406868500738735, -98.48317591338972], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -1988,7 +1983,7 @@
         `);
         
 
-        L.circleMarker([36.38203742930698, -120.05317253550024], {
+        L.circleMarker([34.102833377172274, -117.44986434142001], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2008,7 +2003,7 @@
         `);
         
 
-        L.circleMarker([36.09148537809873, -119.63176040650505], {
+        L.circleMarker([34.06231129512395, -117.6489078562602], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2028,7 +2023,7 @@
         `);
         
 
-        L.circleMarker([35.88125962894006, -119.30913095891474], {
+        L.circleMarker([33.67520226515761, -117.81160267835658], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2048,7 +2043,7 @@
         `);
         
 
-        L.circleMarker([36.03934094020089, -119.96976579455792], {
+        L.circleMarker([36.07008576412053, -119.85448507673475], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2068,7 +2063,7 @@
         `);
         
 
-        L.circleMarker([36.15549908877946, -119.45163293091002], {
+        L.circleMarker([36.13978065326767, -119.543605358546], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2088,7 +2083,7 @@
         `);
         
 
-        L.circleMarker([35.81735406338969, -119.8698477086991], {
+        L.circleMarker([33.67264604253559, -117.83403134834796], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2108,7 +2103,7 @@
         `);
         
 
-        L.circleMarker([36.611352356660895, -119.53168594236054], {
+        L.circleMarker([33.704405974266436, -117.82050487769442], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2128,7 +2123,7 @@
         `);
         
 
-        L.circleMarker([36.054303083914505, -119.6639881589644], {
+        L.circleMarker([36.0790630503487, -119.67101849537865], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2148,7 +2143,7 @@
         `);
         
 
-        L.circleMarker([33.47789619586827, -81.22030966296845], {
+        L.circleMarker([33.62949451752096, -81.11018859778108], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2168,7 +2163,7 @@
         `);
         
 
-        L.circleMarker([35.954288562147454, -119.59325528154277], {
+        L.circleMarker([34.0057234224859, -117.68536765126171], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2188,7 +2183,7 @@
         `);
         
 
-        L.circleMarker([35.846317732596575, -119.96134661554844], {
+        L.circleMarker([33.63000458930386, -117.61429130462193], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2208,7 +2203,7 @@
         `);
         
 
-        L.circleMarker([44.14301408600903, -121.9398350427299], {
+        L.circleMarker([45.498039723440364, -122.67315588170919], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2228,7 +2223,7 @@
         `);
         
 
-        L.circleMarker([35.84514478381115, -119.27614398699387], {
+        L.circleMarker([32.70485767135244, -117.14488319947976], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2248,7 +2243,7 @@
         `);
         
 
-        L.circleMarker([36.47583840025374, -120.11070665011134], {
+        L.circleMarker([33.99498541601015, -117.39266570600445], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2268,7 +2263,7 @@
         `);
         
 
-        L.circleMarker([35.854207634369, -119.51258622170371], {
+        L.circleMarker([33.93202018537476, -117.22294088886814], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2288,7 +2283,7 @@
         `);
         
 
-        L.circleMarker([35.83043980737044, -120.04925215127497], {
+        L.circleMarker([33.63546947229482, -117.703907526051], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2308,7 +2303,7 @@
         `);
         
 
-        L.circleMarker([31.49000124058067, -97.49241790667472], {
+        L.circleMarker([31.315795544348404, -97.52083514400483], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2328,7 +2323,7 @@
         `);
         
 
-        L.circleMarker([36.08887402631179, -119.39694457570924], {
+        L.circleMarker([36.099805615787076, -119.51079234542554], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2348,7 +2343,7 @@
         `);
         
 
-        L.circleMarker([36.42369999776664, -119.99115408563812], {
+        L.circleMarker([33.95479987991067, -117.24208360342551], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2368,7 +2363,7 @@
         `);
         
 
-        L.circleMarker([35.71313381422882, -119.75051281759362], {
+        L.circleMarker([35.87436148853729, -119.72293329055617], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2388,7 +2383,7 @@
         `);
         
 
-        L.circleMarker([36.03978162301992, -119.71453933196332], {
+        L.circleMarker([34.025543144920796, -117.81161901327853], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2408,7 +2403,7 @@
         `);
         
 
-        L.circleMarker([36.34527884945985, -119.50819945270669], {
+        L.circleMarker([34.0642630339784, -117.74306541810827], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2428,7 +2423,7 @@
         `);
         
 
-        L.circleMarker([33.52478421136597, -84.04465612884805], {
+        L.circleMarker([33.33111812681958, -83.88402327730883], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2448,7 +2443,7 @@
         `);
         
 
-        L.circleMarker([33.63238028210227, -111.59191839460503], {
+        L.circleMarker([33.671331769261364, -111.52763943676301], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2468,7 +2463,7 @@
         `);
         
 
-        L.circleMarker([36.47787553635279, -119.93290766607971], {
+        L.circleMarker([36.333206521811675, -119.83237019964783], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2488,7 +2483,7 @@
         `);
         
 
-        L.circleMarker([33.41996790844081, -111.48260745216686], {
+        L.circleMarker([33.54388434506449, -111.46205287130012], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2508,7 +2503,7 @@
         `);
         
 
-        L.circleMarker([33.651640639834405, -111.65267585533306], {
+        L.circleMarker([33.68288798390064, -111.56409391319983], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2528,7 +2523,7 @@
         `);
         
 
-        L.circleMarker([33.4795654478821, -111.00795540072399], {
+        L.circleMarker([33.57964286872926, -111.17726164043438], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2548,7 +2543,7 @@
         `);
         
 
-        L.circleMarker([36.05933374505346, -119.32021489523817], {
+        L.circleMarker([36.082081447032074, -119.4647545371429], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2568,7 +2563,7 @@
         `);
         
 
-        L.circleMarker([33.78008431244985, -111.88063267047511], {
+        L.circleMarker([33.75995418746991, -111.70086800228506], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2588,7 +2583,7 @@
         `);
         
 
-        L.circleMarker([39.55909346841273, -104.97507641492005], {
+        L.circleMarker([39.35938048104764, -105.10948744895202], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2608,7 +2603,7 @@
         `);
         
 
-        L.circleMarker([39.528807257284754, -104.88473701699188], {
+        L.circleMarker([39.341208754370854, -105.05528381019512], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2628,7 +2623,7 @@
         `);
         
 
-        L.circleMarker([31.403182734414308, -97.89714988939609], {
+        L.circleMarker([29.571147829376574, -95.82184755557584], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2648,7 +2643,7 @@
         `);
         
 
-        L.circleMarker([31.04012812545072, -97.84971370080082], {
+        L.circleMarker([30.438825645018028, -97.63145010803204], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2668,7 +2663,7 @@
         `);
         
 
-        L.circleMarker([30.955527292549455, -98.00482560002783], {
+        L.circleMarker([30.995111175529672, -97.8282797600167], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2688,7 +2683,7 @@
         `);
         
 
-        L.circleMarker([35.995176118976914, -119.19625515622027], {
+        L.circleMarker([34.06375892475908, -117.9195876462488], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2708,7 +2703,7 @@
         `);
         
 
-        L.circleMarker([35.88140605817215, -119.39749339805142], {
+        L.circleMarker([35.97532483490329, -119.51112163883086], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2728,7 +2723,7 @@
         `);
         
 
-        L.circleMarker([36.07121136733914, -119.75855651400983], {
+        L.circleMarker([34.02680033469356, -117.81337970056039], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2748,7 +2743,7 @@
         `);
         
 
-        L.circleMarker([36.57352064085967, -119.18614131050728], {
+        L.circleMarker([36.390593584515806, -119.38431038630436], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2768,7 +2763,7 @@
         `);
         
 
-        L.circleMarker([36.171971323405614, -119.46315572470367], {
+        L.circleMarker([36.14966399404337, -119.5505190348222], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2788,7 +2783,7 @@
         `);
         
 
-        L.circleMarker([30.709283825274067, -97.76675317450544], {
+        L.circleMarker([30.84736509516444, -97.68543630470326], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2808,7 +2803,7 @@
         `);
         
 
-        L.circleMarker([45.04073036496916, -121.99175770918374], {
+        L.circleMarker([44.853246618981494, -122.02342982551025], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2828,7 +2823,7 @@
         `);
         
 
-        L.circleMarker([36.158398201374276, -119.43358843962093], {
+        L.circleMarker([33.68628780805498, -117.81658097758483], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2848,7 +2843,7 @@
         `);
         
 
-        L.circleMarker([46.958067272907485, -121.40631640554103], {
+        L.circleMarker([45.6209866109163, -122.65813289622164], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -2868,7 +2863,7 @@
         `);
         
 
-        L.circleMarker([36.11905338291951, -119.32884410795171], {
+        L.circleMarker([33.647014015316785, -117.67509120431806], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2888,7 +2883,7 @@
         `);
         
 
-        L.circleMarker([35.773635727939485, -119.22078509672555], {
+        L.circleMarker([34.07849730911758, -117.41656884386903], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2908,7 +2903,7 @@
         `);
         
 
-        L.circleMarker([35.69631446524058, -119.99573903901927], {
+        L.circleMarker([35.86426987914435, -119.87006902341156], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2928,7 +2923,7 @@
         `);
         
 
-        L.circleMarker([36.211238106450025, -119.50635144639591], {
+        L.circleMarker([36.173224063870016, -119.57643646783754], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2948,7 +2943,7 @@
         `);
         
 
-        L.circleMarker([40.08466089500093, -89.36625038605287], {
+        L.circleMarker([42.272408155800036, -87.96860453544211], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2968,7 +2963,7 @@
         `);
         
 
-        L.circleMarker([36.50649031412944, -119.93534865221137], {
+        L.circleMarker([34.107811492565176, -117.44515138608845], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -2988,7 +2983,7 @@
         `);
         
 
-        L.circleMarker([36.21072215353344, -119.56218248966789], {
+        L.circleMarker([36.172914492120064, -119.60993509380073], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3008,7 +3003,7 @@
         `);
         
 
-        L.circleMarker([36.03542791533587, -119.59789171070877], {
+        L.circleMarker([33.83336899661343, -117.91095310842834], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3028,7 +3023,7 @@
         `);
         
 
-        L.circleMarker([36.13898571553196, -119.24685774226357], {
+        L.circleMarker([36.12987262931917, -119.42074024535813], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3048,7 +3043,7 @@
         `);
         
 
-        L.circleMarker([32.74487819942354, -83.42688219921058], {
+        L.circleMarker([32.86317451965412, -83.51335891952635], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3068,7 +3063,7 @@
         `);
         
 
-        L.circleMarker([35.854888952615845, -119.78577815320874], {
+        L.circleMarker([35.9594145715695, -119.74409249192524], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3088,7 +3083,7 @@
         `);
         
 
-        L.circleMarker([36.28789322295997, -119.88156692020124], {
+        L.circleMarker([36.219217133775985, -119.80156575212074], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3108,7 +3103,7 @@
         `);
         
 
-        L.circleMarker([47.217079196271854, -121.2386295075856], {
+        L.circleMarker([47.290608317763116, -121.33937530455135], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3128,7 +3123,7 @@
         `);
         
 
-        L.circleMarker([46.97344511449316, -121.53220847738142], {
+        L.circleMarker([47.664401724579726, -122.21036857909525], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3148,7 +3143,7 @@
         `);
         
 
-        L.circleMarker([33.539073440854445, -83.1469775521449], {
+        L.circleMarker([33.339691664512664, -83.34541613128694], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3168,7 +3163,7 @@
         `);
         
 
-        L.circleMarker([44.145281721099636, -122.35778368773296], {
+        L.circleMarker([45.498130428843986, -122.68987382750932], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3188,7 +3183,7 @@
         `);
         
 
-        L.circleMarker([35.8814034147504, -119.24830462200629], {
+        L.circleMarker([35.97532324885024, -119.42160837320377], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3208,7 +3203,7 @@
         `);
         
 
-        L.circleMarker([36.49706717368644, -119.30229375751546], {
+        L.circleMarker([34.594634566947455, -118.10132919030062], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3228,7 +3223,7 @@
         `);
         
 
-        L.circleMarker([35.98573008873888, -120.02381716764276], {
+        L.circleMarker([37.43668108354955, -122.15669012670571], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3248,7 +3243,7 @@
         `);
         
 
-        L.circleMarker([47.73464695463981, -121.28695407491263], {
+        L.circleMarker([47.60114897278389, -121.36837004494758], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3268,7 +3263,7 @@
         `);
         
 
-        L.circleMarker([36.22788076572595, -119.19433093636849], {
+        L.circleMarker([37.77936711062904, -122.39991067745474], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3288,7 +3283,7 @@
         `);
         
 
-        L.circleMarker([47.55487831771074, -121.98267089284784], {
+        L.circleMarker([47.49328779062644, -121.7858001357087], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3308,7 +3303,7 @@
         `);
         
 
-        L.circleMarker([36.43330713511546, -119.88218524780001], {
+        L.circleMarker([34.04128416540462, -117.818324849912], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3328,7 +3323,7 @@
         `);
         
 
-        L.circleMarker([36.279591714966074, -119.2426339960729], {
+        L.circleMarker([36.214236228979644, -119.41820599764374], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3348,7 +3343,7 @@
         `);
         
 
-        L.circleMarker([32.67491011439337, -84.02764532958089], {
+        L.circleMarker([32.82119366863602, -83.87381679774853], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3368,7 +3363,7 @@
         `);
         
 
-        L.circleMarker([35.723238977709414, -119.62834035911519], {
+        L.circleMarker([32.69998143910838, -117.15897105436461], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3388,7 +3383,7 @@
         `);
         
 
-        L.circleMarker([44.34436921231482, -121.96610817296977], {
+        L.circleMarker([44.43542992738889, -122.00804010378187], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3408,7 +3403,7 @@
         `);
         
 
-        L.circleMarker([33.2582311871388, -83.93947668767255], {
+        L.circleMarker([33.171186312283275, -83.82091561260353], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3428,7 +3423,7 @@
         `);
         
 
-        L.circleMarker([33.17485695888508, -83.87909009836959], {
+        L.circleMarker([33.121161775331046, -83.78468365902175], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3448,7 +3443,7 @@
         `);
         
 
-        L.circleMarker([35.61859785214938, -79.40108250892068], {
+        L.circleMarker([35.62318511128962, -79.56321710535241], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3468,7 +3463,7 @@
         `);
         
 
-        L.circleMarker([33.38672271329486, -84.05077553228726], {
+        L.circleMarker([33.24828122797691, -83.88769491937236], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3488,7 +3483,7 @@
         `);
         
 
-        L.circleMarker([38.98338677256373, -105.53442377602775], {
+        L.circleMarker([39.013956463538236, -105.44509586561665], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3508,7 +3503,7 @@
         `);
         
 
-        L.circleMarker([35.61974868908778, -119.41044477698037], {
+        L.circleMarker([33.93294182756352, -117.57395523107921], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3528,7 +3523,7 @@
         `);
         
 
-        L.circleMarker([36.25331637730138, -119.91960873756565], {
+        L.circleMarker([32.72118453509206, -117.17062178950263], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3548,7 +3543,7 @@
         `);
         
 
-        L.circleMarker([35.87129690834793, -79.75473857887361], {
+        L.circleMarker([35.774804545008756, -79.77541074732417], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3568,7 +3563,7 @@
         `);
         
 
-        L.circleMarker([35.557752918980675, -80.29674930039167], {
+        L.circleMarker([35.586678151388405, -80.100617180235], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3588,7 +3583,7 @@
         `);
         
 
-        L.circleMarker([35.69144686007377, -119.29845760669986], {
+        L.circleMarker([38.56460975440295, -121.47907574426799], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3608,7 +3603,7 @@
         `);
         
 
-        L.circleMarker([33.444547571559895, -83.59748371079448], {
+        L.circleMarker([33.28297614293594, -83.61571982647669], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3628,7 +3623,7 @@
         `);
         
 
-        L.circleMarker([47.73549701988602, -121.40798443351021], {
+        L.circleMarker([45.65208380079544, -122.65819961734041], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3648,7 +3643,7 @@
         `);
         
 
-        L.circleMarker([35.76429678556748, -120.05411848071786], {
+        L.circleMarker([33.6705237514227, -117.84140217922871], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3668,7 +3663,7 @@
         `);
         
 
-        L.circleMarker([32.848877349930135, -83.2440925112574], {
+        L.circleMarker([32.925574009958076, -83.40368510675444], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3688,7 +3683,7 @@
         `);
         
 
-        L.circleMarker([33.336741304888044, -83.2823714179991], {
+        L.circleMarker([33.21829238293282, -83.42665245079945], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3708,7 +3703,7 @@
         `);
         
 
-        L.circleMarker([47.799826636526475, -121.78041746166025], {
+        L.circleMarker([45.65465698546106, -122.67309693846641], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3728,7 +3723,7 @@
         `);
         
 
-        L.circleMarker([35.86573273922292, -120.07877037832822], {
+        L.circleMarker([33.512481189568916, -117.72348825513313], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3748,7 +3743,7 @@
         `);
         
 
-        L.circleMarker([36.39631924187144, -119.29742929854899], {
+        L.circleMarker([33.99180464967486, -117.36013461194196], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3768,7 +3763,7 @@
         `);
         
 
-        L.circleMarker([36.022580389832115, -119.56090248984928], {
+        L.circleMarker([36.06002943389927, -119.60916709390956], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3788,7 +3783,7 @@
         `);
         
 
-        L.circleMarker([35.770756338332205, -119.25168298430631], {
+        L.circleMarker([34.041282133533294, -117.73280475937226], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3808,7 +3803,7 @@
         `);
         
 
-        L.circleMarker([36.48080869621996, -119.20535796706903], {
+        L.circleMarker([33.9031842278488, -117.79405175868277], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3828,7 +3823,7 @@
         `);
         
 
-        L.circleMarker([31.3652587199404, -97.18204479533668], {
+        L.circleMarker([31.24095003196424, -97.33461127720201], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3848,7 +3843,7 @@
         `);
         
 
-        L.circleMarker([35.640989361898185, -119.4449995282449], {
+        L.circleMarker([35.83107481713891, -119.53962531694694], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3868,7 +3863,7 @@
         `);
         
 
-        L.circleMarker([33.56194446794643, -111.00040511395167], {
+        L.circleMarker([33.487487418717855, -111.90886736455808], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3888,7 +3883,7 @@
         `);
         
 
-        L.circleMarker([44.87425613893714, -121.70687397162472], {
+        L.circleMarker([45.52728940555748, -122.66383743886499], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3908,7 +3903,7 @@
         `);
         
 
-        L.circleMarker([40.16017531657439, -86.49147229040553], {
+        L.circleMarker([40.03587558994464, -86.39819457424332], {
             radius: 6,
             fillColor: '#ea580c',
             color: '#fff',
@@ -3928,7 +3923,7 @@
         `);
         
 
-        L.circleMarker([44.85939550913547, -122.46284237359704], {
+        L.circleMarker([45.52669498036542, -122.69407617494387], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -3948,7 +3943,7 @@
         `);
         
 
-        L.circleMarker([47.773068782906094, -121.13190074866222], {
+        L.circleMarker([45.65358667131624, -122.64715626994649], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3968,7 +3963,7 @@
         `);
         
 
-        L.circleMarker([47.123335717545665, -121.17390739440307], {
+        L.circleMarker([47.47179734870183, -122.20443653577613], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -3988,7 +3983,7 @@
         `);
         
 
-        L.circleMarker([36.07650623467894, -119.8763731326614], {
+        L.circleMarker([37.336612129387156, -121.89409236530646], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4008,7 +4003,7 @@
         `);
         
 
-        L.circleMarker([39.61386849915286, -75.77954551259224], {
+        L.circleMarker([39.695513819966116, -75.7605961805037], {
             radius: 6,
             fillColor: '#ea580c',
             color: '#fff',
@@ -4028,7 +4023,7 @@
         `);
         
 
-        L.circleMarker([35.63986743470145, -119.98843421167228], {
+        L.circleMarker([33.96394657738806, -118.1090748084669], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4048,7 +4043,7 @@
         `);
         
 
-        L.circleMarker([35.9444649511977, -119.31721105796971], {
+        L.circleMarker([33.93563047804791, -117.21512588231879], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4068,7 +4063,7 @@
         `);
         
 
-        L.circleMarker([36.58309210404836, -119.90243900727812], {
+        L.circleMarker([33.665575564161934, -117.69803500029113], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4088,7 +4083,7 @@
         `);
         
 
-        L.circleMarker([36.25768473860763, -119.78188561563994], {
+        L.circleMarker([34.1453592695443, -118.03941286462559], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4108,7 +4103,7 @@
         `);
         
 
-        L.circleMarker([36.59735268719826, -119.64534826752127], {
+        L.circleMarker([33.21514598748793, -117.37805137070085], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4128,7 +4123,7 @@
         `);
         
 
-        L.circleMarker([36.55544014032471, -120.06622224814856], {
+        L.circleMarker([34.01566948561299, -117.98408632992594], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4148,7 +4143,7 @@
         `);
         
 
-        L.circleMarker([34.20015961102223, -111.75265318382753], {
+        L.circleMarker([33.51301602444089, -111.9389572873531], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4168,7 +4163,7 @@
         `);
         
 
-        L.circleMarker([36.57873731576156, -119.91609763747702], {
+        L.circleMarker([34.59790137263046, -118.12588134549908], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4188,7 +4183,7 @@
         `);
         
 
-        L.circleMarker([35.72460554721471, -119.74700024143534], {
+        L.circleMarker([34.52053610188859, -117.2954174496574], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4208,7 +4203,7 @@
         `);
         
 
-        L.circleMarker([31.283032060652705, -97.74978368580501], {
+        L.circleMarker([30.276341802426106, -97.7505529074322], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4228,7 +4223,7 @@
         `);
         
 
-        L.circleMarker([36.22241185330614, -119.67014094033051], {
+        L.circleMarker([34.03284835413224, -117.80984307761322], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4248,7 +4243,7 @@
         `);
         
 
-        L.circleMarker([36.001398433344725, -119.6049759565034], {
+        L.circleMarker([32.71110781733379, -117.15803647826014], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4268,7 +4263,7 @@
         `);
         
 
-        L.circleMarker([35.87092550613858, -119.47277871616582], {
+        L.circleMarker([33.942988900245545, -117.57644858864663], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4288,7 +4283,7 @@
         `);
         
 
-        L.circleMarker([35.61789427821863, -119.25598883450091], {
+        L.circleMarker([33.62086765112874, -117.58607699338003], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4308,7 +4303,7 @@
         `);
         
 
-        L.circleMarker([31.092938997092794, -97.34403100085515], {
+        L.circleMarker([30.50983807988371, -97.6701228000342], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4328,7 +4323,7 @@
         `);
         
 
-        L.circleMarker([36.358153077839475, -119.510935495567], {
+        L.circleMarker([34.11607800311358, -117.58627485982268], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4348,7 +4343,7 @@
         `);
         
 
-        L.circleMarker([30.918708471781265, -97.9934871888737], {
+        L.circleMarker([30.26176885887125, -97.76030104755495], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4368,7 +4363,7 @@
         `);
         
 
-        L.circleMarker([36.28044068491127, -119.8513639639574], {
+        L.circleMarker([33.88186950739645, -117.5731919985583], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4388,7 +4383,7 @@
         `);
         
 
-        L.circleMarker([30.86840264505836, -97.21544572049366], {
+        L.circleMarker([30.535256625802333, -97.53277938881975], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4408,7 +4403,7 @@
         `);
         
 
-        L.circleMarker([31.274241263013952, -97.76313873178874], {
+        L.circleMarker([30.448190170520558, -97.62798710927156], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4428,7 +4423,7 @@
         `);
         
 
-        L.circleMarker([30.863771662208656, -97.65506809138078], {
+        L.circleMarker([30.497571386488346, -97.82396428365523], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4448,7 +4443,7 @@
         `);
         
 
-        L.circleMarker([36.01860338705772, -119.88590879747404], {
+        L.circleMarker([33.68069601548231, -117.83467379189896], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4468,7 +4463,7 @@
         `);
         
 
-        L.circleMarker([39.926191799059154, -74.60056466622709], {
+        L.circleMarker([40.753491511962366, -74.14858214664908], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4488,7 +4483,7 @@
         `);
         
 
-        L.circleMarker([36.556566670730184, -119.50424605472726], {
+        L.circleMarker([34.40931454682921, -118.53550728218909], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4508,7 +4503,7 @@
         `);
         
 
-        L.circleMarker([43.72942354573259, -84.42058008404862], {
+        L.circleMarker([42.1856122218293, -83.77697940336195], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4528,7 +4523,7 @@
         `);
         
 
-        L.circleMarker([47.20185187456557, -121.4425567868643], {
+        L.circleMarker([45.630737994982624, -122.65958251147458], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -4548,7 +4543,7 @@
         `);
         
 
-        L.circleMarker([35.61660893969729, -119.89465028313107], {
+        L.circleMarker([34.55941623758789, -118.12502345132525], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4568,7 +4563,7 @@
         `);
         
 
-        L.circleMarker([40.27934514998984, -88.90615221880432], {
+        L.circleMarker([42.280195525999595, -87.95020060875217], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4588,7 +4583,7 @@
         `);
         
 
-        L.circleMarker([36.27090862370307, -119.71657580975298], {
+        L.circleMarker([33.560088224948124, -117.21530047239011], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4608,7 +4603,7 @@
         `);
         
 
-        L.circleMarker([30.99664679930481, -97.84975959901091], {
+        L.circleMarker([29.61728639197219, -95.64635194396044], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4628,7 +4623,7 @@
         `);
         
 
-        L.circleMarker([36.089389185909326, -119.28038317417175], {
+        L.circleMarker([33.56652744743637, -117.70955276696687], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4648,7 +4643,7 @@
         `);
         
 
-        L.circleMarker([44.868045760126776, -122.40124660380194], {
+        L.circleMarker([45.49894099040507, -122.81691234415209], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4668,7 +4663,7 @@
         `);
         
 
-        L.circleMarker([35.70099853672512, -119.66611199008477], {
+        L.circleMarker([34.123091821469, -118.03478191960339], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4688,7 +4683,7 @@
         `);
         
 
-        L.circleMarker([36.249143855765794, -119.84637574459019], {
+        L.circleMarker([34.05731763423063, -118.05339246978362], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4708,7 +4703,7 @@
         `);
         
 
-        L.circleMarker([36.43462646453666, -119.43042586245926], {
+        L.circleMarker([33.901336938581466, -117.80305447449838], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4728,7 +4723,7 @@
         `);
         
 
-        L.circleMarker([36.28899867055716, -119.95692333400271], {
+        L.circleMarker([33.52941182682229, -117.71861437336011], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4748,7 +4743,7 @@
         `);
         
 
-        L.circleMarker([38.75894093272658, -105.78667861227318], {
+        L.circleMarker([39.790765197309064, -105.10652298449094], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4768,7 +4763,7 @@
         `);
         
 
-        L.circleMarker([35.86104554407835, -119.70642765578118], {
+        L.circleMarker([33.67439370176314, -117.82749454623125], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4788,7 +4783,7 @@
         `);
         
 
-        L.circleMarker([47.75063969462473, -121.91766577081543], {
+        L.circleMarker([47.630289507784994, -122.05268687083262], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -4808,7 +4803,7 @@
         `);
         
 
-        L.circleMarker([44.48646201099772, -121.94117261926229], {
+        L.circleMarker([45.51177764043991, -122.67320938477049], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4828,7 +4823,7 @@
         `);
         
 
-        L.circleMarker([32.73505423673971, -83.4467197495095], {
+        L.circleMarker([33.57537740946959, -84.53434582998037], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4848,7 +4843,7 @@
         `);
         
 
-        L.circleMarker([36.11058016901043, -119.93757956042155], {
+        L.circleMarker([33.98037508676042, -117.38574062241686], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4868,7 +4863,7 @@
         `);
         
 
-        L.circleMarker([47.556960011111784, -121.98494918186196], {
+        L.circleMarker([45.64494232044447, -122.68127820727449], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -4888,7 +4883,7 @@
         `);
         
 
-        L.circleMarker([47.65186647661847, -121.22044781142597], {
+        L.circleMarker([47.41173857906474, -122.31349815245703], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -4908,7 +4903,7 @@
         `);
         
 
-        L.circleMarker([35.72279029656354, -119.75641780605726], {
+        L.circleMarker([33.668863491862545, -117.82949415224229], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4928,7 +4923,7 @@
         `);
         
 
-        L.circleMarker([35.79208968170653, -119.22359795772046], {
+        L.circleMarker([33.82363546726826, -117.89598135830882], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4948,7 +4943,7 @@
         `);
         
 
-        L.circleMarker([31.072444750443744, -98.01324261485937], {
+        L.circleMarker([33.09081831001775, -96.90469126459438], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4968,7 +4963,7 @@
         `);
         
 
-        L.circleMarker([30.803685279659973, -97.21512465264834], {
+        L.circleMarker([29.6084679311864, -95.52376654610593], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -4988,7 +4983,7 @@
         `);
         
 
-        L.circleMarker([36.07266482547017, -119.38014739827773], {
+        L.circleMarker([37.430558473018806, -121.88754333593111], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5008,7 +5003,7 @@
         `);
         
 
-        L.circleMarker([31.222064732586354, -97.07556854693355], {
+        L.circleMarker([29.706103109303456, -95.88038430187734], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5028,7 +5023,7 @@
         `);
         
 
-        L.circleMarker([36.21165531846942, -119.23152439155683], {
+        L.circleMarker([33.68841809273878, -117.80849841566227], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5048,7 +5043,7 @@
         `);
         
 
-        L.circleMarker([31.44591292581044, -97.45080867723824], {
+        L.circleMarker([29.77605703703242, -95.36529390708952], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5068,7 +5063,7 @@
         `);
         
 
-        L.circleMarker([36.335476961275965, -119.6767858351756], {
+        L.circleMarker([34.198770958451036, -118.45120887340703], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5088,7 +5083,7 @@
         `);
         
 
-        L.circleMarker([36.44677216972141, -119.63369204938917], {
+        L.circleMarker([34.203222766788855, -118.44948512197557], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5108,7 +5103,7 @@
         `);
         
 
-        L.circleMarker([36.51341110323326, -119.43790855784042], {
+        L.circleMarker([34.45948832412933, -118.59945378231362], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5128,7 +5123,7 @@
         `);
         
 
-        L.circleMarker([40.32413143682305, -89.22694545153497], {
+        L.circleMarker([41.63098697747292, -88.2216323380614], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5148,7 +5143,7 @@
         `);
         
 
-        L.circleMarker([30.80172673750966, -97.42579956322385], {
+        L.circleMarker([29.413989589500385, -98.48809354252896], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5168,7 +5163,7 @@
         `);
         
 
-        L.circleMarker([35.895879684297164, -79.78511918717203], {
+        L.circleMarker([35.790232547371886, -78.63734800748688], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5188,7 +5183,7 @@
         `);
         
 
-        L.circleMarker([36.24295143698178, -119.90696655308246], {
+        L.circleMarker([37.34326993747927, -121.8953161021233], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5208,7 +5203,7 @@
         `);
         
 
-        L.circleMarker([35.693686353864734, -119.89583584913684], {
+        L.circleMarker([34.127299334154586, -118.01057087396546], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5228,7 +5223,7 @@
         `);
         
 
-        L.circleMarker([35.887918107082186, -119.86185443158124], {
+        L.circleMarker([34.043068604283285, -118.25091161726326], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5248,7 +5243,7 @@
         `);
         
 
-        L.circleMarker([36.15635522251846, -120.04318993848383], {
+        L.circleMarker([38.410406088900736, -121.38606503753935], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5268,7 +5263,7 @@
         `);
         
 
-        L.circleMarker([38.79520747972819, -76.60815118770094], {
+        L.circleMarker([39.40435045918913, -77.26414200750804], {
             radius: 6,
             fillColor: '#ea580c',
             color: '#fff',
@@ -5288,7 +5283,7 @@
         `);
         
 
-        L.circleMarker([36.32262214169455, -120.11733514928612], {
+        L.circleMarker([34.10045676566778, -117.45243084597145], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5308,7 +5303,7 @@
         `);
         
 
-        L.circleMarker([44.479620369666584, -122.02832685949608], {
+        L.circleMarker([45.41700397478666, -122.66889555437983], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5328,7 +5323,7 @@
         `);
         
 
-        L.circleMarker([36.03197723410315, -119.97472961048558], {
+        L.circleMarker([34.140830969364124, -118.01372662441942], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5348,7 +5343,7 @@
         `);
         
 
-        L.circleMarker([36.036346517773424, -119.27672552165981], {
+        L.circleMarker([38.57840574071094, -121.47820646086639], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5368,7 +5363,7 @@
         `);
         
 
-        L.circleMarker([44.656100414204225, -121.87541501350204], {
+        L.circleMarker([45.43456317656817, -122.76367908054009], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5388,7 +5383,7 @@
         `);
         
 
-        L.circleMarker([38.670247032303934, -116.78977942388192], {
+        L.circleMarker([36.18416928129216, -115.12917621695527], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5408,7 +5403,7 @@
         `);
         
 
-        L.circleMarker([38.19389602892771, -117.54947791641601], {
+        L.circleMarker([36.0347152411571, -115.00146415665664], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5428,7 +5423,7 @@
         `);
         
 
-        L.circleMarker([35.96796180267182, -119.42808887494061], {
+        L.circleMarker([37.332270352106875, -121.87616099499763], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5448,7 +5443,7 @@
         `);
         
 
-        L.circleMarker([36.469650950569104, -119.22813366152988], {
+        L.circleMarker([34.069237918022765, -117.73186278646119], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5468,7 +5463,7 @@
         `);
         
 
-        L.circleMarker([47.31992328262982, -121.24297833102194], {
+        L.circleMarker([47.53466085130519, -122.14519937324089], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -5488,7 +5483,7 @@
         `);
         
 
-        L.circleMarker([36.16233530973384, -119.57831141105875], {
+        L.circleMarker([34.14154529238935, -118.03126989644234], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5508,7 +5503,7 @@
         `);
         
 
-        L.circleMarker([35.83674169432382, -119.96214236537855], {
+        L.circleMarker([34.04102154777295, -118.25492313461514], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5528,7 +5523,7 @@
         `);
         
 
-        L.circleMarker([36.05203897604664, -120.15253918005328], {
+        L.circleMarker([34.14823343904186, -118.46783900720213], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5548,7 +5543,7 @@
         `);
         
 
-        L.circleMarker([30.890616543698385, -97.38431911497166], {
+        L.circleMarker([33.229645181747934, -96.79393432459887], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5568,7 +5563,7 @@
         `);
         
 
-        L.circleMarker([36.020519669137634, -120.01651926879649], {
+        L.circleMarker([33.7028726667655, -117.09759821075185], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5588,7 +5583,7 @@
         `);
         
 
-        L.circleMarker([36.08359314923231, -120.05393620271883], {
+        L.circleMarker([33.9884956059693, -117.74689488810876], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5608,7 +5603,7 @@
         `);
         
 
-        L.circleMarker([36.23845996097406, -120.15459754809486], {
+        L.circleMarker([34.017090278438964, -117.7078213419238], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5628,7 +5623,7 @@
         `);
         
 
-        L.circleMarker([36.01022325633971, -119.61717201697522], {
+        L.circleMarker([37.77066081025359, -122.416824320679], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5648,7 +5643,7 @@
         `);
         
 
-        L.circleMarker([35.64330504634031, -119.53881435199065], {
+        L.circleMarker([34.04438408185361, -117.64519001407962], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5668,7 +5663,7 @@
         `);
         
 
-        L.circleMarker([30.690186487230566, -97.6017625559485], {
+        L.circleMarker([33.00522797948922, -96.70043206223794], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5688,7 +5683,7 @@
         `);
         
 
-        L.circleMarker([35.66648763348863, -119.80246013581186], {
+        L.circleMarker([32.697711385339545, -117.16593584543249], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5708,7 +5703,7 @@
         `);
         
 
-        L.circleMarker([30.766147284211485, -97.7366151951187], {
+        L.circleMarker([32.942166411368454, -96.89722616780475], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5728,7 +5723,7 @@
         `);
         
 
-        L.circleMarker([36.37743270789402, -119.80243778443585], {
+        L.circleMarker([34.07374918831576, -117.65573495137743], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5748,7 +5743,7 @@
         `);
         
 
-        L.circleMarker([44.824030823554786, -121.73901371484473], {
+        L.circleMarker([45.49718039294219, -122.79042302859379], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5768,7 +5763,7 @@
         `);
         
 
-        L.circleMarker([35.86847453178238, -120.09965776723836], {
+        L.circleMarker([33.5900908612713, -117.68872375068953], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5788,7 +5783,7 @@
         `);
         
 
-        L.circleMarker([35.63558628705001, -119.64214495207746], {
+        L.circleMarker([33.657975331482, -117.18322323808309], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5808,7 +5803,7 @@
         `);
         
 
-        L.circleMarker([36.61611082850921, -119.83160365627981], {
+        L.circleMarker([34.08859631314037, -117.94500158625118], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5828,7 +5823,7 @@
         `);
         
 
-        L.circleMarker([36.26634709324988, -119.4003309503891], {
+        L.circleMarker([38.58760576373, -121.48315067801556], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5848,7 +5843,7 @@
         `);
         
 
-        L.circleMarker([36.26795765524389, -119.42733079594046], {
+        L.circleMarker([33.69067018620976, -117.81633067183762], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5868,7 +5863,7 @@
         `);
         
 
-        L.circleMarker([36.565814732715985, -119.98220331763746], {
+        L.circleMarker([34.046584469308634, -117.8223255727055], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5888,7 +5883,7 @@
         `);
         
 
-        L.circleMarker([30.574867017320333, -97.91107865421522], {
+        L.circleMarker([32.91541520069282, -97.2436047061686], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5908,7 +5903,7 @@
         `);
         
 
-        L.circleMarker([47.02712297487421, -121.32103515538009], {
+        L.circleMarker([47.66654883899497, -122.2019216462152], {
             radius: 6,
             fillColor: '#dc2626',
             color: '#fff',
@@ -5928,7 +5923,7 @@
         `);
         
 
-        L.circleMarker([31.118456581930023, -97.8454964590935], {
+        L.circleMarker([29.971658783277203, -95.70848141836373], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5948,7 +5943,7 @@
         `);
         
 
-        L.circleMarker([31.253951971246153, -97.29656290164377], {
+        L.circleMarker([32.93917859884984, -96.44902407606575], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5968,7 +5963,7 @@
         `);
         
 
-        L.circleMarker([35.783992143367804, -119.57431650610906], {
+        L.circleMarker([33.86201156573472, -117.56211010024437], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -5988,7 +5983,7 @@
         `);
         
 
-        L.circleMarker([36.36412865195528, -120.0670311286211], {
+        L.circleMarker([33.694517026078216, -117.84191868514483], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6008,7 +6003,7 @@
         `);
         
 
-        L.circleMarker([36.435504174311085, -119.2168432269659], {
+        L.circleMarker([34.06787204697245, -117.73141116907864], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6028,7 +6023,7 @@
         `);
         
 
-        L.circleMarker([35.724301749657606, -120.15588557450253], {
+        L.circleMarker([33.6032239499863, -117.9478728629801], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6048,7 +6043,7 @@
         `);
         
 
-        L.circleMarker([44.3839782443947, -121.89359071314959], {
+        L.circleMarker([45.50767828977579, -122.67130610852598], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6068,7 +6063,7 @@
         `);
         
 
-        L.circleMarker([36.574375838205896, -119.78490955848336], {
+        L.circleMarker([37.50352691352823, -122.24053382233934], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6088,7 +6083,7 @@
         `);
         
 
-        L.circleMarker([45.90946870504947, -94.32419552215694], {
+        L.circleMarker([44.92970058820198, -93.48566014088628], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6108,7 +6103,7 @@
         `);
         
 
-        L.circleMarker([36.306817415932976, -119.55432160439895], {
+        L.circleMarker([37.62142457663732, -122.48181030417597], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6128,7 +6123,7 @@
         `);
         
 
-        L.circleMarker([45.29635530544598, -93.62771111504878], {
+        L.circleMarker([44.920676052217836, -93.65350076460196], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6148,7 +6143,7 @@
         `);
         
 
-        L.circleMarker([36.4664962390888, -119.58115238518315], {
+        L.circleMarker([33.69861172956355, -117.82248353540732], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6168,7 +6163,7 @@
         `);
         
 
-        L.circleMarker([35.737258065067316, -119.19771964848532], {
+        L.circleMarker([37.53334220260269, -121.96924622593941], {
             radius: 6,
             fillColor: '#16a34a',
             color: '#fff',
@@ -6188,7 +6183,6 @@
         `);
         
         
-        // Layer control
         document.getElementById('toggleZones').addEventListener('change', function(e) {
             if (e.target.checked) {
                 map.addLayer(weatherZones);
