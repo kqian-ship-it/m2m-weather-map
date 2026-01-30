@@ -9,19 +9,20 @@
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        .info { padding: 12px 16px; background: rgba(255,255,255,0.95); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 8px; max-width: 320px; }
+        .info { padding: 12px 16px; background: rgba(255,255,255,0.95); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 8px; max-width: 350px; }
         .info h4 { margin: 0 0 10px; color: #333; font-size: 16px; }
         .info .update-time { font-size: 11px; color: #666; margin-bottom: 10px; }
         .legend { line-height: 26px; color: #555; }
         .legend i { width: 18px; height: 18px; float: left; margin-right: 10px; opacity: 0.85; border-radius: 50%; border: 1px solid #333; }
         .legend-item { margin-bottom: 6px; clear: both; }
-        .summary { padding: 12px 16px; background: rgba(255,255,255,0.95); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 8px; max-width: 280px; }
+        .summary { padding: 12px 16px; background: rgba(255,255,255,0.95); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 8px; max-width: 300px; }
         .summary h4 { margin: 0 0 10px; color: #333; }
         .summary-item { margin-bottom: 5px; font-size: 13px; }
         .critical { color: #dc3545; font-weight: bold; }
         .severe { color: #fd7e14; font-weight: bold; }
         .moderate { color: #ffc107; font-weight: bold; }
         .low { color: #28a745; }
+        .vacant-warning { color: #dc3545; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -32,258 +33,416 @@
             attribution: '&copy; OpenStreetMap contributors | Month2Month Weather Alert System',
             maxZoom: 19
         }).addTo(map);
-        
-        L.circleMarker([33.7175, -117.8311], {
-            radius: 19.2,
-            fillColor: '#28a745',
+
+        L.circleMarker([33.749, -84.388], {
+            radius: 14.6,
+            fillColor: '#dc3545',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Orange County</b><br>Properties: 56<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 53°F - 72°F<br>Conditions: Mild, no winter weather concerns`);
+        }).addTo(map).bindPopup(`<b>Georgia</b><br>Properties: 11<br><span class='vacant-warning'>⚠️ Vacant: 4</span> | Occupied: 7<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 14°F - 45°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
+
+        L.marker([34.149, -83.988], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Georgia</b><br><span class='critical'>4 vacant properties</span><br>in <b>CRITICAL</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([35.7796, -78.6382], {
+            radius: 12.0,
+            fillColor: '#dc3545',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>North Carolina</b><br>Properties: 4<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 3<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 12°F - 40°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
+
+        L.marker([36.1796, -78.23819999999999], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - North Carolina</b><br><span class='critical'>1 vacant properties</span><br>in <b>CRITICAL</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([32.7765, -79.9311], {
+            radius: 10.0,
+            fillColor: '#dc3545',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>South Carolina</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 0<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 15°F - 45°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
+
+        L.marker([33.1765, -79.5311], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - South Carolina</b><br><span class='critical'>1 vacant properties</span><br>in <b>CRITICAL</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([39.7684, -86.1581], {
+            radius: 10.0,
+            fillColor: '#dc3545',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Indiana</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 10°F - 30°F<br>Conditions: WINTER STORM WARNING, Cold Weather Advisory`);
+
         L.circleMarker([28.5383, -81.3792], {
-            radius: 9.4,
+            radius: 13.3,
             fillColor: '#fd7e14',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Orlando</b><br>Properties: 7<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 24°F - 65°F<br>Conditions: Extreme Cold Warning, Freeze Watch`);
-        L.circleMarker([33.9533, -117.3962], {
-            radius: 12.2,
-            fillColor: '#28a745',
+        }).addTo(map).bindPopup(`<b>Orlando</b><br>Properties: 7<br><span class='vacant-warning'>⚠️ Vacant: 4</span> | Occupied: 3<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 24°F - 65°F<br>Conditions: Extreme Cold Warning, Freeze Watch`);
+
+        L.marker([28.938299999999998, -80.97919999999999], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Orlando</b><br><span class='critical'>4 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([41.8781, -87.6298], {
+            radius: 11.5,
+            fillColor: '#fd7e14',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Riverside</b><br>Properties: 21<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 51°F - 70°F<br>Conditions: Mild, no winter weather concerns`);
+        }).addTo(map).bindPopup(`<b>Chicago and Nearby</b><br>Properties: 3<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 2<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 8°F - 28°F<br>Conditions: Cold Weather Advisory, Winter Storm Watch`);
+
+        L.marker([42.2781, -87.2298], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Chicago and Nearby</b><br><span class='critical'>1 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([44.9778, -93.265], {
+            radius: 10.8,
+            fillColor: '#fd7e14',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Minnesota</b><br>Properties: 2<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 0<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: -5°F - 18°F<br>Conditions: Cold Weather Advisory, Extreme Cold`);
+
+        L.marker([45.3778, -92.865], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Minnesota</b><br><span class='critical'>2 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([42.3314, -83.0458], {
+            radius: 10.0,
+            fillColor: '#fd7e14',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Michigan</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 12°F - 28°F<br>Conditions: Cold, monitoring`);
+
+        L.circleMarker([39.0458, -76.6413], {
+            radius: 10.0,
+            fillColor: '#fd7e14',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Maryland</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 0<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 16°F - 36°F<br>Conditions: Cold Weather Advisory, Winter Storm Watch`);
+
+        L.marker([39.4458, -76.2413], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Maryland</b><br><span class='critical'>1 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([43.6532, -79.3832], {
+            radius: 10.0,
+            fillColor: '#fd7e14',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Toronto</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 10°F - 28°F<br>Conditions: Cold (Canada - not NWS)`);
+
         L.circleMarker([29.7604, -95.3698], {
-            radius: 11.0,
+            radius: 15.7,
             fillColor: '#ffc107',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Houston</b><br>Properties: 15<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 27°F - 55°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
-        L.circleMarker([45.5152, -122.6784], {
-            radius: 10.6,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Portland and Nearby</b><br>Properties: 13<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 44°F - 52°F<br>Conditions: Cool but no winter weather concerns`);
-        L.circleMarker([29.4241, -98.4936], {
-            radius: 8.8,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>San Antonio</b><br>Properties: 4<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 25°F - 52°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
-        L.circleMarker([34.0522, -118.2437], {
-            radius: 16.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Los Angeles and Nearby</b><br>Properties: 41<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 54°F - 73°F<br>Conditions: Mild, no winter weather concerns`);
-        L.circleMarker([34.1083, -117.2898], {
-            radius: 12.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>San Bernardino</b><br>Properties: 21<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 51°F - 68°F<br>Conditions: Mild, no winter weather concerns`);
-        L.circleMarker([37.3861, -122.0839], {
-            radius: 11.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Bay Area</b><br>Properties: 16<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 62°F<br>Conditions: Cool but no winter weather concerns`);
+        }).addTo(map).bindPopup(`<b>Houston</b><br>Properties: 15<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 13<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 27°F - 55°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
+
+        L.marker([30.1604, -94.96979999999999], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Houston</b><br><span class='critical'>2 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
         L.circleMarker([32.7767, -96.797], {
+            radius: 14.3,
+            fillColor: '#ffc107',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Dallas</b><br>Properties: 10<br><span class='vacant-warning'>⚠️ Vacant: 4</span> | Occupied: 6<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 20°F - 45°F<br>Conditions: Cold Weather Advisory`);
+
+        L.marker([33.1767, -96.39699999999999], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Dallas</b><br><span class='critical'>4 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([30.2672, -97.7431], {
+            radius: 13.3,
+            fillColor: '#ffc107',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Austin and Nearby</b><br>Properties: 7<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 5<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 22°F - 50°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
+
+        L.marker([30.667199999999998, -97.34309999999999], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Austin and Nearby</b><br><span class='critical'>2 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([29.4241, -98.4936], {
+            radius: 12.0,
+            fillColor: '#ffc107',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>San Antonio</b><br>Properties: 4<br><span class='vacant-warning'>⚠️ Vacant: 3</span> | Occupied: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 25°F - 52°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
+
+        L.marker([29.824099999999998, -98.0936], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - San Antonio</b><br><span class='critical'>3 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([39.7392, -104.9903], {
+            radius: 12.0,
+            fillColor: '#ffc107',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Colorado</b><br>Properties: 4<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 2<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 18°F - 42°F<br>Conditions: Cold but no active warnings`);
+
+        L.marker([40.139199999999995, -104.5903], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            })
+        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Colorado</b><br><span class='critical'>2 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
+
+        L.circleMarker([39.6837, -75.7497], {
             radius: 10.0,
             fillColor: '#ffc107',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Dallas</b><br>Properties: 10<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 20°F - 45°F<br>Conditions: Cold Weather Advisory`);
-        L.circleMarker([38.5816, -121.4944], {
-            radius: 9.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Sacramento</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 42°F - 58°F<br>Conditions: Cool but no winter weather concerns`);
-        L.circleMarker([32.7765, -79.9311], {
-            radius: 8.2,
-            fillColor: '#dc3545',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>South Carolina</b><br>Properties: 1<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 15°F - 45°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
-        L.circleMarker([32.7157, -117.1611], {
-            radius: 9.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>San Diego</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 54°F - 68°F<br>Conditions: Mild, no winter weather concerns`);
-        L.circleMarker([33.749, -84.388], {
-            radius: 10.2,
-            fillColor: '#dc3545',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Georgia</b><br>Properties: 11<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 14°F - 45°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
-        L.circleMarker([33.4484, -112.074], {
-            radius: 9.4,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Phoenix and Nearby</b><br>Properties: 7<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 48°F - 72°F<br>Conditions: Mild, no winter weather concerns`);
-        L.circleMarker([39.7392, -104.9903], {
-            radius: 8.8,
+        }).addTo(map).bindPopup(`<b>Delaware</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 18°F - 38°F<br>Conditions: Cold Weather Advisory`);
+
+        L.circleMarker([40.7282, -74.0776], {
+            radius: 10.0,
             fillColor: '#ffc107',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Colorado</b><br>Properties: 4<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 18°F - 42°F<br>Conditions: Cold but no active warnings`);
-        L.circleMarker([30.2672, -97.7431], {
-            radius: 9.4,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Austin and Nearby</b><br>Properties: 7<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 22°F - 50°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
-        L.circleMarker([45.6387, -122.6615], {
-            radius: 9.2,
+        }).addTo(map).bindPopup(`<b>New Jersey</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 20°F - 38°F<br>Conditions: Cold Weather Advisory`);
+
+        L.circleMarker([33.7175, -117.8311], {
+            radius: 23.0,
             fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Vancouver</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 42°F - 50°F<br>Conditions: Cool but no winter weather concerns`);
-        L.circleMarker([41.8781, -87.6298], {
-            radius: 8.6,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Chicago and Nearby</b><br>Properties: 3<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 8°F - 28°F<br>Conditions: Cold Weather Advisory, Winter Storm Watch`);
-        L.circleMarker([35.3733, -119.0187], {
-            radius: 8.4,
+        }).addTo(map).bindPopup(`<b>Orange County</b><br>Properties: 56<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 53°F - 72°F<br>Conditions: Mild, no winter weather concerns`);
+
+        L.circleMarker([34.0522, -118.2437], {
+            radius: 20.8,
             fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Bakersfield</b><br>Properties: 2<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 48°F - 65°F<br>Conditions: Mild, no winter weather concerns`);
+        }).addTo(map).bindPopup(`<b>Los Angeles and Nearby</b><br>Properties: 41<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 54°F - 73°F<br>Conditions: Mild, no winter weather concerns`);
+
+        L.circleMarker([33.9533, -117.3962], {
+            radius: 17.2,
+            fillColor: '#28a745',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Riverside</b><br>Properties: 21<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 51°F - 70°F<br>Conditions: Mild, no winter weather concerns`);
+
+        L.circleMarker([34.1083, -117.2898], {
+            radius: 17.2,
+            fillColor: '#28a745',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>San Bernardino</b><br>Properties: 21<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 51°F - 68°F<br>Conditions: Mild, no winter weather concerns`);
+
+        L.circleMarker([37.3861, -122.0839], {
+            radius: 16.0,
+            fillColor: '#28a745',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Bay Area</b><br>Properties: 16<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 62°F<br>Conditions: Cool but no winter weather concerns`);
+
+        L.circleMarker([45.5152, -122.6784], {
+            radius: 15.2,
+            fillColor: '#28a745',
+            color: '#333',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>Portland and Nearby</b><br>Properties: 13<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 44°F - 52°F<br>Conditions: Cool but no winter weather concerns`);
+
         L.circleMarker([47.6062, -122.3321], {
-            radius: 9.8,
+            radius: 14.0,
             fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(map).bindPopup(`<b>Seattle and Nearby</b><br>Properties: 9<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 52°F<br>Conditions: Cool but no winter weather concerns`);
-        L.circleMarker([35.7796, -78.6382], {
-            radius: 8.8,
-            fillColor: '#dc3545',
+
+        L.circleMarker([33.4484, -112.074], {
+            radius: 13.3,
+            fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>North Carolina</b><br>Properties: 4<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 12°F - 40°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
-        L.circleMarker([39.7684, -86.1581], {
-            radius: 8.2,
-            fillColor: '#dc3545',
+        }).addTo(map).bindPopup(`<b>Phoenix and Nearby</b><br>Properties: 7<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 48°F - 72°F<br>Conditions: Mild, no winter weather concerns`);
+
+        L.circleMarker([38.5816, -121.4944], {
+            radius: 12.9,
+            fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Indiana</b><br>Properties: 1<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 10°F - 30°F<br>Conditions: WINTER STORM WARNING, Cold Weather Advisory`);
-        L.circleMarker([39.6837, -75.7497], {
-            radius: 8.2,
-            fillColor: '#ffc107',
+        }).addTo(map).bindPopup(`<b>Sacramento</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 42°F - 58°F<br>Conditions: Cool but no winter weather concerns`);
+
+        L.circleMarker([32.7157, -117.1611], {
+            radius: 12.9,
+            fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Delaware</b><br>Properties: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 18°F - 38°F<br>Conditions: Cold Weather Advisory`);
-        L.circleMarker([40.7282, -74.0776], {
-            radius: 8.2,
-            fillColor: '#ffc107',
+        }).addTo(map).bindPopup(`<b>San Diego</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 54°F - 68°F<br>Conditions: Mild, no winter weather concerns`);
+
+        L.circleMarker([45.6387, -122.6615], {
+            radius: 12.9,
+            fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>New Jersey</b><br>Properties: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 20°F - 38°F<br>Conditions: Cold Weather Advisory`);
-        L.circleMarker([42.2808, -83.743], {
-            radius: 8.2,
-            fillColor: '#fd7e14',
+        }).addTo(map).bindPopup(`<b>Vancouver</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 42°F - 50°F<br>Conditions: Cool but no winter weather concerns`);
+
+        L.circleMarker([35.3733, -119.0187], {
+            radius: 10.8,
+            fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Michigan</b><br>Properties: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 12°F - 28°F<br>Conditions: Cold, monitoring`);
-        L.circleMarker([39.4143, -77.4105], {
-            radius: 8.2,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Maryland</b><br>Properties: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 16°F - 36°F<br>Conditions: Cold Weather Advisory, Winter Storm Watch`);
+        }).addTo(map).bindPopup(`<b>Bakersfield</b><br>Properties: 2<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 48°F - 65°F<br>Conditions: Mild, no winter weather concerns`);
+
         L.circleMarker([36.1699, -115.1398], {
-            radius: 8.4,
+            radius: 10.8,
             fillColor: '#28a745',
             color: '#333',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(map).bindPopup(`<b>Las Vegas</b><br>Properties: 2<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 62°F<br>Conditions: Mild, no winter weather concerns`);
-        L.circleMarker([43.6532, -79.3832], {
-            radius: 8.2,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Toronto</b><br>Properties: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 10°F - 28°F<br>Conditions: Cold (Canada - not NWS)`);
-        L.circleMarker([44.9778, -93.265], {
-            radius: 8.4,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Minnesota</b><br>Properties: 2<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: -5°F - 18°F<br>Conditions: Cold Weather Advisory, Extreme Cold`);
+
+        // Add CSS animation for pulsing warning icons
+        var style = document.createElement('style');
+        style.textContent = '@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }';
+        document.head.appendChild(style);
+        
+        // Legend
         var legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
-            div.innerHTML = '<h4>Weather Impact Legend</h4><div class="update-time">Updated: 2026-01-30 15:10 UTC</div><div class="legend-item"><i style="background:#dc3545"></i> CRITICAL - Winter Storm Warning</div><div class="legend-item"><i style="background:#fd7e14"></i> SEVERE - Extreme Cold Warning</div><div class="legend-item"><i style="background:#ffc107"></i> MODERATE - Cold/Freeze Advisory</div><div class="legend-item"><i style="background:#28a745"></i> LOW - No Weather Concerns</div>';
+            div.innerHTML = '<h4>Weather Risk Level</h4>' +
+                '<div class="update-time">Updated: 2026-01-30 22:44 UTC</div>' +
+                '<div class="legend-item"><i style="background:#dc3545"></i> CRITICAL - Winter Storm Warning</div>' +
+                '<div class="legend-item"><i style="background:#fd7e14"></i> SEVERE - Extreme Cold Warning</div>' +
+                '<div class="legend-item"><i style="background:#ffc107"></i> MODERATE - Cold/Freeze Advisory</div>' +
+                '<div class="legend-item"><i style="background:#28a745"></i> LOW - No Major Concerns</div>' +
+                '<div class="legend-item" style="margin-top:12px;border-top:1px solid #ddd;padding-top:8px;"><span style="font-size:20px;">⚠️</span> <b>Vacant Property Alert</b></div>';
             return div;
         };
         legend.addTo(map);
+        
+        // Summary
         var summary = L.control({position: 'topright'});
         summary.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'summary');
-            div.innerHTML = '<h4>Impact Summary</h4><div class="summary-item critical">CRITICAL: 4 regions (17 properties)</div><div class="summary-item severe">SEVERE: 6 regions (15 properties)</div><div class="summary-item moderate">MODERATE: 7 regions (42 properties)</div><div class="summary-item low">LOW: 13 regions (206 properties)</div><hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;"><div style="font-size: 12px; color: #666;">Total: 280 properties across 30 regions</div>';
+            div.innerHTML = '<h4>📊 Property Summary</h4>' +
+                '<div class="summary-item critical">🔴 CRITICAL: 4 regions, 17 properties</div>' +
+                '<div class="summary-item severe">🟠 SEVERE: 6 regions, 15 properties</div>' +
+                '<div class="summary-item moderate">🟡 MODERATE: 7 regions, 42 properties</div>' +
+                '<div class="summary-item low">🟢 LOW: 13 regions, 206 properties</div>' +
+                '<hr style="margin:10px 0;">' +
+                '<div class="summary-item" style="background:#fff3cd;padding:8px;border-radius:4px;border-left:4px solid #dc3545;"><b>⚠️ Vacant in High-Risk: 27</b></div>';
             return div;
         };
         summary.addTo(map);
