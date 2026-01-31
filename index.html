@@ -1,451 +1,256 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Month2Month Weather Alert Map</title>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M2M Weather Alert Map - 2026-01-31</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        .info { padding: 12px 16px; background: rgba(255,255,255,0.95); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 8px; max-width: 350px; }
-        .info h4 { margin: 0 0 10px; color: #333; font-size: 16px; }
-        .info .update-time { font-size: 11px; color: #666; margin-bottom: 10px; }
-        .legend { line-height: 26px; color: #555; }
-        .legend i { width: 18px; height: 18px; float: left; margin-right: 10px; opacity: 0.85; border-radius: 50%; border: 1px solid #333; }
-        .legend-item { margin-bottom: 6px; clear: both; }
-        .summary { padding: 12px 16px; background: rgba(255,255,255,0.95); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 8px; max-width: 300px; }
-        .summary h4 { margin: 0 0 10px; color: #333; }
-        .summary-item { margin-bottom: 5px; font-size: 13px; }
-        .critical { color: #dc3545; font-weight: bold; }
-        .severe { color: #fd7e14; font-weight: bold; }
-        .moderate { color: #ffc107; font-weight: bold; }
-        .low { color: #28a745; }
-        .vacant-warning { color: #dc3545; font-size: 14px; font-weight: bold; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .legend {
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .summary-stats {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .warning-badge {
+            background: #dc2626;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .custom-popup {
+            min-width: 200px;
+        }
+        .popup-header {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .popup-stats {
+            display: flex;
+            gap: 15px;
+            margin: 8px 0;
+        }
+        .popup-stat {
+            text-align: center;
+        }
+        .popup-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .popup-stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+        .popup-alerts {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+        }
+        .popup-alert-item {
+            padding: 2px 0;
+            color: #666;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .warning-icon {
+            animation: pulse 1.5s infinite;
+            font-size: 24px;
+        }
+        .marker-cluster {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    <div class="info-panel">
+        <h3>🌡️ M2M Weather Alert Map</h3>
+        <p style="font-size: 12px; color: #666;">Updated: 2026-01-31</p>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #dc2626;"></div>
+                <span>CRITICAL Risk</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ea580c;"></div>
+                <span>SEVERE Risk</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #eab308;"></div>
+                <span>MODERATE Risk</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #22c55e;"></div>
+                <span>LOW Risk</span>
+            </div>
+        </div>
+        
+        <div class="summary-stats">
+            <div class="stat-row">
+                <span>Total Properties:</span>
+                <strong>275</strong>
+            </div>
+            <div class="stat-row">
+                <span>Vacant:</span>
+                <strong>71</strong>
+            </div>
+            <div class="stat-row">
+                <span>Occupied:</span>
+                <strong>204</strong>
+            </div>
+            <div class="stat-row" style="margin-top: 10px;">
+                <span>⚠️ High-Risk Vacant:</span>
+                <span class="warning-badge">8</span>
+            </div>
+            <div class="stat-row">
+                <span>⚠️ Moderate-Risk Vacant:</span>
+                <span class="warning-badge" style="background: #eab308;">15</span>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([37.5, -96], 4);
+        // Initialize map centered on US
+        const map = L.map('map').setView([37.5, -96], 4);
+        
+        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors | Month2Month Weather Alert System',
-            maxZoom: 19
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-
-        L.circleMarker([33.749, -84.388], {
-            radius: 14.6,
-            fillColor: '#dc3545',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Georgia</b><br>Properties: 11<br><span class='vacant-warning'>⚠️ Vacant: 4</span> | Occupied: 7<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 14°F - 45°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
-
-        L.marker([34.149, -83.988], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Georgia</b><br><span class='critical'>4 vacant properties</span><br>in <b>CRITICAL</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([35.7796, -78.6382], {
-            radius: 12.0,
-            fillColor: '#dc3545',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>North Carolina</b><br>Properties: 4<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 3<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 12°F - 40°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
-
-        L.marker([36.1796, -78.23819999999999], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - North Carolina</b><br><span class='critical'>1 vacant properties</span><br>in <b>CRITICAL</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([32.7765, -79.9311], {
-            radius: 10.0,
-            fillColor: '#dc3545',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>South Carolina</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 0<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 15°F - 45°F<br>Conditions: WINTER STORM WARNING, Extreme Cold Watch`);
-
-        L.marker([33.1765, -79.5311], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - South Carolina</b><br><span class='critical'>1 vacant properties</span><br>in <b>CRITICAL</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([39.7684, -86.1581], {
-            radius: 10.0,
-            fillColor: '#dc3545',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Indiana</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#dc3545;font-weight:bold'>CRITICAL</span><br>Temperature: 10°F - 30°F<br>Conditions: WINTER STORM WARNING, Cold Weather Advisory`);
-
-        L.circleMarker([28.5383, -81.3792], {
-            radius: 13.3,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Orlando</b><br>Properties: 7<br><span class='vacant-warning'>⚠️ Vacant: 4</span> | Occupied: 3<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 24°F - 65°F<br>Conditions: Extreme Cold Warning, Freeze Watch`);
-
-        L.marker([28.938299999999998, -80.97919999999999], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Orlando</b><br><span class='critical'>4 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([41.8781, -87.6298], {
-            radius: 11.5,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Chicago and Nearby</b><br>Properties: 3<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 2<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 8°F - 28°F<br>Conditions: Cold Weather Advisory, Winter Storm Watch`);
-
-        L.marker([42.2781, -87.2298], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Chicago and Nearby</b><br><span class='critical'>1 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([44.9778, -93.265], {
-            radius: 10.8,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Minnesota</b><br>Properties: 2<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 0<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: -5°F - 18°F<br>Conditions: Cold Weather Advisory, Extreme Cold`);
-
-        L.marker([45.3778, -92.865], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Minnesota</b><br><span class='critical'>2 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([42.3314, -83.0458], {
-            radius: 10.0,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Michigan</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 12°F - 28°F<br>Conditions: Cold, monitoring`);
-
-        L.circleMarker([39.0458, -76.6413], {
-            radius: 10.0,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Maryland</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 1</span> | Occupied: 0<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 16°F - 36°F<br>Conditions: Cold Weather Advisory, Winter Storm Watch`);
-
-        L.marker([39.4458, -76.2413], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Maryland</b><br><span class='critical'>1 vacant properties</span><br>in <b>SEVERE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([43.6532, -79.3832], {
-            radius: 10.0,
-            fillColor: '#fd7e14',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Toronto</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#fd7e14;font-weight:bold'>SEVERE</span><br>Temperature: 10°F - 28°F<br>Conditions: Cold (Canada - not NWS)`);
-
-        L.circleMarker([29.7604, -95.3698], {
-            radius: 15.7,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Houston</b><br>Properties: 15<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 13<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 27°F - 55°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
-
-        L.marker([30.1604, -94.96979999999999], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Houston</b><br><span class='critical'>2 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([32.7767, -96.797], {
-            radius: 14.3,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Dallas</b><br>Properties: 10<br><span class='vacant-warning'>⚠️ Vacant: 4</span> | Occupied: 6<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 20°F - 45°F<br>Conditions: Cold Weather Advisory`);
-
-        L.marker([33.1767, -96.39699999999999], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Dallas</b><br><span class='critical'>4 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([30.2672, -97.7431], {
-            radius: 13.3,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Austin and Nearby</b><br>Properties: 7<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 5<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 22°F - 50°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
-
-        L.marker([30.667199999999998, -97.34309999999999], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Austin and Nearby</b><br><span class='critical'>2 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([29.4241, -98.4936], {
-            radius: 12.0,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>San Antonio</b><br>Properties: 4<br><span class='vacant-warning'>⚠️ Vacant: 3</span> | Occupied: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 25°F - 52°F<br>Conditions: Cold Weather Advisory, Freeze Watch`);
-
-        L.marker([29.824099999999998, -98.0936], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - San Antonio</b><br><span class='critical'>3 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([39.7392, -104.9903], {
-            radius: 12.0,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Colorado</b><br>Properties: 4<br><span class='vacant-warning'>⚠️ Vacant: 2</span> | Occupied: 2<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 18°F - 42°F<br>Conditions: Cold but no active warnings`);
-
-        L.marker([40.139199999999995, -104.5903], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div style="background:#dc3545;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);animation:pulse 1.5s infinite;">⚠</div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            })
-        }).addTo(map).bindPopup(`<b>⚠️ VACANT ALERT - Colorado</b><br><span class='critical'>2 vacant properties</span><br>in <b>MODERATE</b> weather zone<br><br>🚨 Priority: Check for pipe freeze risk`);
-
-        L.circleMarker([39.6837, -75.7497], {
-            radius: 10.0,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Delaware</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 18°F - 38°F<br>Conditions: Cold Weather Advisory`);
-
-        L.circleMarker([40.7282, -74.0776], {
-            radius: 10.0,
-            fillColor: '#ffc107',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>New Jersey</b><br>Properties: 1<br><span class='vacant-warning'>⚠️ Vacant: 0</span> | Occupied: 1<br>Severity: <span style='color:#ffc107;font-weight:bold'>MODERATE</span><br>Temperature: 20°F - 38°F<br>Conditions: Cold Weather Advisory`);
-
-        L.circleMarker([33.7175, -117.8311], {
-            radius: 23.0,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Orange County</b><br>Properties: 56<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 53°F - 72°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([34.0522, -118.2437], {
-            radius: 20.8,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Los Angeles and Nearby</b><br>Properties: 41<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 54°F - 73°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([33.9533, -117.3962], {
-            radius: 17.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Riverside</b><br>Properties: 21<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 51°F - 70°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([34.1083, -117.2898], {
-            radius: 17.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>San Bernardino</b><br>Properties: 21<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 51°F - 68°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([37.3861, -122.0839], {
-            radius: 16.0,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Bay Area</b><br>Properties: 16<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 62°F<br>Conditions: Cool but no winter weather concerns`);
-
-        L.circleMarker([45.5152, -122.6784], {
-            radius: 15.2,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Portland and Nearby</b><br>Properties: 13<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 44°F - 52°F<br>Conditions: Cool but no winter weather concerns`);
-
-        L.circleMarker([47.6062, -122.3321], {
-            radius: 14.0,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Seattle and Nearby</b><br>Properties: 9<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 52°F<br>Conditions: Cool but no winter weather concerns`);
-
-        L.circleMarker([33.4484, -112.074], {
-            radius: 13.3,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Phoenix and Nearby</b><br>Properties: 7<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 48°F - 72°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([38.5816, -121.4944], {
-            radius: 12.9,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Sacramento</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 42°F - 58°F<br>Conditions: Cool but no winter weather concerns`);
-
-        L.circleMarker([32.7157, -117.1611], {
-            radius: 12.9,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>San Diego</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 54°F - 68°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([45.6387, -122.6615], {
-            radius: 12.9,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Vancouver</b><br>Properties: 6<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 42°F - 50°F<br>Conditions: Cool but no winter weather concerns`);
-
-        L.circleMarker([35.3733, -119.0187], {
-            radius: 10.8,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Bakersfield</b><br>Properties: 2<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 48°F - 65°F<br>Conditions: Mild, no winter weather concerns`);
-
-        L.circleMarker([36.1699, -115.1398], {
-            radius: 10.8,
-            fillColor: '#28a745',
-            color: '#333',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Las Vegas</b><br>Properties: 2<br>Severity: <span style='color:#28a745;font-weight:bold'>LOW</span><br>Temperature: 45°F - 62°F<br>Conditions: Mild, no winter weather concerns`);
-
-        // Add CSS animation for pulsing warning icons
-        var style = document.createElement('style');
-        style.textContent = '@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }';
-        document.head.appendChild(style);
         
-        // Legend
-        var legend = L.control({position: 'bottomright'});
-        legend.onAdd = function (map) {
-            var div = L.DomUtil.create('div', 'info legend');
-            div.innerHTML = '<h4>Weather Risk Level</h4>' +
-                '<div class="update-time">Updated: 2026-01-30 22:45 UTC</div>' +
-                '<div class="legend-item"><i style="background:#dc3545"></i> CRITICAL - Winter Storm Warning</div>' +
-                '<div class="legend-item"><i style="background:#fd7e14"></i> SEVERE - Extreme Cold Warning</div>' +
-                '<div class="legend-item"><i style="background:#ffc107"></i> MODERATE - Cold/Freeze Advisory</div>' +
-                '<div class="legend-item"><i style="background:#28a745"></i> LOW - No Major Concerns</div>' +
-                '<div class="legend-item" style="margin-top:12px;border-top:1px solid #ddd;padding-top:8px;"><span style="font-size:20px;">⚠️</span> <b>Vacant Property Alert</b></div>';
-            return div;
+        // Risk colors
+        const riskColors = {
+            'CRITICAL': '#dc2626',
+            'SEVERE': '#ea580c',
+            'MODERATE': '#eab308',
+            'LOW': '#22c55e'
         };
-        legend.addTo(map);
         
-        // Summary
-        var summary = L.control({position: 'topright'});
-        summary.onAdd = function (map) {
-            var div = L.DomUtil.create('div', 'summary');
-            div.innerHTML = '<h4>📊 Property Summary</h4>' +
-                '<div class="summary-item critical">🔴 CRITICAL: 4 regions, 17 properties</div>' +
-                '<div class="summary-item severe">🟠 SEVERE: 6 regions, 15 properties</div>' +
-                '<div class="summary-item moderate">🟡 MODERATE: 7 regions, 42 properties</div>' +
-                '<div class="summary-item low">🟢 LOW: 13 regions, 206 properties</div>' +
-                '<hr style="margin:10px 0;">' +
-                '<div class="summary-item" style="background:#fff3cd;padding:8px;border-radius:4px;border-left:4px solid #dc3545;"><b>⚠️ Vacant in High-Risk: 27</b></div>';
-            return div;
-        };
-        summary.addTo(map);
+        // Property markers data
+        const markers = [{"lat": 33.6694199, "lon": -117.8173361, "address": "5 Rockwood, Irvine, CA 92614, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "18"}, {"lat": 28.3234176, "lon": -81.6050264, "address": "7901 Golden Pond Cir, Kissimmee, FL 34747, USA", "region": "Orlando", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "22"}, {"lat": 33.6955904, "lon": -117.7459914, "address": "78 Talisman, Irvine, CA 92620, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "174"}, {"lat": 33.59940150000001, "lon": -117.8878034, "address": "507 J St, Newport Beach, CA 92661, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "3474"}, {"lat": 33.7179639, "lon": -117.7407963, "address": "105 Cordial, Irvine, CA 92620, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "7341"}, {"lat": 28.3162709, "lon": -81.6458246, "address": "2478 Dubai St, Kissimmee, FL 34747, USA", "region": "Orlando", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "10560"}, {"lat": 45.5387766, "lon": -122.7704507, "address": "9021 NW Bartholomew Dr, Portland, OR 97229, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41001"}, {"lat": 29.35965, "lon": -98.609735, "address": "7026 Randado Ct, San Antonio, TX 78242, USA", "region": "San Antonio", "status": "Vacant", "risk_level": "MODERATE", "house_id": "41019"}, {"lat": 29.3417998, "lon": -98.41886699999999, "address": "3514 Booker Trl, San Antonio, TX 78223, USA", "region": "San Antonio", "status": "Vacant", "risk_level": "MODERATE", "house_id": "41225"}, {"lat": 34.1049225, "lon": -117.6969143, "address": "863 Harvest Ave, Upland, CA 91786, USA", "region": "San Bernardino", "status": "Vacant", "risk_level": "LOW", "house_id": "41279"}, {"lat": 37.2230232, "lon": -121.876832, "address": "6429 McAbee Rd, San Jose, CA 95120, USA", "region": "Bay Area", "status": "Vacant", "risk_level": "LOW", "house_id": "41318"}, {"lat": 34.0869094, "lon": -117.3758547, "address": "630 W Woodcrest St, Rialto, CA 92376, USA", "region": "San Bernardino", "status": "Vacant", "risk_level": "LOW", "house_id": "41339"}, {"lat": 33.6793271, "lon": -117.7484416, "address": "197 Augustine, Irvine, CA 92618, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "41363"}, {"lat": 34.6664128, "lon": -118.2400112, "address": "43130 62nd St W, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41369"}, {"lat": 34.124283, "lon": -117.689907, "address": "1644 Coral Bells Pl, Upland, CA 91784, USA", "region": "San Bernardino", "status": "Vacant", "risk_level": "LOW", "house_id": "41423"}, {"lat": 32.8287084, "lon": -80.1053096, "address": "782 Jancus St, Charleston, SC 29414, USA", "region": "South Carolina", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "41505"}, {"lat": 33.648379, "lon": -117.5849171, "address": "108 Wild Horse, Rancho Santa Margarita, CA 92688, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "41523"}, {"lat": 45.5401234, "lon": -122.775598, "address": "2377 NW Birkendene St, Portland, OR 97229, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41532"}, {"lat": 34.007984, "lon": -117.315523, "address": "19907 Sunkissed Ridge Dr, Riverside, CA 92507, USA", "region": "Riverside", "status": "Vacant", "risk_level": "LOW", "house_id": "41559"}, {"lat": 33.9715651, "lon": -117.2592298, "address": "10311 Penguin Ct, Moreno Valley, CA 92557, USA", "region": "Riverside", "status": "Vacant", "risk_level": "LOW", "house_id": "41562"}, {"lat": 33.1450363, "lon": -96.6914023, "address": "5801 Fuder Dr, Mckinney, TX 75070, USA", "region": "Dallas", "status": "Vacant", "risk_level": "MODERATE", "house_id": "41574"}, {"lat": 33.9370133, "lon": -117.2022701, "address": "12675 Elmhurst Dr, Moreno Valley, CA 92555, USA", "region": "Riverside", "status": "Vacant", "risk_level": "LOW", "house_id": "41613"}, {"lat": 33.78875449085626, "lon": -117.1527414226318, "address": "29223 Obsidian Ct, Nuevo, CA 92567, USA", "region": "Riverside", "status": "Vacant", "risk_level": "LOW", "house_id": "41703"}, {"lat": 40.1387906, "lon": -105.1675408, "address": "5107 Linda Pl, Longmont, CO 80503, USA", "region": "Colorado", "status": "Vacant", "risk_level": "LOW", "house_id": "41709"}, {"lat": 33.9947337, "lon": -117.8214877, "address": "1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41751"}, {"lat": 33.1795578, "lon": -96.8715435, "address": "2137 Goliad Cir, Frisco, TX 75034, USA", "region": "Dallas", "status": "Vacant", "risk_level": "MODERATE", "house_id": "41763"}, {"lat": 33.9192535, "lon": -117.9954166, "address": "12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41808"}, {"lat": 42.3080575, "lon": -87.96399459999999, "address": "246 Cater Ln, Libertyville, IL 60048, USA", "region": "Chicago and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41814"}, {"lat": 37.3464239, "lon": -121.9980716, "address": "1090 Wood Duck Ave, Santa Clara, CA 95051, USA", "region": "Bay Area", "status": "Vacant", "risk_level": "LOW", "house_id": "41841"}, {"lat": 35.34944718514957, "lon": -119.1154978779086, "address": "606 Windsor Park Dr, Bakersfield, CA 93311, USA", "region": "Bakersfield", "status": "Vacant", "risk_level": "MODERATE", "house_id": "41844"}, {"lat": 47.7949897, "lon": -122.1846739, "address": "3610 223rd Pl SE, Bothell, WA 98021, USA", "region": "Seattle and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41847"}, {"lat": 47.7232048, "lon": -122.184649, "address": "13711 117th Ave NE, Kirkland, WA 98034, USA", "region": "Seattle and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41850"}, {"lat": 34.0870903, "lon": -83.9752323, "address": "3658 Silver Fox Path, Buford, GA 30519, USA", "region": "Georgia", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "41856"}, {"lat": 34.2860814, "lon": -118.3941513, "address": "11843 Apple Grove Ln, Sylmar, CA 91342, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41877"}, {"lat": 47.66279, "lon": -122.039037, "address": "6406 224th Ave NE, Redmond, WA 98053, USA", "region": "Seattle and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "41901"}, {"lat": 35.35119460000001, "lon": -119.118461, "address": "10410 Bichester Ct, Bakersfield, CA 93311, USA", "region": "Bakersfield", "status": "Vacant", "risk_level": "MODERATE", "house_id": "41913"}, {"lat": 32.922536, "lon": -117.1611889, "address": "11022 Alonda Ct, San Diego, CA 92126, USA", "region": "San Diego", "status": "Vacant", "risk_level": "LOW", "house_id": "41925"}, {"lat": 33.7878073, "lon": -84.2603501, "address": "427 Third Ave, Scottdale, GA 30079, USA", "region": "Georgia", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "41934"}, {"lat": 35.9412374, "lon": -78.8427991, "address": "4 Suncrest Ct, Durham, NC 27703, USA", "region": "North Carolina", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "41973"}, {"lat": 33.882123, "lon": -84.11592999999999, "address": "4122 Fulson Dr, Lilburn, GA 30047, USA", "region": "Georgia", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "42000"}, {"lat": 33.8714583, "lon": -84.5940874, "address": "1345 Velvet Creek Way SW, Marietta, GA 30008, USA", "region": "Georgia", "status": "Vacant", "risk_level": "CRITICAL", "house_id": "42003"}, {"lat": 45.5388942, "lon": -122.7781388, "address": "9831 NW Bartholomew Dr, Portland, OR 97229, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42048"}, {"lat": 45.5472522, "lon": -122.671275, "address": "521 N Cook St, Portland, OR 97227, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42057"}, {"lat": 45.753664, "lon": -122.623245, "address": "18214 NE 47th Ave, Vancouver, WA 98686, USA", "region": "Vancouver", "status": "Vacant", "risk_level": "LOW", "house_id": "42063"}, {"lat": 34.1114697, "lon": -118.0075058, "address": "4389 Maple Ln, Arcadia, CA 91006, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42090"}, {"lat": 30.4040336, "lon": -97.6160767, "address": "2920 Tweedy Trail, Pflugerville, TX 78660, USA", "region": "Austin and Nearby", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42153"}, {"lat": 30.479954, "lon": -97.8206598, "address": "2214 S Lakeline Blvd #108, Cedar Park, TX 78613, USA", "region": "Austin and Nearby", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42159"}, {"lat": 33.6996465, "lon": -117.7675898, "address": "130 Cartier Aisle, Irvine, CA 92620, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "42162"}, {"lat": 34.4421967, "lon": -118.4569252, "address": "18244 Cumulus Ct, Santa Clarita, CA 91350, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42174"}, {"lat": 45.4985183, "lon": -122.8549738, "address": "17274 SW Arborcrest Way lot 34, Beaverton, OR 97003, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42201"}, {"lat": 34.1210745, "lon": -118.0364781, "address": "137 W Winnie Way, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42204"}, {"lat": 39.7941847, "lon": -105.1075534, "address": "5330 Johnson St, Arvada, CO 80002, USA", "region": "Colorado", "status": "Vacant", "risk_level": "LOW", "house_id": "42222"}, {"lat": 33.101229, "lon": -96.8815712, "address": "5124 Reed Dr, The Colony, TX 75056, USA", "region": "Dallas", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42276"}, {"lat": 29.9440515, "lon": -95.1809834, "address": "15410 Rosehill Summit Ln, Houston, TX 77044, USA", "region": "Houston", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42312"}, {"lat": 29.5037869, "lon": -98.5917465, "address": "5406 Tomas Cir, San Antonio, TX 78240, USA", "region": "San Antonio", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42327"}, {"lat": 38.4035183, "lon": -121.3647507, "address": "9042 El Oro Plaza Dr, Elk Grove, CA 95624, USA", "region": "Sacramento", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42354"}, {"lat": 39.4021649, "lon": -77.312777, "address": "6242 Walleye Pl, New Market, MD 21774, USA", "region": "Maryland", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42357"}, {"lat": 45.4148568, "lon": -122.6896558, "address": "15501 Diamond Head Rd, Lake Oswego, OR 97034, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42366"}, {"lat": 45.4119196, "lon": -122.8019799, "address": "12099 SW Aspen Ridge Dr, Tigard, OR 97224, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42375"}, {"lat": 47.5384468, "lon": -122.172246, "address": "12543 SE 72nd St, Newcastle, WA 98056, USA", "region": "Seattle and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42396"}, {"lat": 37.7238654, "lon": -122.4621379, "address": "306 Ashton Ave, San Francisco, CA 94112, USA", "region": "Bay Area", "status": "Vacant", "risk_level": "LOW", "house_id": "42438"}, {"lat": 45.5058824, "lon": -122.823407, "address": "14255 SW Compass Dr, Beaverton, OR 97005, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42468"}, {"lat": 32.9414708, "lon": -97.25263740000001, "address": "116 Johnson Rd, Keller, TX 76248, USA", "region": "Dallas", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42498"}, {"lat": 47.6811862, "lon": -122.1954796, "address": "639 8th Ave, Kirkland, WA 98033, USA", "region": "Seattle and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42501"}, {"lat": 29.8966024, "lon": -95.74030499999999, "address": "21318 Monterrico Bay Dr, Cypress, TX 77433, USA", "region": "Houston", "status": "Vacant", "risk_level": "MODERATE", "house_id": "42504"}, {"lat": 34.0745215, "lon": -117.7652566, "address": "1615 California Pl, Pomona, CA 91768, USA", "region": "Los Angeles and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42516"}, {"lat": 45.5255981, "lon": -122.7991499, "address": "685 NW Falling Waters Ln unit 103, Portland, OR 97229, USA", "region": "Portland and Nearby", "status": "Vacant", "risk_level": "LOW", "house_id": "42522"}, {"lat": 44.9126415, "lon": -93.46124549999999, "address": "14222 Bellevue Dr, Minnetonka, MN 55345, USA", "region": "Minnesota", "status": "Vacant", "risk_level": "LOW", "house_id": "42528"}, {"lat": 37.6491779, "lon": -122.4805567, "address": "437 Norfolk Dr, Pacifica, CA 94044, USA", "region": "Bay Area", "status": "Vacant", "risk_level": "LOW", "house_id": "42531"}, {"lat": 44.9277476, "lon": -93.6746161, "address": "5912 Bartlett Blvd, Mound, MN 55364, USA", "region": "Minnesota", "status": "Vacant", "risk_level": "LOW", "house_id": "42534"}, {"lat": 33.629288, "lon": -117.7987864, "address": "9 Goldfinch, Irvine, CA 92603, USA", "region": "Orange County", "status": "Vacant", "risk_level": "LOW", "house_id": "42537"}, {"lat": 33.697583, "lon": -117.7620681, "address": "63 Secret Garden, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "14"}, {"lat": 33.6681966, "lon": -117.8515274, "address": "1125 Scholarship, Irvine, CA 92612, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "17"}, {"lat": 33.6672297, "lon": -117.8515681, "address": "2117 Scholarship, Irvine, CA 92612, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "19"}, {"lat": 33.707491, "lon": -117.749444, "address": "101 Thornhurst, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "25"}, {"lat": 33.689846, "lon": -117.7577609, "address": "75 Gardenstone Path, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "28"}, {"lat": 33.6864443, "lon": -117.7516637, "address": "77 Hanging Garden, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "58"}, {"lat": 33.6872274, "lon": -117.7509331, "address": "95 Hanging Garden, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "110"}, {"lat": 33.6780999, "lon": -117.7972309, "address": "21 Lakefront, Irvine, CA 92604, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "185"}, {"lat": 28.3282223, "lon": -81.62711929999999, "address": "8655 La Isla Dr, Kissimmee, FL 34747, USA", "region": "Orlando", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "202"}, {"lat": 28.3124373, "lon": -81.64762209999999, "address": "9022 Rhodes St, Kissimmee, FL 34747, USA", "region": "Orlando", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "205"}, {"lat": 33.701485, "lon": -117.727787, "address": "109 Bright Poppy, Irvine, CA 92618, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "2943"}, {"lat": 33.6872136, "lon": -117.732435, "address": "104 Electra, Irvine, CA 92618, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "3276"}, {"lat": 33.6670116, "lon": -117.8178137, "address": "20 Rockrose Way, Irvine, CA 92612, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "6915"}, {"lat": 33.6845162, "lon": -117.7559144, "address": "64 Thornapple, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "6964"}, {"lat": 33.7085418, "lon": -118.0457746, "address": "4731 Oceanridge Dr, Huntington Beach, CA 92649, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "7002"}, {"lat": 28.261766, "lon": -81.64582709999999, "address": "1550 Plunker Dr, Davenport, FL 33896, USA", "region": "Orlando", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "7020"}, {"lat": 33.7115533, "lon": -117.7410451, "address": "101 Ovation, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "7101"}, {"lat": 33.6827386, "lon": -117.7380252, "address": "159 Terrapin, Irvine, CA 92618, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "7104"}, {"lat": 33.7369671, "lon": -117.7510589, "address": "231 Rodeo, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "7110"}, {"lat": 33.7114522, "lon": -117.7444134, "address": "61 Crestwick, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "7572"}, {"lat": 33.6820709, "lon": -117.7385972, "address": "173 Terrapin, Irvine, CA 92618, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "9441"}, {"lat": 33.6672935, "lon": -117.7866458, "address": "205 Cherrybrook Ln, Irvine, CA 92618, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "10140"}, {"lat": 28.3068419, "lon": -81.6424242, "address": "8859 Geneve Ct, Kissimmee, FL 34747, USA", "region": "Orlando", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "10155"}, {"lat": 33.7302458, "lon": -117.764092, "address": "5 La Canada, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "40704"}, {"lat": 33.9394432, "lon": -117.6005292, "address": "14496 Meadowbrook Ln, Eastvale, CA 92880, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "40809"}, {"lat": 33.6992522, "lon": -117.7621904, "address": "48 Bamboo, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "40818"}, {"lat": 29.4741224, "lon": -95.5335341, "address": "8718 Myrtle Bend Dr, Missouri City, TX 77459, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "40860"}, {"lat": 29.4748939, "lon": -95.533908, "address": "8710 Crossing Oak Ln, Missouri City, TX 77459, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "40872"}, {"lat": 33.9581966, "lon": -117.6077093, "address": "7143 Leighton Dr, Corona, CA 92880, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "40938"}, {"lat": 29.553496, "lon": -95.7629212, "address": "6602 Sterling Shores Ln, Rosenberg, TX 77471, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41010"}, {"lat": 29.4759149, "lon": -95.53338289999999, "address": "2142 Ironwood Pass Dr, Missouri City, TX 77459, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41016"}, {"lat": 28.2819875, "lon": -81.6478789, "address": "850 Sticks St, Championsgate, FL 33896, USA", "region": "Orlando", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41022"}, {"lat": 34.107876, "lon": -118.0324027, "address": "2617 Glamis Ct, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41034"}, {"lat": 33.996667, "lon": -117.6694313, "address": "6203 Winona St, Chino, CA 91710, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41049"}, {"lat": 37.4351055, "lon": -122.1242596, "address": "820 Colorado Ave, Palo Alto, CA 94303, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "41091"}, {"lat": 37.4505892, "lon": -122.1302269, "address": "546 Hilbar Ln, Palo Alto, CA 94303, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "41100"}, {"lat": 29.4756443, "lon": -95.5349691, "address": "2151 Long Spring Dr, Sienna Plantation, TX 77459, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41138"}, {"lat": 33.673581, "lon": -117.6844821, "address": "129 Lavender, Lake Forest, CA 92630, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41153"}, {"lat": 33.2529148, "lon": -97.1432784, "address": "3604 Beatriz Dr, Denton, TX 76207, USA", "region": "Dallas", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41174"}, {"lat": 29.4721062, "lon": -95.5331241, "address": "8719 Fox Trail Dr, Missouri City, TX 77459, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41189"}, {"lat": 29.9025534, "lon": -95.7089858, "address": "19738 Tacoma Bluff Drive, Cypress, TX 77433, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41228"}, {"lat": 33.7341338, "lon": -117.7470771, "address": "138 Stallion, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41252"}, {"lat": 29.7006298, "lon": -95.8450141, "address": "6411 Tea Tree Dr, Katy, TX 77494, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41267"}, {"lat": 33.8880018, "lon": -117.5296952, "address": "613 Towergrove Dr, Corona, CA 92879, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "41276"}, {"lat": 34.1067654, "lon": -117.5127908, "address": "8049 Jamestown Cir, Fontana, CA 92336, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41327"}, {"lat": 33.7214095, "lon": -117.7822976, "address": "17 Riveroaks, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41333"}, {"lat": 33.9781123, "lon": -117.5880985, "address": "5910 Sendero Ave, Eastvale, CA 92880, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "41351"}, {"lat": 33.9248807, "lon": -117.2739208, "address": "13479 Arbor Park Lane, Moreno Valley, CA 92551, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "41354"}, {"lat": 34.1057879, "lon": -118.035051, "address": "5657 McCulloch Ave #106, Temple City, CA 91780, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41372"}, {"lat": 34.0454279, "lon": -117.2299638, "address": "11466 Gower St, Loma Linda, CA 92354, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41375"}, {"lat": 33.90912490000001, "lon": -117.2281719, "address": "14563 Gulfstream Lane, Moreno Valley, CA 92553, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "41378"}, {"lat": 38.6372214, "lon": -121.0919746, "address": "3304 Sunny Gate Ln, Folsom, CA 95630, USA", "region": "Sacramento", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41384"}, {"lat": 34.6704216, "lon": -118.2382733, "address": "43341 Harbor St, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41390"}, {"lat": 34.014483, "lon": -117.417999, "address": "6599 Bryce Canyon Ct, Jurupa Valley, CA 92509, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "41393"}, {"lat": 29.3566285, "lon": -98.6057392, "address": "5406 Elm Valley Dr, San Antonio, TX 78242, USA", "region": "San Antonio", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41399"}, {"lat": 34.1529954, "lon": -117.4840511, "address": "5554 Pheasant Dr, Fontana, CA 92336, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41402"}, {"lat": 33.9854643, "lon": -117.5809932, "address": "4835 South Monarch Pl, Ontario, CA 91762, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41414"}, {"lat": 33.7329961, "lon": -117.77629, "address": "107 Waterman, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41417"}, {"lat": 37.3463892, "lon": -121.9980182, "address": "1088 Wood Duck Ave, Santa Clara, CA 95051, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "41420"}, {"lat": 33.7341338, "lon": -117.7470771, "address": "132 Stallion, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41429"}, {"lat": 33.7349398, "lon": -117.7404354, "address": "126 Donati, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41460"}, {"lat": 37.3284908, "lon": -121.9763041, "address": "300 Salsbury Dr, Santa Clara, CA 95051, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "41481"}, {"lat": 33.9636202, "lon": -117.6419329, "address": "7473 Brahman Ln, Chino, CA 91708, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41511"}, {"lat": 32.96975763886958, "lon": -117.1288463435987, "address": "13850 Bruyere Ct, San Diego, CA 92129, USA", "region": "San Diego", "status": "Occupied", "risk_level": "LOW", "house_id": "41538"}, {"lat": 33.6625556, "lon": -117.6816069, "address": "228 Siena, Lake Forest, CA 92630, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41565"}, {"lat": 34.6854175, "lon": -118.2200161, "address": "44149 Buckeye Ct, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41589"}, {"lat": 38.6387558, "lon": -121.0919298, "address": "3200 Sunny Gate Ln, Folsom, CA 95630, USA", "region": "Sacramento", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41616"}, {"lat": 33.968186, "lon": -117.8434739, "address": "21075 Blossom Way, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41628"}, {"lat": 33.966995, "lon": -84.16035099999999, "address": "4065 Spinnaker Dr, Duluth, GA 30096, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41646"}, {"lat": 33.73487710000001, "lon": -112.1140522, "address": "2510 W Big Oak St, Phoenix, AZ 85085, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41649"}, {"lat": 34.0383495, "lon": -117.8593712, "address": "1210 N Country Hollow Dr, Walnut, CA 91789, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41682"}, {"lat": 33.7112093, "lon": -112.1427653, "address": "3853 W Fallen Leaf Ln, Glendale, AZ 85310, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41691"}, {"lat": 33.8678482, "lon": -112.1571565, "address": "4509 W Venture Ct, Anthem, AZ 85086, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41697"}, {"lat": 33.7330446, "lon": -112.1751802, "address": "5414 W Straight Arrow Ln, Phoenix, AZ 85083, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41700"}, {"lat": 33.74135330666064, "lon": -112.1135987572086, "address": "2519 W Desert Vista Trl, Phoenix, AZ 85085, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41706"}, {"lat": 40.166686, "lon": -105.058227, "address": "521 High Point Dr, Longmont, CO 80504, USA", "region": "Colorado", "status": "Occupied", "risk_level": "LOW", "house_id": "41712"}, {"lat": 29.5142328, "lon": -95.80121079999999, "address": "4715 Purple Fountain Drive, Rosenberg, TX 77469, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41715"}, {"lat": 30.4569647, "lon": -97.57862229999999, "address": "3105 Honey Peach Way, Pflugerville, TX 78660, USA", "region": "Austin and Nearby", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41727"}, {"lat": 29.7292031, "lon": -95.88852729999999, "address": "29914 Reagans Ranch Dr, Katy, TX 77494, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41733"}, {"lat": 34.0558546, "lon": -117.8753494, "address": "917 S Easthills Dr, West Covina, CA 91791, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41742"}, {"lat": 33.8178592, "lon": -118.0190081, "address": "6548 Sequoia Dr, Buena Park, CA 90620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41748"}, {"lat": 34.1070775, "lon": -117.8445704, "address": "945 E Wonder Ln, Glendora, CA 91740, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41754"}, {"lat": 34.6810163, "lon": -118.2410813, "address": "6127 W Avenue J9, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41757"}, {"lat": 45.5322172, "lon": -122.891924, "address": "8493 NE Windstone St, Hillsboro, OR 97006, USA", "region": "Portland and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41769"}, {"lat": 33.7179976, "lon": -117.7476468, "address": "113 Baja, Irvine, CA 92620, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41772"}, {"lat": 45.6094277, "lon": -122.4957704, "address": "1603 SE 171st Pl, Vancouver, WA 98683, USA", "region": "Vancouver", "status": "Occupied", "risk_level": "LOW", "house_id": "41784"}, {"lat": 33.6701938, "lon": -117.6666541, "address": "181 Pin Ln, Lake Forest, CA 92630, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41790"}, {"lat": 34.108962, "lon": -117.4648484, "address": "15637 Curry Pl, Fontana, CA 92336, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41793"}, {"lat": 34.6491951, "lon": -118.2544415, "address": "7030 W Ave L12, Lancaster, CA 93536, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41796"}, {"lat": 34.1118768, "lon": -117.498702, "address": "14033 Yorktown Ct, Fontana, CA 92336, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41817"}, {"lat": 33.8896699, "lon": -118.1357675, "address": "9303 Alondra Blvd Apt 4, Bellflower, CA 90706, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41820"}, {"lat": 33.8053821, "lon": -117.89772, "address": "1690 S Lewis St, Anaheim, CA 92805, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41823"}, {"lat": 34.1181504, "lon": -117.6793034, "address": "1509 Granada Rd, Upland, CA 91786, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "41829"}, {"lat": 33.9540205, "lon": -84.1695817, "address": "4589 Brook Farms Dr, Duluth, GA 30096, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41832"}, {"lat": 45.5430947, "lon": -122.8024148, "address": "3289 NW Kinsley Terrace, Portland, OR 97229, USA", "region": "Portland and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41862"}, {"lat": 34.5542436, "lon": -118.0919034, "address": "37058 Alton Drive, Palmdale, CA 93550, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41892"}, {"lat": 37.4303862, "lon": -122.1065577, "address": "3743 Klamath Ln, Palo Alto, CA 94303, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "41895"}, {"lat": 37.7861476, "lon": -122.3942911, "address": "50 Lansing St #407, San Francisco, CA 94105, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "41904"}, {"lat": 47.3985435, "lon": -122.2050508, "address": "22720 SE 101st Pl, Kent, WA 98031, USA", "region": "Seattle and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41907"}, {"lat": 33.9718462, "lon": -117.8375584, "address": "2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41910"}, {"lat": 33.9729197, "lon": -84.0805553, "address": "1775 Stoneoak Cir, Lawrenceville, GA 30043, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41922"}, {"lat": 45.5260678, "lon": -122.9215442, "address": "487 NE 58th Ave, Hillsboro, OR 97124, USA", "region": "Portland and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "41931"}, {"lat": 34.0875758, "lon": -84.2045955, "address": "5590 Cannonero Dr, Alpharetta, GA 30005, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41937"}, {"lat": 35.617196, "lon": -78.37630399999999, "address": "70 Echo Canyon Dr, Clayton, NC 27527, USA", "region": "North Carolina", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41949"}, {"lat": 33.8998823, "lon": -83.9581827, "address": "211 Clark Lake Ln, Grayson, GA 30017, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41952"}, {"lat": 39.8097229, "lon": -104.7427968, "address": "6211 N Malaya St, Aurora, CO 80019, USA", "region": "Colorado", "status": "Occupied", "risk_level": "LOW", "house_id": "41958"}, {"lat": 33.9564793, "lon": -117.5737747, "address": "7232 Cari Ct, Eastvale, CA 92880, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "41964"}, {"lat": 32.9441382, "lon": -117.2310592, "address": "12588 Carmel Creek Rd #27, San Diego, CA 92130, USA", "region": "San Diego", "status": "Occupied", "risk_level": "LOW", "house_id": "41967"}, {"lat": 35.9437061, "lon": -78.888792, "address": "2543 Wyntercrest Ln, Durham, NC 27713, USA", "region": "North Carolina", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41970"}, {"lat": 38.6541082, "lon": -121.495624, "address": "1618 Pagoda Lane, Sacramento, CA 95834, USA", "region": "Sacramento", "status": "Occupied", "risk_level": "MODERATE", "house_id": "41982"}, {"lat": 33.8938296, "lon": -84.18041780000001, "address": "5772 Williams Rd, Norcross, GA 30093, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "41985"}, {"lat": 45.6690238, "lon": -122.5976167, "address": "7401 NE 65th St, Vancouver, WA 98662, USA", "region": "Vancouver", "status": "Occupied", "risk_level": "LOW", "house_id": "41991"}, {"lat": 33.6903521, "lon": -117.8043298, "address": "6 Del Carlo, Irvine, CA 92606, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "41997"}, {"lat": 45.6310519, "lon": -122.5014946, "address": "1207 NE 166th Ave, Vancouver, WA 98684, USA", "region": "Vancouver", "status": "Occupied", "risk_level": "LOW", "house_id": "42006"}, {"lat": 33.5248633, "lon": -117.6935064, "address": "7 Genoa, Laguna Niguel, CA 92677, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42009"}, {"lat": 33.8984522, "lon": -117.3246675, "address": "8371 Attica Dr, Riverside, CA 92508, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42015"}, {"lat": 34.0538496, "lon": -117.235667, "address": "26074 Lugo Dr, Loma Linda, CA 92354, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42021"}, {"lat": 34.0329467, "lon": -117.7512062, "address": "2101 Rio Grande, Pomona, CA 91766, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42030"}, {"lat": 33.8908319, "lon": -117.7549753, "address": "20461 V\u00eda Trovador, Yorba Linda, CA 92887, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42033"}, {"lat": 32.6558118, "lon": -97.3322256, "address": "35 Glen Crossing Rd, Edgecliff Village, TX 76134, USA", "region": "Dallas", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42036"}, {"lat": 34.1003325, "lon": -117.6760724, "address": "1424 W Winn Dr, Upland, CA 91786, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42042"}, {"lat": 33.60605040000001, "lon": -111.9404885, "address": "6511 E Eugie Terrace, Scottsdale, AZ 85254, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42045"}, {"lat": 39.650595, "lon": -86.1825862, "address": "7907 Shannon Lakes Way, Indianapolis, IN 46217, USA", "region": "Indiana", "status": "Occupied", "risk_level": "LOW", "house_id": "42051"}, {"lat": 47.4628012, "lon": -122.1800418, "address": "1928 Beacon Way SE, Renton, WA 98058, USA", "region": "Seattle and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42066"}, {"lat": 37.3519981, "lon": -121.8105522, "address": "1452 Lochner Dr, San Jose, CA 95127, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "42069"}, {"lat": 39.6653964, "lon": -75.7223617, "address": "18 Montrose Dr, Newark, DE 19713, USA", "region": "Delaware", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42078"}, {"lat": 33.9789945, "lon": -118.0912127, "address": "7033 Passons Blvd, Pico Rivera, CA 90660, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42081"}, {"lat": 33.9514097, "lon": -117.2869229, "address": "21585 Del Amo St, Moreno Valley, CA 92557, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42084"}, {"lat": 33.6267442, "lon": -117.7067074, "address": "24282 Sunnybrook Cir, Lake Forest, CA 92630, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42087"}, {"lat": 33.238135, "lon": -117.309464, "address": "4397 Cadence Wy, Oceanside, CA 92057, USA", "region": "San Diego", "status": "Occupied", "risk_level": "LOW", "house_id": "42096"}, {"lat": 34.001953, "lon": -117.9565918, "address": "16103 Wedgeworth Dr, Hacienda Heights, CA 91745, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42099"}, {"lat": 33.6236184, "lon": -111.9450996, "address": "6245 E Janice Wy, Scottsdale, AZ 85254, USA", "region": "Phoenix and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42102"}, {"lat": 34.6226459, "lon": -118.2056255, "address": "4138 Club Vista Dr, Palmdale, CA 93551, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42108"}, {"lat": 34.4814642, "lon": -117.2930045, "address": "16996 Torino Dr, Victorville, CA 92395, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42111"}, {"lat": 30.4219455, "lon": -97.690021, "address": "13001 Powderhorn St, Austin, TX 78727, USA", "region": "Austin and Nearby", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42114"}, {"lat": 33.9961523, "lon": -117.816466, "address": "1428 Spruce Tree Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42117"}, {"lat": 32.781657, "lon": -117.1442752, "address": "2858 Avella Cir, San Diego, CA 92108, USA", "region": "San Diego", "status": "Occupied", "risk_level": "LOW", "house_id": "42120"}, {"lat": 33.9718127, "lon": -117.5535289, "address": "6397 Peacock Ct, Eastvale, CA 91752, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42123"}, {"lat": 33.6559144, "lon": -117.6177056, "address": "9 El Guiro, Rancho Santa Margarita, CA 92688, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42129"}, {"lat": 30.5004611, "lon": -97.7302251, "address": "8105 Luckenwald Cv, Round Rock, TX 78681, USA", "region": "Austin and Nearby", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42135"}, {"lat": 34.080721, "lon": -117.5638438, "address": "11002 Getaway Dr, Rancho Cucamonga, CA 91730, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42138"}, {"lat": 30.4595371, "lon": -97.78465179999999, "address": "9424 Morgan Creek Dr, Austin, TX 78717, USA", "region": "Austin and Nearby", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42141"}, {"lat": 33.83263760000001, "lon": -117.5629654, "address": "688 Black Oak Cir, Corona, CA 92881, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42144"}, {"lat": 30.5403045, "lon": -97.5291036, "address": "132 Canley Lp, Hutto, TX 78634, USA", "region": "Austin and Nearby", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42147"}, {"lat": 40.765904, "lon": -74.1538123, "address": "13 Wilkinson Terrace, Kearny, NJ 07032, USA", "region": "New Jersey", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42171"}, {"lat": 42.1580178, "lon": -83.8075211, "address": "2770 Silo Dr, Saline Township, MI 48176, USA", "region": "Michigan", "status": "Occupied", "risk_level": "LOW", "house_id": "42177"}, {"lat": 45.6313086, "lon": -122.4991375, "address": "16804 NE 12th St, Vancouver, WA 98684, USA", "region": "Vancouver", "status": "Occupied", "risk_level": "LOW", "house_id": "42180"}, {"lat": 34.6171737, "lon": -118.1911864, "address": "3423 Racquet Ln, Palmdale, CA 93551, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42183"}, {"lat": 42.3302593, "lon": -87.9648981, "address": "1717 River Birch Way, Libertyville, IL 60048, USA", "region": "Chicago and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42189"}, {"lat": 33.5750091, "lon": -117.1425142, "address": "29626 Yorkton Rd, Murrieta, CA 92563, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42192"}, {"lat": 29.5638304, "lon": -95.58497299999999, "address": "4519 Sterling Heights Ln, Sugar Land, TX 77479, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42195"}, {"lat": 33.5925124, "lon": -117.7342906, "address": "6 Saddleridge, Aliso Viejo, CA 92656, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42198"}, {"lat": 34.0601284, "lon": -118.0587137, "address": "49 Aria St, South El Monte, CA 91733, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42210"}, {"lat": 33.9068426, "lon": -117.7805687, "address": "3750 Forest Glen Rd, Yorba Linda, CA 92886, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42216"}, {"lat": 33.5471001, "lon": -117.6881776, "address": "28651 Placida Ave, Laguna Niguel, CA 92677, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42219"}, {"lat": 33.6794555, "lon": -117.7940324, "address": "20 Coldbrook, Irvine, CA 92604, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42225"}, {"lat": 47.5928765, "lon": -122.0574095, "address": "1894 211th Ave SE, Sammamish, WA 98075, USA", "region": "Seattle and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42228"}, {"lat": 45.5387766, "lon": -122.7704508, "address": "1620 NW Barnsley Ct, Portland, OR 97229, USA", "region": "Portland and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42234"}, {"lat": 33.591941, "lon": -84.584606, "address": "8317 Hunters Grv Rd, Union City, GA 30291, USA", "region": "Georgia", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "42243"}, {"lat": 34.0026363, "lon": -117.3686875, "address": "1705 Parkplace Ln, Riverside, CA 92501, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42255"}, {"lat": 45.6065225, "lon": -122.535219, "address": "2008 SE 134th Ave, Vancouver, WA 98683, USA", "region": "Vancouver", "status": "Occupied", "risk_level": "LOW", "house_id": "42261"}, {"lat": 47.34909700000001, "lon": -122.314989, "address": "1407 S 281st St, Des Moines, WA 98003, USA", "region": "Seattle and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42264"}, {"lat": 33.6666823, "lon": -117.7124071, "address": "136 Sentosa, Irvine, CA 92618, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42267"}, {"lat": 33.8496203, "lon": -117.9252474, "address": "527 W Victor Ave, Anaheim, CA 92801, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42270"}, {"lat": 29.5581017, "lon": -95.5657927, "address": "6518 Portuguese Bend Dr, Missouri City, TX 77459, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42282"}, {"lat": 37.4087114, "lon": -121.8938593, "address": "370 Riesling Ave unit 20, Milpitas, CA 95035, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "42285"}, {"lat": 29.7017683, "lon": -95.8841454, "address": "29635 Burcreek Ln, Fulshear, TX 77441, USA", "region": "Houston", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42288"}, {"lat": 33.73552590000001, "lon": -117.7676854, "address": "39 Meadow Valley, Irvine, CA 92602, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42297"}, {"lat": 34.1923305, "lon": -118.4674404, "address": "15333 Lemay St, Van Nuys, CA 91406, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42315"}, {"lat": 34.1923005, "lon": -118.4674508, "address": "15335 Lemay St, Van Nuys, CA 91406, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42318"}, {"lat": 34.4106323, "lon": -118.6017454, "address": "26707 Beartown Ln, Valencia, CA 91381, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42321"}, {"lat": 41.6532768, "lon": -88.19370029999999, "address": "12632 S Talbot Cir, Plainfield, IL 60585, USA", "region": "Chicago and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42324"}, {"lat": 35.7325689, "lon": -78.6174418, "address": "3622 Brideveil Ct, Raleigh, NC 27610, USA", "region": "North Carolina", "status": "Occupied", "risk_level": "CRITICAL", "house_id": "42330"}, {"lat": 37.2990505, "lon": -121.9724628, "address": "1376 Klamath Dr, San Jose, CA 95130, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "42333"}, {"lat": 34.1550804, "lon": -118.0063838, "address": "224 Melrose Ave, Monrovia, CA 91016, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42339"}, {"lat": 34.1118768, "lon": -117.498702, "address": "7476 Peppertree Ln, Fontana, CA 92336, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42360"}, {"lat": 34.1196839, "lon": -118.0030104, "address": "122 Brisbane St, Monrovia, CA 91016, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42369"}, {"lat": 38.4761642, "lon": -121.453901, "address": "114 Decathlon Cir, Sacramento, CA 95823, USA", "region": "Sacramento", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42372"}, {"lat": 36.0093463, "lon": -115.2730201, "address": "9867 Big Window St, Las Vegas, NV 89178, USA", "region": "Las Vegas", "status": "Occupied", "risk_level": "LOW", "house_id": "42378"}, {"lat": 36.0647292, "lon": -114.9737352, "address": "258 Homeward Way, Henderson, NV 89011, USA", "region": "Las Vegas", "status": "Occupied", "risk_level": "LOW", "house_id": "42381"}, {"lat": 37.38714239999999, "lon": -121.8341062, "address": "3410 Pepper Tree Ln, San Jose, CA 95127, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "42387"}, {"lat": 34.0647394, "lon": -117.7701486, "address": "761 Lewis St, Pomona, CA 91768, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42390"}, {"lat": 34.1265743, "lon": -118.059525, "address": "850 Arcadia Ave unit 4, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42408"}, {"lat": 34.1072897, "lon": -118.2752966, "address": "3834 Evans St W, Los Angeles, CA 90027, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42411"}, {"lat": 34.1614601, "lon": -118.4497689, "address": "14527 Addison St, Sherman Oaks, CA 91403, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42417"}, {"lat": 33.2689272, "lon": -96.8401919, "address": "3520 Osage River Trail, Prosper, TX 75078, USA", "region": "Dallas", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42420"}, {"lat": 33.7073033, "lon": -117.1179202, "address": "31097 Linden Flower Rd, Winchester, CA 92596, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42426"}, {"lat": 33.9837634, "lon": -117.7208689, "address": "14833 Maywood Dr, Chino Hills, CA 91709, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42429"}, {"lat": 33.953409, "lon": -117.61698, "address": "8594 Exposition St, Chino, CA 91708, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42435"}, {"lat": 33.9830938, "lon": -117.5956692, "address": "2634 E Scarlett Ln, Ontario, CA 91762, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42441"}, {"lat": 33.0778775, "lon": -96.7762941, "address": "4301 Jenkins Dr, Plano, TX 75024, USA", "region": "Dallas", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42447"}, {"lat": 32.896639, "lon": -117.162344, "address": "10512 Cara Cara Dr, San Diego, CA 92126, USA", "region": "San Diego", "status": "Occupied", "risk_level": "LOW", "house_id": "42453"}, {"lat": 32.9765332, "lon": -96.9005736, "address": "2205 Grand Canyon Ct, Carrollton, TX 75006, USA", "region": "Dallas", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42456"}, {"lat": 43.6745142, "lon": -79.39892929999999, "address": "270 Davenport Rd unit 5, Toronto, ON M5R 1J8, Canada", "region": "Toronto", "status": "Occupied", "risk_level": "LOW", "house_id": "42462"}, {"lat": 34.003457, "lon": -117.5860829, "address": "3002 E Oak Knoll Loop, Ontario, CA 91761, USA", "region": "San Bernardino", "status": "Occupied", "risk_level": "LOW", "house_id": "42465"}, {"lat": 33.7302505, "lon": -117.1636558, "address": "26877 Chance Dr, Menifee, CA 92585, USA", "region": "Riverside", "status": "Occupied", "risk_level": "LOW", "house_id": "42474"}, {"lat": 34.050475, "lon": -117.9588504, "address": "1417 Marengo Court, West Covina, CA 91790, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42480"}, {"lat": 38.4699856, "lon": -121.321509, "address": "9986 Aspen Meadows Ct, Sacramento, CA 95829, USA", "region": "Sacramento", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42489"}, {"lat": 33.6743402, "lon": -117.8479311, "address": "2602 Rivington, Irvine, CA 92612, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42492"}, {"lat": 34.0166914, "lon": -117.8118668, "address": "416 Camaritas Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "status": "Occupied", "risk_level": "LOW", "house_id": "42495"}, {"lat": 32.958771, "lon": -96.39084749999999, "address": "583 Bradley Dr, Rockwall, TX 75087, USA", "region": "Dallas", "status": "Occupied", "risk_level": "MODERATE", "house_id": "42507"}, {"lat": 33.667312, "lon": -117.799819, "address": "478 E Yale Loop #16, Irvine, CA 92614, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42513"}, {"lat": 33.6489057, "lon": -117.8645717, "address": "436 Baypointe #436, Newport Beach, CA 92660, USA", "region": "Orange County", "status": "Occupied", "risk_level": "LOW", "house_id": "42519"}, {"lat": 37.4744444, "lon": -122.2268618, "address": "415 Oak Ave, Redwood City, CA 94061, USA", "region": "Bay Area", "status": "Occupied", "risk_level": "LOW", "house_id": "42525"}];
+        
+        // Region markers data
+        const regionMarkers = [{"lat": 33.69552111272728, "lon": -117.77185275818182, "region": "Orange County", "vacant": 8, "occupied": 47, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 28.3044205, "lon": -81.63738894285713, "region": "Orlando", "vacant": 2, "occupied": 5, "risk_level": "CRITICAL", "has_warning": true, "events": ["Extreme Cold Warning", "Wind Advisory", "Freeze Warning"]}, {"lat": 45.51245983846154, "lon": -122.79622789999999, "region": "Portland and Nearby", "vacant": 9, "occupied": 4, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 29.3904663, "lon": -98.556521925, "region": "San Antonio", "vacant": 3, "occupied": 1, "risk_level": "MODERATE", "has_warning": true, "events": ["Cold Weather Advisory"]}, {"lat": 34.07895293333333, "lon": -117.53864683809522, "region": "San Bernardino", "vacant": 3, "occupied": 18, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 37.44272971333333, "lon": -122.08567320666666, "region": "Bay Area", "vacant": 4, "occupied": 11, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 34.205331730769224, "lon": -118.08125594871795, "region": "Los Angeles and Nearby", "vacant": 8, "occupied": 31, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 32.8287084, "lon": -80.1053096, "region": "South Carolina", "vacant": 1, "occupied": 0, "risk_level": "CRITICAL", "has_warning": true, "events": ["Winter Storm Warning", "Extreme Cold Warning"]}, {"lat": 33.89717750454282, "lon": -117.36352626613159, "region": "Riverside", "vacant": 4, "occupied": 16, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 33.055812939999996, "lon": -96.90805655, "region": "Dallas", "vacant": 4, "occupied": 6, "risk_level": "MODERATE", "has_warning": true, "events": ["Cold Weather Advisory"]}, {"lat": 39.97734605, "lon": -105.0190295, "region": "Colorado", "vacant": 2, "occupied": 2, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 42.09719786666667, "lon": -88.04086433333333, "region": "Chicago and Nearby", "vacant": 1, "occupied": 2, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 35.350320892574786, "lon": -119.1169794389543, "region": "Bakersfield", "vacant": 2, "occupied": 0, "risk_level": "MODERATE", "has_warning": true, "events": ["Dense Fog Advisory"]}, {"lat": 47.578215077777784, "lon": -122.17039740000001, "region": "Seattle and Nearby", "vacant": 5, "occupied": 4, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 33.908694800000006, "lon": -84.20762634545453, "region": "Georgia", "vacant": 4, "occupied": 7, "risk_level": "CRITICAL", "has_warning": true, "events": ["Winter Storm Warning", "Extreme Cold Warning"]}, {"lat": 32.95881047314493, "lon": -117.18952960726644, "region": "San Diego", "vacant": 1, "occupied": 5, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 35.8086771, "lon": -78.681334225, "region": "North Carolina", "vacant": 1, "occupied": 3, "risk_level": "CRITICAL", "has_warning": true, "events": ["Winter Storm Warning", "Cold Weather Advisory", "Extreme Cold Warning"]}, {"lat": 45.65016641666667, "lon": -122.54208053333332, "region": "Vancouver", "vacant": 1, "occupied": 5, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 30.466171499999998, "lon": -97.67848004285713, "region": "Austin and Nearby", "vacant": 2, "occupied": 5, "risk_level": "MODERATE", "has_warning": true, "events": ["Cold Weather Advisory"]}, {"lat": 29.629143406666667, "lon": -95.64211845999999, "region": "Houston", "vacant": 2, "occupied": 13, "risk_level": "MODERATE", "has_warning": true, "events": ["Freeze Watch", "Cold Weather Advisory"]}, {"lat": 38.54662558333333, "lon": -121.30328151666667, "region": "Sacramento", "vacant": 1, "occupied": 5, "risk_level": "MODERATE", "has_warning": true, "events": ["Dense Fog Advisory"]}, {"lat": 39.4021649, "lon": -77.312777, "region": "Maryland", "vacant": 1, "occupied": 0, "risk_level": "MODERATE", "has_warning": true, "events": ["Cold Weather Advisory"]}, {"lat": 44.92019455, "lon": -93.5679308, "region": "Minnesota", "vacant": 2, "occupied": 0, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 33.71685732952295, "lon": -112.08404872245839, "region": "Phoenix and Nearby", "vacant": 0, "occupied": 7, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 39.650595, "lon": -86.1825862, "region": "Indiana", "vacant": 0, "occupied": 1, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 39.6653964, "lon": -75.7223617, "region": "Delaware", "vacant": 0, "occupied": 1, "risk_level": "MODERATE", "has_warning": false, "events": ["Cold Weather Advisory"]}, {"lat": 40.765904, "lon": -74.1538123, "region": "New Jersey", "vacant": 0, "occupied": 1, "risk_level": "MODERATE", "has_warning": false, "events": ["Cold Weather Advisory"]}, {"lat": 42.1580178, "lon": -83.8075211, "region": "Michigan", "vacant": 0, "occupied": 1, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 36.037037749999996, "lon": -115.12337765, "region": "Las Vegas", "vacant": 0, "occupied": 2, "risk_level": "LOW", "has_warning": false, "events": []}, {"lat": 43.6745142, "lon": -79.39892929999999, "region": "Toronto", "vacant": 0, "occupied": 1, "risk_level": "LOW", "has_warning": false, "events": []}];
+        
+        // Add property markers
+        markers.forEach(m => {
+            const color = riskColors[m.risk_level];
+            const isVacant = m.status === 'Vacant';
+            const radius = isVacant ? 8 : 6;
+            const opacity = isVacant ? 1 : 0.7;
+            
+            const marker = L.circleMarker([m.lat, m.lon], {
+                radius: radius,
+                fillColor: color,
+                color: isVacant && m.risk_level !== 'LOW' ? '#000' : color,
+                weight: isVacant && m.risk_level !== 'LOW' ? 2 : 1,
+                opacity: 1,
+                fillOpacity: opacity
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div class="custom-popup">
+                    <div class="popup-header">${m.address}</div>
+                    <div><strong>Status:</strong> ${m.status}</div>
+                    <div><strong>Risk Level:</strong> <span style="color: ${color}; font-weight: bold;">${m.risk_level}</span></div>
+                    <div><strong>Region:</strong> ${m.region}</div>
+                </div>
+            `);
+        });
+        
+        // Add region markers with warning icons
+        regionMarkers.forEach(r => {
+            if (r.has_warning) {
+                const warningIcon = L.divIcon({
+                    html: `<div class="warning-icon" style="color: ${riskColors[r.risk_level]};">⚠️</div>`,
+                    className: '',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                
+                const warningMarker = L.marker([r.lat, r.lon], {icon: warningIcon}).addTo(map);
+                
+                const eventsHtml = r.events.length > 0 
+                    ? `<div class="popup-alerts"><strong>Active Alerts:</strong>${r.events.map(e => `<div class="popup-alert-item">• ${e}</div>`).join('')}</div>`
+                    : '';
+                
+                warningMarker.bindPopup(`
+                    <div class="custom-popup">
+                        <div class="popup-header">${r.region}</div>
+                        <div class="popup-stats">
+                            <div class="popup-stat">
+                                <div class="popup-stat-value" style="color: #dc2626;">⚠️ ${r.vacant}</div>
+                                <div class="popup-stat-label">Vacant</div>
+                            </div>
+                            <div class="popup-stat">
+                                <div class="popup-stat-value">${r.occupied}</div>
+                                <div class="popup-stat-label">Occupied</div>
+                            </div>
+                        </div>
+                        <div><strong>Risk Level:</strong> <span style="color: ${riskColors[r.risk_level]}; font-weight: bold;">${r.risk_level}</span></div>
+                        ${eventsHtml}
+                    </div>
+                `);
+            }
+        });
     </script>
 </body>
 </html>
