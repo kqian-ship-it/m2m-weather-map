@@ -1,150 +1,980 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2M 天气预警地图 - 2026-02-17</title>
+    <title>M2M Weather Alert Map - 2026-02-17</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        #map { width: 100%; height: calc(100vh - 60px); }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; }
+        
+        #map { width: 100%; height: 100vh; }
+        
         .header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-            color: white;
-            padding: 12px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 60px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-bottom: 2px solid #334155;
         }
-        .header h1 { font-size: 18px; font-weight: 600; }
-        .header .date { font-size: 13px; opacity: 0.85; }
-        .legend {
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            font-size: 13px;
-        }
-        .legend h4 { margin-bottom: 8px; font-size: 14px; }
-        .legend-item { display: flex; align-items: center; margin: 4px 0; }
-        .legend-dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
-        .summary-panel {
-            position: absolute;
-            top: 70px;
-            left: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            font-size: 12px;
-            max-width: 260px;
-        }
-        .summary-panel h4 { margin-bottom: 8px; font-size: 14px; }
-        .stat-row { display: flex; justify-content: space-between; margin: 3px 0; padding: 2px 0; }
-        .stat-row.critical { color: #dc2626; font-weight: bold; }
-        .stat-row.severe { color: #ea580c; font-weight: bold; }
-        .stat-row.moderate { color: #eab308; }
         
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-        .warning-icon {
-            animation: pulse 1.5s ease-in-out infinite;
+        
+        .logo {
             font-size: 20px;
+            font-weight: 700;
+            color: #4A90D9;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-title {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .header-date {
+            font-size: 13px;
+            color: #64748b;
+            background: #1e293b;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .stat-critical { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); }
+        .stat-severe { background: rgba(234,88,12,0.15); color: #fdba74; border: 1px solid rgba(234,88,12,0.3); }
+        .stat-moderate { background: rgba(234,179,8,0.15); color: #fde047; border: 1px solid rgba(234,179,8,0.3); }
+        .stat-low { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+        
+        .stat-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .legend {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        
+        .legend h4 {
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+        
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .alert-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            max-width: 320px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .alert-panel h4 {
+            color: #fca5a5;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            background: rgba(220,38,38,0.08);
+            border-radius: 6px;
+            border-left: 3px solid;
+            font-size: 11px;
+            color: #e2e8f0;
+        }
+        
+        .alert-critical { border-left-color: #dc2626; }
+        .alert-severe { border-left-color: #ea580c; }
+        .alert-moderate { border-left-color: #eab308; }
+        
+        .warning-icon {
+            background: none !important;
+            border: none !important;
+        }
+        
+        .warning-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             cursor: pointer;
         }
-        .leaflet-div-icon {
-            background: transparent !important;
+        
+        .warning-badge.critical {
+            background: #dc2626;
+            color: white;
+            border: 2px solid #fca5a5;
+        }
+        
+        .warning-badge.severe {
+            background: #ea580c;
+            color: white;
+            border: 2px solid #fdba74;
+        }
+        
+        .warning-badge.moderate {
+            background: #eab308;
+            color: #1f2937;
+            border: 2px solid #fde047;
+        }
+        
+        .pulse-warning .warning-badge {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        .region-label {
+            background: none !important;
             border: none !important;
+        }
+        
+        .label-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+            white-space: nowrap;
+        }
+        
+        /* Custom Leaflet popup styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+        }
+        
+        .leaflet-popup-content {
+            margin: 12px !important;
+        }
+        
+        /* Scrollbar styling for alert panel */
+        .alert-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+        .alert-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .alert-panel::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div>
-            <h1>🌡️ Month2Month 天气预警地图</h1>
-            <div class="date">生成时间: 2026年02月17日 | 数据来源: NWS (National Weather Service)</div>
+        <div class="header-left">
+            <div class="logo">Month2Month</div>
+            <div class="header-title">Weather Alert Dashboard</div>
+            <div class="header-date">📅 2026-02-17</div>
         </div>
-        <div style="text-align:right;">
-            <div style="font-size:13px;">总物业: 280</div>
-            <div style="font-size:13px;">空置: 72 | 已入住: 200</div>
+        <div class="stats-bar">
+            <div class="stat-chip stat-critical">
+                <div class="stat-dot" style="background:#dc2626;"></div>
+                CRITICAL: 0
+            </div>
+            <div class="stat-chip stat-severe">
+                <div class="stat-dot" style="background:#ea580c;"></div>
+                SEVERE: 2
+            </div>
+            <div class="stat-chip stat-moderate">
+                <div class="stat-dot" style="background:#eab308;"></div>
+                MODERATE: 7
+            </div>
+            <div class="stat-chip stat-low">
+                <div class="stat-dot" style="background:#22c55e;"></div>
+                LOW: 21
+            </div>
+            <div class="stat-chip" style="background:rgba(220,38,38,0.2);color:#fca5a5;border:1px solid rgba(220,38,38,0.4);">
+                ⚠️ Vacant at Risk: 41
+            </div>
         </div>
     </div>
+    
     <div id="map"></div>
     
     <div class="legend">
-        <h4>风险等级</h4>
-        <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div> 极高风险 (CRITICAL)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ea580c;"></div> 高风险 (SEVERE)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> 中等风险 (MODERATE)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> 低风险 (LOW)</div>
-        <hr style="margin:8px 0;">
-        <div class="legend-item"><span style="margin-right:8px;">⚠️</span> 空置物业在风险区</div>
+        <h4>Risk Levels</h4>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#dc2626;"></div>
+            CRITICAL - Immediate threat
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#ea580c;"></div>
+            SEVERE - Significant risk
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#eab308;"></div>
+            MODERATE - Advisory level
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#22c55e;"></div>
+            LOW - No active alerts
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid #334155;">
+            <div class="legend-item">
+                <div style="font-size:16px;">⚠️</div>
+                Vacant properties at risk
+            </div>
+        </div>
     </div>
-
-    <div class="summary-panel">
-        <h4>📊 区域风险概览</h4>
-<div style="margin-top:6px;font-weight:bold;color:#dc2626;">极高风险:</div><div class="stat-row critical">⚠️ Colorado: 空2/住2</div><div style="margin-top:6px;font-weight:bold;color:#ea580c;">高风险:</div><div class="stat-row severe">⚠️ Las Vegas: 空1/住1</div><div class="stat-row severe">⚠️ Los Angeles and Nearby: 空12/住26</div><div class="stat-row severe">⚠️ Maryland: 空1/住0</div><div class="stat-row severe">⚠️ Orange County: 空9/住46</div><div class="stat-row severe">⚠️ Riverside: 空7/住12</div><div class="stat-row severe">⚠️ Sacramento: 空2/住4</div><div class="stat-row severe">⚠️ San Bernardino: 空3/住18</div><div class="stat-row severe">⚠️ San Diego: 空3/住3</div><div style="margin-top:6px;font-weight:bold;color:#eab308;">中等风险:</div><div class="stat-row moderate">⚠️ Bay Area: 空2/住12</div>
+    
+    <div class="alert-panel">
+        <h4>⚠️ Priority Alerts - Vacant Properties</h4>
+        <div class="alert-item alert-severe">
+            <div>Colorado</div>
+            <div style="font-weight:600;">SEVERE | ⚠️ 2 Vacant</div>
+        </div><div class="alert-item alert-severe">
+            <div>Los Angeles and Nearby</div>
+            <div style="font-weight:600;">SEVERE | ⚠️ 12 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>Bay Area</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 2 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>Las Vegas</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 1 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>Orange County</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 9 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>Riverside</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 7 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>Sacramento</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 2 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>San Bernardino</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 3 Vacant</div>
+        </div><div class="alert-item alert-moderate">
+            <div>San Diego</div>
+            <div style="font-weight:600;">MODERATE | ⚠️ 3 Vacant</div>
+        </div>
     </div>
-
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([37.5, -98.0], 4);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(map);
-
-        var markers = [{"lat": 45.5152, "lon": -122.6784, "region": "Portland and Nearby", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Portland and Nearby</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 7</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 6</span> |                 \u603b\u8ba1: 13            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 15.6, "has_warning": false, "vacant": 7, "occupied": 6, "total": 13}, {"lat": 35.3733, "lon": -119.0187, "region": "Bakersfield", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Bakersfield</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 2            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 1, "occupied": 1, "total": 2}, {"lat": 33.6846, "lon": -117.8265, "region": "Orange County", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f Orange County</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 9</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 46</span> |                 \u603b\u8ba1: 56            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Wind Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>2117 Scholarship, Irvine, CA 92612, USA</li><li style=\\'font-size:11px;\\'>77 Hanging Garden, Irvine, CA 92620, USA</li><li style=\\'font-size:11px;\\'>507 J St, Newport Beach, CA 92661, USA</li><li style=\\'font-size:11px;\\'>4731 Oceanridge Dr, Huntington Beach, CA 92649, USA</li><li style=\\'font-size:11px;\\'>48 Bamboo, Irvine, CA 92620, USA</li><li style=\\'font-size:11px;\\'>17 Riveroaks, Irvine, CA 92602, USA</li><li style=\\'font-size:11px;\\'>527 W Victor Ave, Anaheim, CA 92801, USA</li><li style=\\'font-size:11px;\\'>478 E Yale Loop #16, Irvine, CA 92614, USA</li><li style=\\'font-size:11px;\\'>9 Goldfinch, Irvine, CA 92603, USA</li></ul></div>        </div>    ", "radius": 30, "has_warning": true, "vacant": 9, "occupied": 46, "total": 56}, {"lat": 33.4484, "lon": -112.074, "region": "Phoenix and Nearby", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Phoenix and Nearby</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 7</span> |                 \u603b\u8ba1: 7            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8.4, "has_warning": false, "vacant": 0, "occupied": 7, "total": 7}, {"lat": 34.1083, "lon": -117.2898, "region": "San Bernardino", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f San Bernardino</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 3</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 18</span> |                 \u603b\u8ba1: 21            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Wind Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>1644 Coral Bells Pl, Upland, CA 91784, USA</li><li style=\\'font-size:11px;\\'>1509 Granada Rd, Upland, CA 91786, USA</li><li style=\\'font-size:11px;\\'>14833 Maywood Dr, Chino Hills, CA 91709, USA</li></ul></div>        </div>    ", "radius": 25.2, "has_warning": true, "vacant": 3, "occupied": 18, "total": 21}, {"lat": 33.9533, "lon": -117.3962, "region": "Riverside", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f Riverside</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 7</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 12</span> |                 \u603b\u8ba1: 21            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Wind Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>14563 Gulfstream Lane, Moreno Valley, CA 92553, USA</li><li style=\\'font-size:11px;\\'>19907 Sunkissed Ridge Dr, Riverside, CA 92507, USA</li><li style=\\'font-size:11px;\\'>12675 Elmhurst Dr, Moreno Valley, CA 92555, USA</li><li style=\\'font-size:11px;\\'>29223 Obsidian Ct, Nuevo, CA 92567, USA</li><li style=\\'font-size:11px;\\'>688 Black Oak Cir, Corona, CA 92881, USA</li><li style=\\'font-size:11px;\\'>1705 Parkplace Ln, Riverside, CA 92501, USA</li><li style=\\'font-size:11px;\\'>26877 Chance Dr, Menifee, CA 92585, USA</li></ul></div>        </div>    ", "radius": 25.2, "has_warning": true, "vacant": 7, "occupied": 12, "total": 21}, {"lat": 29.4241, "lon": -98.4936, "region": "San Antonio", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>San Antonio</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 3</span> |                 \u603b\u8ba1: 4            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 1, "occupied": 3, "total": 4}, {"lat": 42.1706, "lon": -83.7783, "region": "Michigan", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Michigan</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 0</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 1, "occupied": 0, "total": 1}, {"lat": 39.6837, "lon": -75.7497, "region": "Delaware", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Delaware</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 0, "occupied": 1, "total": 1}, {"lat": 44.9778, "lon": -93.265, "region": "Minnesota", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Minnesota</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 2</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 0</span> |                 \u603b\u8ba1: 2            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 2, "occupied": 0, "total": 2}, {"lat": 38.5816, "lon": -121.4944, "region": "Sacramento", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f Sacramento</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 2</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 4</span> |                 \u603b\u8ba1: 6            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Wind Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>3304 Sunny Gate Ln, Folsom, CA 95630, USA</li><li style=\\'font-size:11px;\\'>9042 El Oro Plaza Dr, Elk Grove, CA 95624, USA</li></ul></div>        </div>    ", "radius": 8, "has_warning": true, "vacant": 2, "occupied": 4, "total": 6}, {"lat": 35.7796, "lon": -78.6382, "region": "North Carolina", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>North Carolina</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 3</span> |                 \u603b\u8ba1: 4            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 1, "occupied": 3, "total": 4}, {"lat": 39.4143, "lon": -77.4105, "region": "Maryland", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f Maryland</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 0</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Dense Fog Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>6242 Walleye Pl, New Market, MD 21774, USA</li></ul></div>        </div>    ", "radius": 8, "has_warning": true, "vacant": 1, "occupied": 0, "total": 1}, {"lat": 39.7684, "lon": -86.1581, "region": "Indiana", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Indiana</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 0, "occupied": 1, "total": 1}, {"lat": 33.749, "lon": -84.388, "region": "Georgia", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Georgia</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 10</span> |                 \u603b\u8ba1: 11            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 13.2, "has_warning": false, "vacant": 1, "occupied": 10, "total": 11}, {"lat": 32.7767, "lon": -96.797, "region": "Dallas", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Dallas</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 3</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 7</span> |                 \u603b\u8ba1: 10            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 12.0, "has_warning": false, "vacant": 3, "occupied": 7, "total": 10}, {"lat": 30.2672, "lon": -97.7431, "region": "Austin and Nearby", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Austin and Nearby</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 3</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 4</span> |                 \u603b\u8ba1: 7            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8.4, "has_warning": false, "vacant": 3, "occupied": 4, "total": 7}, {"lat": 45.6387, "lon": -122.6615, "region": "Vancouver", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Vancouver</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 5</span> |                 \u603b\u8ba1: 6            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 1, "occupied": 5, "total": 6}, {"lat": 42.3601, "lon": -87.9317, "region": "Chicago and Nearby", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Chicago and Nearby</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 2</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 3            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 2, "occupied": 1, "total": 3}, {"lat": 32.7765, "lon": -79.9311, "region": "South Carolina", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>South Carolina</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 0, "occupied": 1, "total": 1}, {"lat": 40.7684, "lon": -74.1502, "region": "New Jersey", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>New Jersey</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 0, "occupied": 1, "total": 1}, {"lat": 47.6062, "lon": -122.3321, "region": "Seattle and Nearby", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Seattle and Nearby</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 3</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 6</span> |                 \u603b\u8ba1: 9            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 10.799999999999999, "has_warning": false, "vacant": 3, "occupied": 6, "total": 9}, {"lat": 34.0522, "lon": -118.2437, "region": "Los Angeles and Nearby", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f Los Angeles and Nearby</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 12</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 26</span> |                 \u603b\u8ba1: 41            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Wind Advisory<br>\u2022 Flood Watch            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>44149 Buckeye Ct, Lancaster, CA 93536, USA</li><li style=\\'font-size:11px;\\'>1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA</li><li style=\\'font-size:11px;\\'>945 E Wonder Ln, Glendora, CA 91740, USA</li><li style=\\'font-size:11px;\\'>12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA</li><li style=\\'font-size:11px;\\'>11843 Apple Grove Ln, Sylmar, CA 91342, USA</li><li style=\\'font-size:11px;\\'>37058 Alton Drive, Palmdale, CA 93550, USA</li><li style=\\'font-size:11px;\\'>2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA</li><li style=\\'font-size:11px;\\'>4389 Maple Ln, Arcadia, CA 91006, USA</li><li style=\\'font-size:11px;\\'>18244 Cumulus Ct, Santa Clarita, CA 91350, USA</li><li style=\\'font-size:11px;\\'>137 W Winnie Way, Arcadia, CA 91007, USA</li><li style=\\'font-size:11px;color:#666;\\'>...\u53ca\u5176\u4ed6 2 \u4e2a</li></ul></div>        </div>    ", "radius": 30, "has_warning": true, "vacant": 12, "occupied": 26, "total": 41}, {"lat": 37.3861, "lon": -122.0839, "region": "Bay Area", "risk": "MODERATE", "color": "#eab308", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#eab308;font-size:14px;\\'>\u26a0\ufe0f Bay Area</h3>            <div style=\\'background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4e2d\u7b49\u98ce\u9669 (MODERATE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 2</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 12</span> |                 \u603b\u8ba1: 16            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Coastal Flood Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>1090 Wood Duck Ave, Santa Clara, CA 95051, USA</li><li style=\\'font-size:11px;\\'>306 Ashton Ave, San Francisco, CA 94112, USA</li></ul></div>        </div>    ", "radius": 19.2, "has_warning": true, "vacant": 2, "occupied": 12, "total": 16}, {"lat": 43.6532, "lon": -79.3832, "region": "Toronto", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Toronto</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 1            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8, "has_warning": false, "vacant": 0, "occupied": 1, "total": 1}, {"lat": 36.1699, "lon": -115.1398, "region": "Las Vegas", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f Las Vegas</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 1</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 1</span> |                 \u603b\u8ba1: 2            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Wind Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>9867 Big Window St, Las Vegas, NV 89178, USA</li></ul></div>        </div>    ", "radius": 8, "has_warning": true, "vacant": 1, "occupied": 1, "total": 2}, {"lat": 28.5383, "lon": -81.3792, "region": "Orlando", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Orlando</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 0</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 7</span> |                 \u603b\u8ba1: 7            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 8.4, "has_warning": false, "vacant": 0, "occupied": 7, "total": 7}, {"lat": 32.7157, "lon": -117.1611, "region": "San Diego", "risk": "SEVERE", "color": "#ea580c", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#ea580c;font-size:14px;\\'>\u26a0\ufe0f San Diego</h3>            <div style=\\'background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u9ad8\u98ce\u9669 (SEVERE)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 3</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 3</span> |                 \u603b\u8ba1: 6            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 High Surf Advisory<br>\u2022 Wind Advisory            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>11022 Alonda Ct, San Diego, CA 92126, USA</li><li style=\\'font-size:11px;\\'>12588 Carmel Creek Rd #27, San Diego, CA 92130, USA</li><li style=\\'font-size:11px;\\'>4397 Cadence Wy, Oceanside, CA 92057, USA</li></ul></div>        </div>    ", "radius": 8, "has_warning": true, "vacant": 3, "occupied": 3, "total": 6}, {"lat": 39.7392, "lon": -104.9903, "region": "Colorado", "risk": "CRITICAL", "color": "#dc2626", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#dc2626;font-size:14px;\\'>\u26a0\ufe0f Colorado</h3>            <div style=\\'background:#dc262622;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u6781\u9ad8\u98ce\u9669 (CRITICAL)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u26a0\ufe0f \u7a7a\u7f6e: 2</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 2</span> |                 \u603b\u8ba1: 4            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u2022 Red Flag Warning<br>\u2022 Fire Weather Watch            </div>            <div style=\\'margin-top:6px;\\'><b>\u7a7a\u7f6e\u7269\u4e1a\u5217\u8868:</b><ul style=\\'margin:2px 0;padding-left:16px;\\'><li style=\\'font-size:11px;\\'>5107 Linda Pl, Longmont, CO 80503, USA</li><li style=\\'font-size:11px;\\'>5330 Johnson St, Arvada, CO 80002, USA</li></ul></div>        </div>    ", "radius": 8, "has_warning": true, "vacant": 2, "occupied": 2, "total": 4}, {"lat": 29.7604, "lon": -95.3698, "region": "Houston", "risk": "LOW", "color": "#22c55e", "popup": "        <div style=\\'min-width:220px;max-width:320px;\\'>            <h3 style=\\'margin:0 0 6px 0;color:#22c55e;font-size:14px;\\'>Houston</h3>            <div style=\\'background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:6px;\\'>                <b>\u98ce\u9669\u7b49\u7ea7: \u4f4e\u98ce\u9669 (LOW)</b>            </div>            <div style=\\'margin-bottom:6px;\\'>                <span style=\\'color:#dc2626;font-weight:bold;\\'>\u7a7a\u7f6e: 4</span> |                 <span style=\\'color:#22c55e;\\'>\u5df2\u5165\u4f4f: 11</span> |                 \u603b\u8ba1: 15            </div>            <div style=\\'font-size:12px;color:#555;margin-bottom:4px;\\'>                <b>\u5929\u6c14\u9884\u8b66:</b><br>\u65e0\u6d3b\u8dc3\u9884\u8b66            </div>                    </div>    ", "radius": 18.0, "has_warning": false, "vacant": 4, "occupied": 11, "total": 15}];
-        
-        markers.forEach(function(m) {
-            // Circle marker
-            var circle = L.circleMarker([m.lat, m.lon], {
-                radius: m.radius,
-                fillColor: m.color,
-                color: m.color,
-                weight: 2,
-                opacity: 0.9,
-                fillOpacity: 0.5
-            }).addTo(map);
-            
-            circle.bindPopup(m.popup, {maxWidth: 350});
-            
-            // Add warning icon for vacant properties in risk zones
-            if (m.has_warning) {
-                var warningIcon = L.divIcon({
-                    html: '<div class="warning-icon">⚠️</div>',
-                    className: 'leaflet-div-icon',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                });
-                
-                var warningMarker = L.marker([m.lat + 0.15, m.lon + 0.15], {
-                    icon: warningIcon
-                }).addTo(map);
-                
-                warningMarker.bindPopup(m.popup, {maxWidth: 350});
-            }
-            
-            // Region label
-            var labelIcon = L.divIcon({
-                html: '<div style="font-size:10px;font-weight:bold;color:#333;white-space:nowrap;text-shadow:1px 1px 2px white,-1px -1px 2px white,1px -1px 2px white,-1px 1px 2px white;">' + m.region + '</div>',
-                className: 'leaflet-div-icon',
-                iconSize: [100, 20],
-                iconAnchor: [50, -10]
-            });
-            L.marker([m.lat, m.lon], {icon: labelIcon, interactive: false}).addTo(map);
+        var map = L.map('map', {
+            center: [37.5, -98],
+            zoom: 5,
+            zoomControl: true,
+            attributionControl: true
         });
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+        
+        // Add padding for header
+        map.fitBounds([[25, -125], [50, -65]], {paddingTopLeft: [0, 60]});
+        
+        
+        L.circleMarker([30.27, -97.74], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Austin and Nearby</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>3</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>4</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>7</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([30.15, -97.74], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Austin and Nearby</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([35.37, -119.02], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Bakersfield</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>2</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([35.25, -119.02], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Bakersfield</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([37.44, -122.14], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Bay Area</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>1 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️2</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>12</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>16</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Coastal Flood Advisory</strong><br>Coastal Flood Advisory issued February 16 at 9:33PM PST until February 17 at 3:00PM PST by NWS San F</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 1090 Wood Duck Ave (ID: 41841)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 306 Ashton Ave (ID: 42438)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([37.589999999999996, -121.99], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️2</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([37.32, -122.14], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Bay Area</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([41.88, -87.63], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Chicago and Nearby</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>2</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>3</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([41.760000000000005, -87.63], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Chicago and Nearby</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([39.74, -105.0], {
+            radius: 30,
+            fillColor: '#ea580c',
+            color: '#374151',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#ea580c;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Colorado</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#ea580c;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>SEVERE</span>                <span style=\'background:#ea580c;color:white;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:bold;\'>HIGH PRIORITY</span>                 <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>2 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️2</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>2</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>4</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Red Flag Warning</strong><br>Red Flag Warning issued February 17 at 8:45AM MST until February 17 at 7:00PM MST by NWS Denver CO</div><div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Fire Weather Watch</strong><br>The Fire Weather Watch has been replaced. Please see the latest information from NWS Denver CO on th</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 5107 Linda Pl (ID: 41709)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 5330 Johnson St (ID: 42222)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([39.89, -104.85], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge severe">⚠️2</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([39.620000000000005, -105.0], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Colorado</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([32.78, -96.8], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Dallas</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>3</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>7</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>10</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([32.660000000000004, -96.8], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Dallas</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([39.67, -75.75], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Delaware</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([39.550000000000004, -75.75], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Delaware</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([33.75, -84.39], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Georgia</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>10</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>11</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([33.63, -84.39], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Georgia</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([29.76, -95.37], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Houston</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>4</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>11</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>15</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([29.64, -95.37], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Houston</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([39.77, -86.16], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Indiana</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([39.650000000000006, -86.16], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Indiana</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([36.17, -115.14], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Las Vegas</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>1 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>2</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 16 at 11:41PM PST until February 18 at 7:00AM PST by NWS Las Vegas NV</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 9867 Big Window St (ID: 42378)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([36.32, -114.99], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️1</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([36.050000000000004, -115.14], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Las Vegas</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([34.05, -118.24], {
+            radius: 30,
+            fillColor: '#ea580c',
+            color: '#374151',
+            weight: 3,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#ea580c;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Los Angeles and Nearby</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#ea580c;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>SEVERE</span>                <span style=\'background:#ea580c;color:white;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:bold;\'>HIGH PRIORITY</span>                 <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>2 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️12</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>26</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>41</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:52AM PST until February 18 at 6:00AM PST by NWS Los Angeles/Ox</div><div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Flood Watch</strong><br>Flood Watch issued February 17 at 2:42AM PST until February 18 at 6:00AM PST by NWS Los Angeles/Oxna</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 44149 Buckeye Ct (ID: 41589)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 1427 Pecan Grove Dr (ID: 41751)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 945 E Wonder Ln (ID: 41754)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 12203 Santa Gertrudes Ave #57 (ID: 41808)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 11843 Apple Grove Ln (ID: 41877)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 37058 Alton Drive (ID: 41892)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 2910 Malaga Cir unit a (ID: 41910)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 4389 Maple Ln (ID: 42090)</div><div style=\'font-size:10px;color:#6b7280;\'>...and 4 more</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([34.199999999999996, -118.08999999999999], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge severe">⚠️12</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([33.93, -118.24], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Los Angeles and Nearby</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([39.41, -77.41], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Maryland</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>0</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([39.29, -77.41], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Maryland</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([42.28, -83.74], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Michigan</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>0</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([42.160000000000004, -83.74], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Michigan</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([44.98, -93.27], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Minnesota</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>2</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>0</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>2</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([44.86, -93.27], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Minnesota</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([40.74, -74.17], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>New Jersey</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([40.620000000000005, -74.17], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">New Jersey</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([35.78, -78.64], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>North Carolina</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>3</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>4</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([35.660000000000004, -78.64], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">North Carolina</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([33.72, -117.78], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Orange County</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>1 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️9</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>46</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>56</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:01AM PST until February 18 at 8:00AM PST by NWS San Diego CA</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 2117 Scholarship (ID: 19)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 77 Hanging Garden (ID: 58)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 507 J St (ID: 3474)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 4731 Oceanridge Dr (ID: 7002)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 48 Bamboo (ID: 40818)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 17 Riveroaks (ID: 41333)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 527 W Victor Ave (ID: 42270)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 478 E Yale Loop #16 (ID: 42513)</div><div style=\'font-size:10px;color:#6b7280;\'>...and 1 more</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([33.87, -117.63], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️9</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([33.6, -117.78], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Orange County</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([28.42, -81.58], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Orlando</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>7</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>7</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([28.3, -81.58], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Orlando</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([33.45, -112.07], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Phoenix and Nearby</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>7</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>7</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([33.330000000000005, -112.07], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Phoenix and Nearby</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([45.52, -122.68], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Portland and Nearby</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>7</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>6</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>13</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([45.400000000000006, -122.68], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Portland and Nearby</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([33.87, -117.37], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Riverside</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>1 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️7</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>12</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>21</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:01AM PST until February 18 at 8:00AM PST by NWS San Diego CA</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 14563 Gulfstream Lane (ID: 41378)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 19907 Sunkissed Ridge Dr (ID: 41559)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 12675 Elmhurst Dr (ID: 41613)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 29223 Obsidian Ct (ID: 41703)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 688 Black Oak Cir (ID: 42144)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 1705 Parkplace Ln (ID: 42255)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 26877 Chance Dr (ID: 42474)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([34.019999999999996, -117.22], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️7</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([33.75, -117.37], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Riverside</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([38.58, -121.49], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ Sacramento</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>1 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️2</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>4</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>6</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 16 at 1:05PM PST until February 19 at 10:00PM PST by NWS Sacramento CA</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 3304 Sunny Gate Ln (ID: 41384)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 9042 El Oro Plaza Dr (ID: 42354)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([38.73, -121.33999999999999], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️2</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([38.46, -121.49], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Sacramento</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([29.42, -98.49], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>San Antonio</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>3</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>4</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([29.3, -98.49], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">San Antonio</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([34.11, -117.29], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ San Bernardino</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>1 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️3</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>18</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>21</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:01AM PST until February 18 at 8:00AM PST by NWS San Diego CA</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 1644 Coral Bells Pl (ID: 41423)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 1509 Granada Rd (ID: 41829)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 14833 Maywood Dr (ID: 42429)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([34.26, -117.14], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️3</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([33.99, -117.29], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">San Bernardino</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([32.72, -117.16], {
+            radius: 25,
+            fillColor: '#eab308',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#eab308;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>⚠️ San Diego</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#eab308;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>MODERATE</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>4 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>⚠️3</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>3</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>6</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>High Surf Advisory</strong><br>High Surf Advisory issued February 17 at 4:18AM PST until February 20 at 10:00PM PST by NWS San Dieg</div><div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:01AM PST until February 18 at 8:00AM PST by NWS San Diego CA</div><div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:01AM PST until February 18 at 4:00PM PST by NWS San Diego CA</div><div style=\'margin:4px 0;padding:4px 8px;background:#fff3cd;border-left:3px solid #ffc107;border-radius:2px;font-size:11px;\'><strong>Wind Advisory</strong><br>Wind Advisory issued February 17 at 2:01AM PST until February 18 at 4:00PM PST by NWS San Diego CA</div>            </div>            <div style=\'margin-top:6px;border-top:1px solid #e5e7eb;padding-top:6px;\'><div style=\'font-size:11px;font-weight:600;color:#dc2626;margin-bottom:4px;\'>⚠️ Vacant Properties at Risk:</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 11022 Alonda Ct (ID: 41925)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 12588 Carmel Creek Rd #27 (ID: 41967)</div><div style=\'font-size:10px;padding:2px 0;color:#dc2626;\'>⚠️ 4397 Cadence Wy (ID: 42096)</div></div>        </div>        ', {maxWidth: 380});
+        
+        L.marker([32.87, -117.00999999999999], {
+            icon: L.divIcon({
+                className: 'warning-icon pulse-warning',
+                html: '<div class="warning-badge moderate">⚠️3</div>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            })
+        }).addTo(map);
+        
+        L.marker([32.6, -117.16], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">San Diego</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([47.61, -122.33], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Seattle and Nearby</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>3</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>6</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>9</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([47.49, -122.33], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Seattle and Nearby</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([32.78, -79.93], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>South Carolina</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([32.660000000000004, -79.93], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">South Carolina</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([43.65, -79.38], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Toronto</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>0</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>1</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>1</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([43.53, -79.38], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Toronto</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
+        L.circleMarker([45.64, -122.66], {
+            radius: 20,
+            fillColor: '#22c55e',
+            color: '#6b7280',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('        <div style=\'min-width:280px;max-width:350px;font-family:Inter,system-ui,sans-serif;\'>            <div style=\'display:flex;align-items:center;gap:8px;margin-bottom:8px;\'>                <div style=\'width:12px;height:12px;border-radius:50%;background:#22c55e;\'></div>                <h3 style=\'margin:0;font-size:15px;font-weight:700;\'>Vancouver</h3>            </div>            <div style=\'display:flex;gap:4px;margin-bottom:8px;\'>                <span style=\'background:#22c55e;color:#1f2937;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;\'>LOW</span>                                <span style=\'background:#f3f4f6;padding:2px 8px;border-radius:12px;font-size:11px;\'>0 alert(s)</span>            </div>            <div style=\'display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;\'>                <div style=\'background:#fef2f2;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#dc2626;\'>1</div>                    <div style=\'font-size:10px;color:#991b1b;\'>Vacant</div>                </div>                <div style=\'background:#f0fdf4;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#16a34a;\'>5</div>                    <div style=\'font-size:10px;color:#166534;\'>Occupied</div>                </div>                <div style=\'background:#f8fafc;padding:6px;border-radius:6px;text-align:center;\'>                    <div style=\'font-size:18px;font-weight:700;color:#475569;\'>6</div>                    <div style=\'font-size:10px;color:#64748b;\'>Total</div>                </div>            </div>            <div style=\'margin-bottom:6px;\'>                <div style=\'font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;\'>Weather Alerts:</div>                <div style=\'color:#6b7280;font-size:11px;\'>No active weather alerts</div>            </div>                    </div>        ', {maxWidth: 380});
+        
+        L.marker([45.52, -122.66], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text">Vancouver</div>',
+                iconSize: [120, 20],
+                iconAnchor: [60, 10]
+            })
+        }).addTo(map);
+        
     </script>
 </body>
 </html>
