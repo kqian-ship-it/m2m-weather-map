@@ -1,500 +1,893 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2M Weather Alert Map - 2026-02-24</title>
+    <title>M2M Weather Alert Map - 2026-02-25</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; }
-        #map { width: 100%; height: 100vh; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; }
         
-        .warning-icon {
-            font-size: 24px;
-            text-align: center;
-            line-height: 30px;
-            filter: drop-shadow(0 0 4px rgba(234, 88, 12, 0.8));
+        #map { width: 100%; height: calc(100vh - 60px); }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
-        .pulse {
-            animation: pulse-animation 1.5s ease-in-out infinite;
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
         }
         
-        @keyframes pulse-animation {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+        .header .stats {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
         }
         
-        .info-panel {
+        .header .stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .header .stat .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .legend {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            bottom: 30px;
+            left: 10px;
             z-index: 1000;
             background: white;
+            padding: 12px 16px;
             border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-            padding: 16px;
-            max-width: 320px;
-            max-height: 90vh;
-            overflow-y: auto;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            font-size: 13px;
+            line-height: 1.8;
         }
         
-        .info-panel h2 {
-            font-size: 16px;
-            margin-bottom: 4px;
-            color: #111827;
-        }
-        
-        .info-panel .subtitle {
-            font-size: 11px;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-        
-        .stat-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        
-        .stat-box {
-            flex: 1;
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        
-        .stat-box .num {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .stat-box .label {
-            font-size: 10px;
-            color: #6b7280;
-            text-transform: uppercase;
+        .legend h4 {
+            margin-bottom: 6px;
+            font-size: 14px;
         }
         
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 3px 0;
-            font-size: 12px;
         }
         
         .legend-dot {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            flex-shrink: 0;
+            display: inline-block;
+            border: 2px solid;
         }
         
-        .section-title {
+        .info-panel {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 14px 18px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            font-size: 13px;
+            max-width: 280px;
+        }
+        
+        .info-panel h4 {
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+        
+        .info-panel .urgent {
+            background: #fef2f2;
+            border-left: 3px solid #dc2626;
+            padding: 6px 10px;
+            margin-top: 8px;
+            border-radius: 0 4px 4px 0;
             font-size: 12px;
-            font-weight: 600;
-            color: #374151;
-            margin: 10px 0 6px 0;
-            padding-top: 8px;
-            border-top: 1px solid #e5e7eb;
+        }
+        
+        /* Pulsing animation for warning markers */
+        .pulse-marker {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.5; }
+        }
+        
+        .warning-div-icon {
+            background: none !important;
+            border: none !important;
+        }
+        
+        .warning-icon {
+            font-size: 22px;
+            animation: bounce 1.5s ease-in-out infinite;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 0 3px rgba(234, 88, 12, 0.6));
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .count-div-icon {
+            background: none !important;
+            border: none !important;
+        }
+        
+        .count-label {
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 24px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        
+        .updated-time {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    
-    <div class="info-panel">
-        <h2>🌡️ M2M Weather Alert Map</h2>
-        <div class="subtitle">Updated: 2026-02-24 | 280 Properties</div>
-        
-        <div class="stat-row">
-            <div class="stat-box" style="background:#fee2e2;">
-                <div class="num" style="color:#dc2626;">80</div>
-                <div class="label">Vacant</div>
-            </div>
-            <div class="stat-box" style="background:#dcfce7;">
-                <div class="num" style="color:#16a34a;">192</div>
-                <div class="label">Occupied</div>
-            </div>
-            <div class="stat-box" style="background:#fef3c7;">
-                <div class="num" style="color:#d97706;">4</div>
-                <div class="label">⚠️ At Risk</div>
-            </div>
+    <div class="header">
+        <div>
+            <h1>🌤️ Month2Month 天气预警地图</h1>
+            <div class="updated-time">更新时间: 2026-02-25 UTC | 数据来源: NWS (National Weather Service)</div>
         </div>
-        
-        <div class="section-title">Risk Legend</div>
-        <div class="legend-item">
-            <div class="legend-dot" style="background:#dc2626;"></div>
-            <span>CRITICAL — Extreme weather</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-dot" style="background:#ea580c;"></div>
-            <span>SEVERE — Severe conditions</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-dot" style="background:#d97706;"></div>
-            <span>MODERATE — Advisory active</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-dot" style="background:#16a34a;"></div>
-            <span>LOW — No active alerts</span>
-        </div>
-        
-        <div class="section-title">⚠️ Active Alert Regions</div>
-        
-                    <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;font-size:12px;">
-                        <span style="color:#ea580c;font-weight:600;">[SEVERE]</span> ⚠️ Colorado
-                        <span style="float:right;color:#6b7280;">V:2 O:2</span>
-                    </div>
-                
-                    <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;font-size:12px;">
-                        <span style="color:#d97706;font-weight:600;">[MODERATE]</span> ⚠️ Dallas
-                        <span style="float:right;color:#6b7280;">V:2 O:8</span>
-                    </div>
-                
-                    <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;font-size:12px;">
-                        <span style="color:#d97706;font-weight:600;">[MODERATE]</span> ⚠️ Georgia
-                        <span style="float:right;color:#6b7280;">V:1 O:10</span>
-                    </div>
-                
-                    <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;font-size:12px;">
-                        <span style="color:#d97706;font-weight:600;">[MODERATE]</span> ⚠️ Minnesota
-                        <span style="float:right;color:#6b7280;">V:2 O:0</span>
-                    </div>
-                
-                    <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;font-size:12px;">
-                        <span style="color:#d97706;font-weight:600;">[MODERATE]</span> New Jersey
-                        <span style="float:right;color:#6b7280;">V:0 O:1</span>
-                    </div>
-                
-        
-        <div style="margin-top:12px;padding-top:8px;border-top:1px solid #e5e7eb;font-size:10px;color:#9ca3af;">
-            Data: NWS API + M2M PMS | ⚠️ = Vacant properties in risk zone
+        <div class="stats">
+            <div class="stat"><span class="dot" style="background:#dc2626"></span> 极端: 1</div>
+            <div class="stat"><span class="dot" style="background:#ea580c"></span> 严重: 9</div>
+            <div class="stat"><span class="dot" style="background:#eab308"></span> 中等: 4</div>
+            <div class="stat"><span class="dot" style="background:#22c55e"></span> 低: 16</div>
+            <div class="stat" style="margin-left:8px;">| 物业: 272 | 空置: 59 | 已入住: 213</div>
         </div>
     </div>
     
+    <div id="map"></div>
+    
+    <div class="legend">
+        <h4>图例</h4>
+        <div class="legend-item"><span class="legend-dot" style="background:#dc262644;border-color:#dc2626"></span> 极端 (CRITICAL)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#ea580c44;border-color:#ea580c"></span> 严重 (SEVERE)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#eab30844;border-color:#eab308"></span> 中等 (MODERATE)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#22c55e44;border-color:#22c55e"></span> 低 (LOW)</div>
+        <div class="legend-item" style="margin-top:4px;">⚠️ 空置物业在风险区域</div>
+    </div>
+    
+    <div class="info-panel">
+        <h4>📊 今日概览</h4>
+        <div>总物业: <b>272</b> (空置 59 / 已入住 213)</div>
+        <div>预警区域: <b>14</b> / 30</div>
+        <div>⚠️ 需关注: <b>11 个区域</b>有空置物业处于风险中</div>
+        <div class='urgent'>🚨 <b>紧急</b>: 8 个区域有空置物业在严重/极端风险区</div>
+    </div>
+    
     <script>
-        var map = L.map('map').setView([37.5, -96], 4);
+        var map = L.map('map').setView([37.5, -98.0], 4);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 18
         }).addTo(map);
         
-        // Region circle markers
         
-            L.circleMarker([33.6846, -117.8265], {
-                radius: 30,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Orange County</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 9                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 46                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 56                </div>                                            </div>        ');
-        
-            L.circleMarker([28.4177, -81.5812], {
-                radius: 10.5,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Orlando</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 4                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 3                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 7                </div>                <hr><b>Active Alerts:</b><br>&bull; Frost Advisory                            </div>        ');
-        
-            L.circleMarker([33.9533, -117.3962], {
-                radius: 30,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Riverside</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 8                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 11                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 21                </div>                                            </div>        ');
-        
-            L.circleMarker([29.5887, -95.5564], {
-                radius: 22.5,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Houston</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 6                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 9                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 15                </div>                                            </div>        ');
-        
-            L.circleMarker([45.5152, -122.6784], {
-                radius: 19.5,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Portland and Nearby</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 7                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 6                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 13                </div>                                            </div>        ');
-        
-            L.circleMarker([29.4241, -98.4936], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">San Antonio</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 3                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 4                </div>                                            </div>        ');
-        
-            L.circleMarker([34.0522, -118.2437], {
-                radius: 30,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Los Angeles and Nearby</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 14                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 24                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 41                </div>                                            </div>        ');
-        
-            L.circleMarker([34.1083, -117.2898], {
-                radius: 30,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">San Bernardino</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 19                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 21                </div>                                            </div>        ');
-        
-            L.circleMarker([37.4419, -122.143], {
-                radius: 24.0,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Bay Area</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 12                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 16                </div>                                            </div>        ');
-        
-            L.circleMarker([32.7767, -96.797], {
-                radius: 15.0,
-                fillColor: '#fcd34d',
-                color: '#d97706',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#d97706;font-size:14px;">Dallas</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 8                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#d97706;">MODERATE</b> &nbsp;|&nbsp; Total: 10                </div>                <hr><b>Active Alerts:</b><br>&bull; Wind Advisory                <hr><b>⚠️ Vacant Properties at Risk:</b><br>⚠️ 5801 Fuder Dr, Mckinney, TX 75070, USA<br>⚠️ 5124 Reed Dr, The Colony, TX 75056, USA            </div>        ');
-        
-            L.circleMarker([38.5816, -121.4944], {
-                radius: 9.0,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Sacramento</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 5                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 6                </div>                                            </div>        ');
-        
-            L.circleMarker([32.7765, -79.9311], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">South Carolina</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 0                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 1                </div>                                            </div>        ');
-        
-            L.circleMarker([32.7157, -117.1611], {
-                radius: 9.0,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">San Diego</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 4                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 6                </div>                                            </div>        ');
-        
-            L.circleMarker([33.9519, -84.1447], {
-                radius: 16.5,
-                fillColor: '#fcd34d',
-                color: '#d97706',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#d97706;font-size:14px;">Georgia</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 10                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#d97706;">MODERATE</b> &nbsp;|&nbsp; Total: 11                </div>                <hr><b>Active Alerts:</b><br>&bull; Special Weather Statement                <hr><b>⚠️ Vacant Properties at Risk:</b><br>⚠️ 427 Third Ave, Scottdale, GA 30079, USA            </div>        ');
-        
-            L.circleMarker([33.4484, -112.074], {
-                radius: 10.5,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Phoenix and Nearby</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 0                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 7                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 7                </div>                                            </div>        ');
-        
-            L.circleMarker([40.1672, -105.1019], {
-                radius: 8,
-                fillColor: '#fdba74',
-                color: '#ea580c',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:14px;">Colorado</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 2                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#ea580c;">SEVERE</b> &nbsp;|&nbsp; Total: 4                </div>                <hr><b>Active Alerts:</b><br>&bull; Red Flag Warning                <hr><b>⚠️ Vacant Properties at Risk:</b><br>⚠️ 5107 Linda Pl, Longmont, CO 80503, USA<br>⚠️ 5330 Johnson St, Arvada, CO 80002, USA            </div>        ');
-        
-            L.circleMarker([30.2672, -97.7431], {
-                radius: 10.5,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Austin and Nearby</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 4                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 3                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 7                </div>                                            </div>        ');
-        
-            L.circleMarker([45.6387, -122.6615], {
-                radius: 9.0,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Vancouver</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 5                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 6                </div>                                            </div>        ');
-        
-            L.circleMarker([42.2808, -87.953], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Chicago and Nearby</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 1                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 3                </div>                                            </div>        ');
-        
-            L.circleMarker([35.3733, -119.0187], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Bakersfield</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 1                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 2                </div>                                            </div>        ');
-        
-            L.circleMarker([47.6062, -122.3321], {
-                radius: 13.5,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Seattle and Nearby</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 3                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 6                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 9                </div>                                            </div>        ');
-        
-            L.circleMarker([35.7796, -78.6382], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">North Carolina</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 3                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 4                </div>                                            </div>        ');
-        
-            L.circleMarker([39.7684, -86.1581], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Indiana</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 0                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 1                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 1                </div>                                            </div>        ');
-        
-            L.circleMarker([39.6837, -75.7497], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Delaware</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 0                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 1                </div>                                            </div>        ');
-        
-            L.circleMarker([40.7684, -74.1201], {
-                radius: 8,
-                fillColor: '#fcd34d',
-                color: '#d97706',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#d97706;font-size:14px;">New Jersey</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 0                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 1                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#d97706;">MODERATE</b> &nbsp;|&nbsp; Total: 1                </div>                <hr><b>Active Alerts:</b><br>&bull; Special Weather Statement                            </div>        ');
-        
-            L.circleMarker([42.1706, -83.7813], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Michigan</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 0                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 1                </div>                                            </div>        ');
-        
-            L.circleMarker([39.4143, -77.4105], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Maryland</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 0                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 1                </div>                                            </div>        ');
-        
-            L.circleMarker([36.1699, -115.1398], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Las Vegas</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 1                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 1                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 2                </div>                                            </div>        ');
-        
-            L.circleMarker([43.6532, -79.3832], {
-                radius: 8,
-                fillColor: '#86efac',
-                color: '#16a34a',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#16a34a;font-size:14px;">Toronto</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 0                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 1                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#16a34a;">LOW</b> &nbsp;|&nbsp; Total: 1                </div>                                            </div>        ');
-        
-            L.circleMarker([44.9375, -93.4614], {
-                radius: 8,
-                fillColor: '#fcd34d',
-                color: '#d97706',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
-            }).addTo(map).bindPopup('            <div style="min-width:220px;font-family:system-ui,-apple-system,sans-serif;">                <h3 style="margin:0 0 8px 0;color:#d97706;font-size:14px;">Minnesota</h3>                <div style="display:flex;gap:12px;margin-bottom:6px;">                    <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Vacant: 2                    </span>                    <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">                        Occupied: 0                    </span>                </div>                <div style="background:#f3f4f6;padding:4px 8px;border-radius:4px;font-size:12px;margin-bottom:4px;">                    Risk Level: <b style="color:#d97706;">MODERATE</b> &nbsp;|&nbsp; Total: 2                </div>                <hr><b>Active Alerts:</b><br>&bull; Special Weather Statement                <hr><b>⚠️ Vacant Properties at Risk:</b><br>⚠️ 14222 Bellevue Dr, Minnetonka, MN 55345, USA<br>⚠️ 5912 Bartlett Blvd, Mound, MN 55364, USA            </div>        ');
-        
-        
-        // Warning icons for vacant in risk zones
-        
-                L.marker([32.9267, -96.64699999999999], {
-                    icon: L.divIcon({
-                        className: 'warning-icon-container',
-                        html: '<div class="warning-icon pulse">⚠️</div>',
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    })
-                }).addTo(map).bindPopup('<b>⚠️ Dallas</b><br>Vacant: 2 in MODERATE zone<br>Wind Advisory');
-            
-                L.marker([34.1019, -83.9947], {
-                    icon: L.divIcon({
-                        className: 'warning-icon-container',
-                        html: '<div class="warning-icon pulse">⚠️</div>',
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    })
-                }).addTo(map).bindPopup('<b>⚠️ Georgia</b><br>Vacant: 1 in MODERATE zone<br>Special Weather Statement');
-            
-                L.marker([40.3172, -104.9519], {
-                    icon: L.divIcon({
-                        className: 'warning-icon-container',
-                        html: '<div class="warning-icon pulse">⚠️</div>',
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    })
-                }).addTo(map).bindPopup('<b>⚠️ Colorado</b><br>Vacant: 2 in SEVERE zone<br>Red Flag Warning');
-            
-                L.marker([45.0875, -93.31139999999999], {
-                    icon: L.divIcon({
-                        className: 'warning-icon-container',
-                        html: '<div class="warning-icon pulse">⚠️</div>',
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    })
-                }).addTo(map).bindPopup('<b>⚠️ Minnesota</b><br>Vacant: 2 in MODERATE zone<br>Special Weather Statement');
-            
+    var circle_Orange_County = L.circleMarker([33.7175, -117.8311], {
+        radius: 35,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Orange_County.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Orange County</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 7</span><br>        已入住: 48<br>        <b>总计: 55</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var warningIcon_Orange_County = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([33.7175, -117.8311], {icon: warningIcon_Orange_County}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Orange County</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 7</span><br>        已入住: 48<br>        <b>总计: 55</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_Orange_County = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">55</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([33.7175, -117.8311], {icon: label_Orange_County, interactive: false}).addTo(map);
+    
+
+    var circle_Orlno = L.circleMarker([28.5383, -81.3792], {
+        radius: 18.5,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Orlno.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Orlando</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 4<br>        已入住: 3<br>        <b>总计: 7</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Orlno = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">7</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([28.5383, -81.3792], {icon: label_Orlno, interactive: false}).addTo(map);
+    
+
+    var circle_Houston = L.circleMarker([29.7604, -95.3698], {
+        radius: 30.5,
+        fillColor: '#eab308',
+        color: '#eab308',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Houston.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">⚠️ Houston</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 14<br>        <b>总计: 15</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Wind Advisory      </div>    </div>    ');
+    
+    var warningIcon_Houston = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([29.7604, -95.3698], {icon: warningIcon_Houston}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">⚠️ Houston</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 14<br>        <b>总计: 15</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Wind Advisory      </div>    </div>    ');
+    
+    var label_Houston = L.divIcon({
+        html: '<div class="count-label" style="background:#eab308">15</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([29.7604, -95.3698], {icon: label_Houston, interactive: false}).addTo(map);
+    
+
+    var circle_Riverside = L.circleMarker([33.9533, -117.3962], {
+        radius: 35,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Riverside.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Riverside</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 7</span><br>        已入住: 12<br>        <b>总计: 19</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var warningIcon_Riverside = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([33.9533, -117.3962], {icon: warningIcon_Riverside}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Riverside</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 7</span><br>        已入住: 12<br>        <b>总计: 19</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_Riverside = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">19</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([33.9533, -117.3962], {icon: label_Riverside, interactive: false}).addTo(map);
+    
+
+    var circle_Portln_n_Nearby = L.circleMarker([45.5152, -122.6784], {
+        radius: 27.5,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Portln_n_Nearby.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Portland and Nearby</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 6</span><br>        已入住: 7<br>        <b>总计: 13</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Dense Fog Advisory<br>• Flood Warning      </div>    </div>    ');
+    
+    var warningIcon_Portln_n_Nearby = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([45.5152, -122.6784], {icon: warningIcon_Portln_n_Nearby}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Portland and Nearby</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 6</span><br>        已入住: 7<br>        <b>总计: 13</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Dense Fog Advisory<br>• Flood Warning      </div>    </div>    ');
+    
+    var label_Portln_n_Nearby = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">13</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([45.5152, -122.6784], {icon: label_Portln_n_Nearby, interactive: false}).addTo(map);
+    
+
+    var circle_San_Antonio = L.circleMarker([29.4241, -98.4936], {
+        radius: 14.0,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_San_Antonio.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">San Antonio</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 3<br>        <b>总计: 4</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_San_Antonio = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">4</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([29.4241, -98.4936], {icon: label_San_Antonio, interactive: false}).addTo(map);
+    
+
+    var circle_Los_Angeles_n_Nearby = L.circleMarker([34.0522, -118.2437], {
+        radius: 35,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Los_Angeles_n_Nearby.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Los Angeles and Nearby</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 13</span><br>        已入住: 25<br>        <b>总计: 38</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var warningIcon_Los_Angeles_n_Nearby = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([34.0522, -118.2437], {icon: warningIcon_Los_Angeles_n_Nearby}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Los Angeles and Nearby</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 13</span><br>        已入住: 25<br>        <b>总计: 38</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_Los_Angeles_n_Nearby = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">38</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([34.0522, -118.2437], {icon: label_Los_Angeles_n_Nearby, interactive: false}).addTo(map);
+    
+
+    var circle_San_Bernardino = L.circleMarker([34.1083, -117.2898], {
+        radius: 35,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_San_Bernardino.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ San Bernardino</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 20<br>        <b>总计: 21</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var warningIcon_San_Bernardino = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([34.1083, -117.2898], {icon: warningIcon_San_Bernardino}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ San Bernardino</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 20<br>        <b>总计: 21</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_San_Bernardino = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">21</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([34.1083, -117.2898], {icon: label_San_Bernardino, interactive: false}).addTo(map);
+    
+
+    var circle_Bay_Area = L.circleMarker([37.3861, -122.0839], {
+        radius: 29.0,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Bay_Area.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">Bay Area</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 14<br>        <b>总计: 14</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_Bay_Area = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">14</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([37.3861, -122.0839], {icon: label_Bay_Area, interactive: false}).addTo(map);
+    
+
+    var circle_Dallas = L.circleMarker([32.7767, -96.797], {
+        radius: 23.0,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Dallas.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Dallas</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 10<br>        <b>总计: 10</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Dallas = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">10</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([32.7767, -96.797], {icon: label_Dallas, interactive: false}).addTo(map);
+    
+
+    var circle_Sacramento = L.circleMarker([38.5816, -121.4944], {
+        radius: 17.0,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Sacramento.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Sacramento</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 5<br>        <b>总计: 6</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var warningIcon_Sacramento = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([38.5816, -121.4944], {icon: warningIcon_Sacramento}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Sacramento</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 5<br>        <b>总计: 6</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_Sacramento = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">6</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([38.5816, -121.4944], {icon: label_Sacramento, interactive: false}).addTo(map);
+    
+
+    var circle_South_Carolina = L.circleMarker([32.7765, -79.9311], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_South_Carolina.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">South Carolina</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 1<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_South_Carolina = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([32.7765, -79.9311], {icon: label_South_Carolina, interactive: false}).addTo(map);
+    
+
+    var circle_San_Diego = L.circleMarker([32.7157, -117.1611], {
+        radius: 17.0,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_San_Diego.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">San Diego</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 6<br>        <b>总计: 6</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_San_Diego = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">6</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([32.7157, -117.1611], {icon: label_San_Diego, interactive: false}).addTo(map);
+    
+
+    var circle_Georgia = L.circleMarker([33.749, -84.388], {
+        radius: 24.5,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Georgia.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Georgia</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 10<br>        <b>总计: 11</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Georgia = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">11</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([33.749, -84.388], {icon: label_Georgia, interactive: false}).addTo(map);
+    
+
+    var circle_Phoenix_n_Nearby = L.circleMarker([33.4484, -112.074], {
+        radius: 18.5,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Phoenix_n_Nearby.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Phoenix and Nearby</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 7<br>        <b>总计: 7</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Phoenix_n_Nearby = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">7</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([33.4484, -112.074], {icon: label_Phoenix_n_Nearby, interactive: false}).addTo(map);
+    
+
+    var circle_Colorado = L.circleMarker([39.7392, -104.9903], {
+        radius: 14.0,
+        fillColor: '#dc2626',
+        color: '#dc2626',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Colorado.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#dc2626;font-size:15px;">⚠️ Colorado</h3>      <div style="background:#dc262622;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 极端 (CRITICAL)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 2</span><br>        已入住: 2<br>        <b>总计: 4</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Winter Weather Advisory<br>• Winter Storm Warning<br>• Red Flag Warning<br>• Fire Weather Watch<br>• Avalanche Warning      </div>    </div>    ');
+    
+    var warningIcon_Colorado = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([39.7392, -104.9903], {icon: warningIcon_Colorado}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#dc2626;font-size:15px;">⚠️ Colorado</h3>      <div style="background:#dc262622;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 极端 (CRITICAL)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 2</span><br>        已入住: 2<br>        <b>总计: 4</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Winter Weather Advisory<br>• Winter Storm Warning<br>• Red Flag Warning<br>• Fire Weather Watch<br>• Avalanche Warning      </div>    </div>    ');
+    
+    var label_Colorado = L.divIcon({
+        html: '<div class="count-label" style="background:#dc2626">4</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([39.7392, -104.9903], {icon: label_Colorado, interactive: false}).addTo(map);
+    
+
+    var circle_Austin_n_Nearby = L.circleMarker([30.2672, -97.7431], {
+        radius: 18.5,
+        fillColor: '#eab308',
+        color: '#eab308',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Austin_n_Nearby.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">⚠️ Austin and Nearby</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 4</span><br>        已入住: 3<br>        <b>总计: 7</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Wind Advisory      </div>    </div>    ');
+    
+    var warningIcon_Austin_n_Nearby = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([30.2672, -97.7431], {icon: warningIcon_Austin_n_Nearby}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">⚠️ Austin and Nearby</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 4</span><br>        已入住: 3<br>        <b>总计: 7</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Wind Advisory      </div>    </div>    ');
+    
+    var label_Austin_n_Nearby = L.divIcon({
+        html: '<div class="count-label" style="background:#eab308">7</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([30.2672, -97.7431], {icon: label_Austin_n_Nearby, interactive: false}).addTo(map);
+    
+
+    var circle_Vancouver = L.circleMarker([45.6387, -122.6615], {
+        radius: 17.0,
+        fillColor: '#eab308',
+        color: '#eab308',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Vancouver.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">Vancouver</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 6<br>        <b>总计: 6</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Dense Fog Advisory      </div>    </div>    ');
+    
+    var label_Vancouver = L.divIcon({
+        html: '<div class="count-label" style="background:#eab308">6</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([45.6387, -122.6615], {icon: label_Vancouver, interactive: false}).addTo(map);
+    
+
+    var circle_Chicago_n_Nearby = L.circleMarker([42.0451, -87.6877], {
+        radius: 12.5,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Chicago_n_Nearby.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Chicago and Nearby</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 2<br>        已入住: 1<br>        <b>总计: 3</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Chicago_n_Nearby = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">3</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([42.0451, -87.6877], {icon: label_Chicago_n_Nearby, interactive: false}).addTo(map);
+    
+
+    var circle_Bakersfield = L.circleMarker([35.3733, -119.0187], {
+        radius: 12,
+        fillColor: '#ea580c',
+        color: '#ea580c',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Bakersfield.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Bakersfield</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 1<br>        <b>总计: 2</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var warningIcon_Bakersfield = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([35.3733, -119.0187], {icon: warningIcon_Bakersfield}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#ea580c;font-size:15px;">⚠️ Bakersfield</h3>      <div style="background:#ea580c22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 严重 (SEVERE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 1</span><br>        已入住: 1<br>        <b>总计: 2</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Flood Warning<br>• Flood Advisory      </div>    </div>    ');
+    
+    var label_Bakersfield = L.divIcon({
+        html: '<div class="count-label" style="background:#ea580c">2</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([35.3733, -119.0187], {icon: label_Bakersfield, interactive: false}).addTo(map);
+    
+
+    var circle_Seattle_n_Nearby = L.circleMarker([47.6062, -122.3321], {
+        radius: 21.5,
+        fillColor: '#eab308',
+        color: '#eab308',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: 'pulse-marker'
+    }).addTo(map);
+    circle_Seattle_n_Nearby.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">⚠️ Seattle and Nearby</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 3</span><br>        已入住: 6<br>        <b>总计: 9</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Winter Weather Advisory      </div>    </div>    ');
+    
+    var warningIcon_Seattle_n_Nearby = L.divIcon({
+        html: '<div class="warning-icon">⚠️</div>',
+        className: 'warning-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, -5]
+    });
+    L.marker([47.6062, -122.3321], {icon: warningIcon_Seattle_n_Nearby}).addTo(map).bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#eab308;font-size:15px;">⚠️ Seattle and Nearby</h3>      <div style="background:#eab30822;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 中等 (MODERATE)</b>      </div>      <div style="margin-bottom:6px;">        <span style="color:#dc2626;font-weight:bold">⚠️ 空置: 3</span><br>        已入住: 6<br>        <b>总计: 9</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        • Winter Weather Advisory      </div>    </div>    ');
+    
+    var label_Seattle_n_Nearby = L.divIcon({
+        html: '<div class="count-label" style="background:#eab308">9</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([47.6062, -122.3321], {icon: label_Seattle_n_Nearby, interactive: false}).addTo(map);
+    
+
+    var circle_North_Carolina = L.circleMarker([35.7796, -78.6382], {
+        radius: 14.0,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_North_Carolina.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">North Carolina</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 3<br>        <b>总计: 4</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_North_Carolina = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">4</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([35.7796, -78.6382], {icon: label_North_Carolina, interactive: false}).addTo(map);
+    
+
+    var circle_Indiana = L.circleMarker([39.7684, -86.1581], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Indiana.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Indiana</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 1<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Indiana = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([39.7684, -86.1581], {icon: label_Indiana, interactive: false}).addTo(map);
+    
+
+    var circle_Delaware = L.circleMarker([39.6837, -75.7497], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Delaware.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Delaware</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 1<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Delaware = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([39.6837, -75.7497], {icon: label_Delaware, interactive: false}).addTo(map);
+    
+
+    var circle_New_Jersey = L.circleMarker([40.7282, -74.0776], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_New_Jersey.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">New Jersey</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 1<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_New_Jersey = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([40.7282, -74.0776], {icon: label_New_Jersey, interactive: false}).addTo(map);
+    
+
+    var circle_Michigan = L.circleMarker([42.17, -83.7816], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Michigan.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Michigan</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 0<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Michigan = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([42.17, -83.7816], {icon: label_Michigan, interactive: false}).addTo(map);
+    
+
+    var circle_Maryln = L.circleMarker([39.4143, -77.4105], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Maryln.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Maryland</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 0<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Maryln = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([39.4143, -77.4105], {icon: label_Maryln, interactive: false}).addTo(map);
+    
+
+    var circle_Las_Vegas = L.circleMarker([36.1699, -115.1398], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Las_Vegas.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Las Vegas</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 1<br>        <b>总计: 2</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Las_Vegas = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">2</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([36.1699, -115.1398], {icon: label_Las_Vegas, interactive: false}).addTo(map);
+    
+
+    var circle_Toronto = L.circleMarker([43.6532, -79.3832], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Toronto.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Toronto</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 0<br>        已入住: 1<br>        <b>总计: 1</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Toronto = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">1</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([43.6532, -79.3832], {icon: label_Toronto, interactive: false}).addTo(map);
+    
+
+    var circle_Minnesota = L.circleMarker([44.9778, -93.265], {
+        radius: 12,
+        fillColor: '#22c55e',
+        color: '#22c55e',
+        weight: 2,
+        opacity: 0.9,
+        fillOpacity: 0.5,
+        className: ''
+    }).addTo(map);
+    circle_Minnesota.bindPopup('    <div style="min-width:220px;font-family:Arial,sans-serif;">      <h3 style="margin:0 0 8px 0;color:#22c55e;font-size:15px;">Minnesota</h3>      <div style="background:#22c55e22;padding:4px 8px;border-radius:4px;margin-bottom:8px;">        <b>风险等级: 低 (LOW)</b>      </div>      <div style="margin-bottom:6px;">        空置: 1<br>        已入住: 1<br>        <b>总计: 2</b>      </div>      <div style="font-size:12px;color:#666;">        <b>活跃预警:</b><br>        无活跃预警      </div>    </div>    ');
+    
+    var label_Minnesota = L.divIcon({
+        html: '<div class="count-label" style="background:#22c55e">2</div>',
+        className: 'count-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    L.marker([44.9778, -93.265], {icon: label_Minnesota, interactive: false}).addTo(map);
+    
     </script>
 </body>
 </html>
