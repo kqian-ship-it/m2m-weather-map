@@ -3,282 +3,876 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2M Weather Alert Map - 2026-02-26</title>
+    <title>M2M Weather Alert Map - 2026-02-27</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
         #header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
             color: white;
-            padding: 16px 24px;
+            padding: 12px 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid #334155;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         #header h1 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
         }
         #header .subtitle {
-            font-size: 13px;
-            color: #94a3b8;
-            margin-top: 2px;
+            font-size: 12px;
+            opacity: 0.8;
         }
-        #header .stats {
+        .header-stats {
             display: flex;
-            gap: 16px;
+            gap: 15px;
+            font-size: 13px;
         }
-        .stat-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 8px 16px;
-            text-align: center;
+        .header-stat {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 10px;
+            border-radius: 4px;
         }
-        .stat-card .value {
-            font-size: 22px;
-            font-weight: 700;
-        }
-        .stat-card .label {
-            font-size: 11px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .stat-critical { color: #ef4444; }
-        .stat-severe { color: #f97316; }
-        .stat-moderate { color: #eab308; }
-        .stat-vacant { color: #f59e0b; }
+        .header-stat b { color: #fbbf24; }
         
-        #map { height: calc(100vh - 130px); width: 100%; }
+        #map { height: calc(100vh - 100px); width: 100%; }
         
         .legend {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #334155;
-            border-radius: 10px;
-            padding: 14px 18px;
-            color: white;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             font-size: 13px;
             line-height: 1.8;
         }
-        .legend h4 {
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #e2e8f0;
-        }
+        .legend h4 { margin-bottom: 6px; font-size: 14px; }
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .legend-circle {
+        .legend-dot {
             width: 14px;
             height: 14px;
             border-radius: 50%;
             display: inline-block;
-            border: 2px solid rgba(255,255,255,0.3);
         }
         
-        /* Pulsing animation for warning markers */
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
+        .popup-content { min-width: 220px; }
+        .popup-content h3 {
+            font-size: 15px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .warning-icon {
-            animation: pulse 2s ease-in-out infinite;
-            font-size: 24px;
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
-            cursor: pointer;
-        }
-        
-        /* Info panel */
-        #info-panel {
-            position: absolute;
-            top: 80px;
-            right: 10px;
-            z-index: 1000;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #334155;
-            border-radius: 10px;
-            padding: 14px 18px;
-            color: white;
-            font-size: 12px;
-            max-width: 280px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-        #info-panel h4 {
-            font-size: 14px;
-            margin-bottom: 10px;
-            color: #f59e0b;
-        }
-        .priority-item {
-            padding: 6px 0;
-            border-bottom: 1px solid #1e293b;
-            font-size: 11px;
-            line-height: 1.4;
-        }
-        .priority-item:last-child { border-bottom: none; }
         .risk-badge {
             display: inline-block;
-            padding: 1px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: 700;
-            margin-right: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
         }
-        .risk-CRITICAL { background: #dc2626; color: white; }
-        .risk-SEVERE { background: #ea580c; color: white; }
-        .risk-MODERATE { background: #eab308; color: #1e293b; }
+        .risk-critical { background: #dc2626; }
+        .risk-severe { background: #ea580c; }
+        .risk-moderate { background: #ca8a04; }
+        .risk-low { background: #16a34a; }
         
-        .leaflet-popup-content-wrapper {
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        .stats { margin: 6px 0; }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-size: 13px;
+        }
+        .stat-label { color: #555; }
+        .stat-value { font-weight: 600; }
+        .vacant-count { color: #dc2626; }
+        .occupied-count { color: #16a34a; }
+        
+        .alerts-section {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+        }
+        .alerts-section h4 { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .alert-item {
+            font-size: 11px;
+            padding: 3px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .region-label {
+            background: none !important;
+            border: none !important;
+        }
+        .label-text {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
+            white-space: nowrap;
+        }
+        
+        .warning-marker {
+            background: none !important;
+            border: none !important;
+        }
+        .warning-pulse {
+            font-size: 22px;
+            animation: pulse 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 4px rgba(220, 38, 38, 0.6));
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+        
+        .warning-icon {
+            font-size: 16px;
+        }
+        .warning-icon.pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+            display: inline-block;
+        }
+        
+        #footer {
+            background: #f8fafc;
+            padding: 8px 20px;
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #e2e8f0;
         }
     </style>
 </head>
 <body>
     <div id="header">
         <div>
-            <h1>🌤️ M2M Weather Alert Dashboard</h1>
-            <div class="subtitle">Month2Month Property Weather Monitoring | Updated: 2026-02-26 UTC</div>
+            <h1>Month2Month Weather Alert Map</h1>
+            <div class="subtitle">天气预警与物业空置状态监控 | Updated: 2026-02-27</div>
         </div>
-        <div class="stats">
-            <div class="stat-card">
-                <div class="value">280</div>
-                <div class="label">Total Properties</div>
-            </div>
-            <div class="stat-card">
-                <div class="value stat-vacant">84</div>
-                <div class="label">Vacant</div>
-            </div>
-            <div class="stat-card">
-                <div class="value stat-severe">3</div>
-                <div class="label">Severe Regions</div>
-            </div>
-            <div class="stat-card">
-                <div class="value stat-moderate">5</div>
-                <div class="label">Moderate Regions</div>
-            </div>
-            <div class="stat-card">
-                <div class="value stat-critical">34</div>
-                <div class="label">⚠️ Priority Vacant</div>
-            </div>
+        <div class="header-stats">
+            <div class="header-stat">Properties: <b>280</b></div>
+            <div class="header-stat">Vacant: <b>75</b></div>
+            <div class="header-stat">Occupied: <b>205</b></div>
+            <div class="header-stat">⚠️ Priority Regions: <b>10</b></div>
+            <div class="header-stat">🔴 Severe/Critical: <b>5</b></div>
         </div>
     </div>
     
     <div id="map"></div>
     
+    <div id="footer">
+        <span>Data: NWS Active Alerts API + M2M PMS | Auto-generated by Month2Month Operations</span>
+        <span>© 2026 Month2Month Inc.</span>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Initialize map
-        var map = L.map('map', {
-            center: [37.5, -98.0],
-            zoom: 5,
-            zoomControl: true,
-            attributionControl: true
-        });
+        var map = L.map('map').setView([37.5, -98.0], 4);
         
-        // Dark tile layer
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
         }).addTo(map);
         
-        // Marker data
-        var markers = [{"region": "Sacramento", "lat": 38.5816, "lng": -121.4944, "risk": "MODERATE", "color": "#eab308", "borderColor": "#a16207", "radius": 12, "vacant": 1, "occupied": 5, "total": 6, "events": ["Dense Fog Advisory"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Sacramento</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#eab308;margin-bottom:8px;'>MODERATE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Dense Fog Advisory</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 1</b> | Occupied: 5</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 6 properties</div></div>"}, {"region": "Indiana", "lat": 39.7684, "lng": -86.1581, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 0, "occupied": 1, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Indiana</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 0 | Occupied: 1</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}, {"region": "Bakersfield", "lat": 35.3733, "lng": -119.0187, "risk": "MODERATE", "color": "#eab308", "borderColor": "#a16207", "radius": 12, "vacant": 1, "occupied": 1, "total": 2, "events": ["Dense Fog Advisory"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Bakersfield</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#eab308;margin-bottom:8px;'>MODERATE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Dense Fog Advisory</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 1</b> | Occupied: 1</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 2 properties</div></div>"}, {"region": "North Carolina", "lat": 35.7796, "lng": -78.6382, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 3, "total": 4, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>North Carolina</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 3</div><div style='font-size:12px;color:#94a3b8;'>Total: 4 properties</div></div>"}, {"region": "Las Vegas", "lat": 36.1699, "lng": -115.1398, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 1, "total": 2, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Las Vegas</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 1</div><div style='font-size:12px;color:#94a3b8;'>Total: 2 properties</div></div>"}, {"region": "San Antonio", "lat": 29.4241, "lng": -98.4936, "risk": "MODERATE", "color": "#eab308", "borderColor": "#a16207", "radius": 12, "vacant": 1, "occupied": 3, "total": 4, "events": ["Dense Fog Advisory"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>San Antonio</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#eab308;margin-bottom:8px;'>MODERATE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Dense Fog Advisory</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 1</b> | Occupied: 3</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 4 properties</div></div>"}, {"region": "Orlando", "lat": 28.5383, "lng": -81.3792, "risk": "SEVERE", "color": "#ea580c", "borderColor": "#c2410c", "radius": 12.2, "vacant": 6, "occupied": 1, "total": 7, "events": ["Red Flag Warning"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Orlando</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#ea580c;margin-bottom:8px;'>SEVERE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Red Flag Warning</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 6</b> | Occupied: 1</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 7 properties</div></div>"}, {"region": "Houston", "lat": 29.7604, "lng": -95.3698, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 17.0, "vacant": 5, "occupied": 10, "total": 15, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Houston</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 5 | Occupied: 10</div><div style='font-size:12px;color:#94a3b8;'>Total: 15 properties</div></div>"}, {"region": "Bay Area", "lat": 37.3861, "lng": -122.0839, "risk": "SEVERE", "color": "#ea580c", "borderColor": "#c2410c", "radius": 17.6, "vacant": 4, "occupied": 12, "total": 16, "events": ["Red Flag Warning", "Dense Fog Advisory", "Fire Weather Watch"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Bay Area</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#ea580c;margin-bottom:8px;'>SEVERE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Red Flag Warning, Dense Fog Advisory, Fire Weather Watch</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 4</b> | Occupied: 12</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 16 properties</div></div>"}, {"region": "San Bernardino", "lat": 34.1083, "lng": -117.2898, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 20.6, "vacant": 1, "occupied": 20, "total": 21, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>San Bernardino</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 20</div><div style='font-size:12px;color:#94a3b8;'>Total: 21 properties</div></div>"}, {"region": "Georgia", "lat": 33.749, "lng": -84.388, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 14.6, "vacant": 1, "occupied": 10, "total": 11, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Georgia</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 10</div><div style='font-size:12px;color:#94a3b8;'>Total: 11 properties</div></div>"}, {"region": "Orange County", "lat": 33.7175, "lng": -117.8311, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 35, "vacant": 8, "occupied": 48, "total": 56, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Orange County</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 8 | Occupied: 48</div><div style='font-size:12px;color:#94a3b8;'>Total: 56 properties</div></div>"}, {"region": "Vancouver", "lat": 45.6387, "lng": -122.6615, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 5, "total": 6, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Vancouver</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 5</div><div style='font-size:12px;color:#94a3b8;'>Total: 6 properties</div></div>"}, {"region": "Toronto", "lat": 43.6532, "lng": -79.3832, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 0, "occupied": 1, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Toronto</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 0 | Occupied: 1</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}, {"region": "Minnesota", "lat": 44.9778, "lng": -93.265, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 2, "occupied": 0, "total": 2, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Minnesota</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 2 | Occupied: 0</div><div style='font-size:12px;color:#94a3b8;'>Total: 2 properties</div></div>"}, {"region": "South Carolina", "lat": 32.7765, "lng": -79.9311, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 0, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>South Carolina</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 0</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}, {"region": "Dallas", "lat": 32.7767, "lng": -96.797, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 14.0, "vacant": 2, "occupied": 8, "total": 10, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Dallas</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 2 | Occupied: 8</div><div style='font-size:12px;color:#94a3b8;'>Total: 10 properties</div></div>"}, {"region": "Los Angeles and Nearby", "lat": 34.0522, "lng": -118.2437, "risk": "MODERATE", "color": "#eab308", "borderColor": "#a16207", "radius": 32.599999999999994, "vacant": 16, "occupied": 25, "total": 41, "events": ["Lake Wind Advisory"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Los Angeles and Nearby</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#eab308;margin-bottom:8px;'>MODERATE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Lake Wind Advisory</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 16</b> | Occupied: 25</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 41 properties</div></div>"}, {"region": "New Jersey", "lat": 40.7282, "lng": -74.0776, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 0, "occupied": 1, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>New Jersey</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 0 | Occupied: 1</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}, {"region": "Riverside", "lat": 33.9533, "lng": -117.3962, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 20.6, "vacant": 9, "occupied": 12, "total": 21, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Riverside</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 9 | Occupied: 12</div><div style='font-size:12px;color:#94a3b8;'>Total: 21 properties</div></div>"}, {"region": "Michigan", "lat": 42.3314, "lng": -83.0458, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 0, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Michigan</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 0</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}, {"region": "Maryland", "lat": 39.2904, "lng": -77.2209, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 0, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Maryland</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 0</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}, {"region": "Austin and Nearby", "lat": 30.2672, "lng": -97.7431, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12.2, "vacant": 4, "occupied": 3, "total": 7, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Austin and Nearby</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 4 | Occupied: 3</div><div style='font-size:12px;color:#94a3b8;'>Total: 7 properties</div></div>"}, {"region": "Chicago and Nearby", "lat": 41.8781, "lng": -87.6298, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 2, "occupied": 1, "total": 3, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Chicago and Nearby</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 2 | Occupied: 1</div><div style='font-size:12px;color:#94a3b8;'>Total: 3 properties</div></div>"}, {"region": "San Diego", "lat": 32.7157, "lng": -117.1611, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 2, "occupied": 4, "total": 6, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>San Diego</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 2 | Occupied: 4</div><div style='font-size:12px;color:#94a3b8;'>Total: 6 properties</div></div>"}, {"region": "Seattle and Nearby", "lat": 47.6062, "lng": -122.3321, "risk": "MODERATE", "color": "#eab308", "borderColor": "#a16207", "radius": 13.399999999999999, "vacant": 3, "occupied": 6, "total": 9, "events": ["Winter Weather Advisory"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Seattle and Nearby</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#eab308;margin-bottom:8px;'>MODERATE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Winter Weather Advisory</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 3</b> | Occupied: 6</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 9 properties</div></div>"}, {"region": "Colorado", "lat": 39.7392, "lng": -104.9903, "risk": "SEVERE", "color": "#ea580c", "borderColor": "#c2410c", "radius": 12, "vacant": 2, "occupied": 2, "total": 4, "events": ["Fire Weather Watch"], "hasVacantRisk": true, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Colorado</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#ea580c;margin-bottom:8px;'>SEVERE</div><div style='margin:6px 0;font-size:13px;color:#64748b;'>\ud83c\udf24\ufe0f Fire Weather Watch</div><div style='margin:8px 0;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;'><span style='font-size:14px;'>\u26a0\ufe0f <b>Vacant: 2</b> | Occupied: 2</span></div><div style='font-size:12px;color:#94a3b8;'>Total: 4 properties</div></div>"}, {"region": "Phoenix and Nearby", "lat": 33.4484, "lng": -112.074, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12.2, "vacant": 0, "occupied": 7, "total": 7, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Phoenix and Nearby</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 0 | Occupied: 7</div><div style='font-size:12px;color:#94a3b8;'>Total: 7 properties</div></div>"}, {"region": "Portland and Nearby", "lat": 45.5152, "lng": -122.6784, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 15.8, "vacant": 7, "occupied": 6, "total": 13, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Portland and Nearby</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 7 | Occupied: 6</div><div style='font-size:12px;color:#94a3b8;'>Total: 13 properties</div></div>"}, {"region": "Delaware", "lat": 39.6837, "lng": -75.7497, "risk": "LOW", "color": "#22c55e", "borderColor": "#15803d", "radius": 12, "vacant": 1, "occupied": 0, "total": 1, "events": [], "hasVacantRisk": false, "popup": "<div style='min-width:220px;'><h3 style='margin:0 0 8px 0;font-size:16px;color:#1e293b;'>Delaware</h3><div style='display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;color:white;background:#22c55e;margin-bottom:8px;'>LOW</div><div style='margin:8px 0;font-size:14px;'>\ud83c\udfe0 Vacant: 1 | Occupied: 0</div><div style='font-size:12px;color:#94a3b8;'>Total: 1 properties</div></div>"}];
-        
         // Add markers
-        markers.forEach(function(m) {
-            // Circle marker for region
-            var circle = L.circleMarker([m.lat, m.lng], {
-                radius: m.radius,
-                fillColor: m.color,
-                color: m.borderColor,
-                weight: 2,
-                opacity: 0.9,
-                fillOpacity: 0.6
-            }).addTo(map);
-            
-            circle.bindPopup(m.popup, {
-                maxWidth: 300,
-                className: 'custom-popup'
-            });
-            
-            // Add property count label
-            var labelIcon = L.divIcon({
-                className: 'region-label',
-                html: '<div style="color:white;font-size:11px;font-weight:700;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.8);">' + m.total + '</div>',
-                iconSize: [30, 20],
-                iconAnchor: [15, 10]
-            });
-            L.marker([m.lat, m.lng], {icon: labelIcon, interactive: false}).addTo(map);
-            
-            // Add warning icon for vacant properties in risk zones
-            if (m.hasVacantRisk) {
-                var warningIcon = L.divIcon({
-                    className: 'warning-marker',
-                    html: '<div class="warning-icon">⚠️</div>',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, -5]
-                });
-                var warningMarker = L.marker([m.lat, m.lng], {
-                    icon: warningIcon,
-                    zIndexOffset: 1000
-                }).addTo(map);
-                
-                warningMarker.bindPopup(
-                    '<div style="min-width:200px;">' +
-                    '<h3 style="color:#f59e0b;margin:0 0 6px 0;">⚠️ ' + m.region + '</h3>' +
-                    '<div style="font-size:13px;margin-bottom:4px;"><b>Vacant at Risk: ' + m.vacant + '</b></div>' +
-                    '<div style="font-size:12px;color:#666;">Alerts: ' + m.events.join(', ') + '</div>' +
-                    '</div>'
-                );
-            }
-        });
         
-        // Add legend
-        var legend = L.control({position: 'bottomleft'});
+        L.circle([33.72, -117.83], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 50000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Orange County </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>49</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>56</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([33.72, -117.83], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Orange County<br><small>V:7 O:49</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([32.78, -79.93], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>South Carolina </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([32.78, -79.93], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">South Carolina<br><small>V:1 O:0</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([44.98, -93.27], {
+            color: '#ea580c',
+            fillColor: '#ea580c',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Minnesota <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:45AM CST until February 28 at 12:00AM CST by NWS Duluth MN</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([44.98, -93.27], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Minnesota <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:45AM CST until February 28 at 12:00AM CST by NWS Duluth MN</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([44.98, -93.27], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ea580c">Minnesota<br><small>V:2 O:0</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([29.76, -95.37], {
+            color: '#ca8a04',
+            fillColor: '#ca8a04',
+            fillOpacity: 0.35,
+            radius: 30000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Houston <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>15</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 8:59AM CST until February 27 at 11:00AM CST by NWS Houston/Galveston TX</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([29.76, -95.37], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Houston <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>15</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 8:59AM CST until February 27 at 11:00AM CST by NWS Houston/Galveston TX</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([29.76, -95.37], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ca8a04">Houston<br><small>V:5 O:10</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([39.74, -105.0], {
+            color: '#ea580c',
+            fillColor: '#ea580c',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Colorado <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 4:40AM MST until February 27 at 6:00PM MST by NWS Denver CO</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:39AM MST until February 27 at 6:00PM MST by NWS Pueblo CO</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([39.74, -105.0], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Colorado <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 4:40AM MST until February 27 at 6:00PM MST by NWS Denver CO</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:39AM MST until February 27 at 6:00PM MST by NWS Pueblo CO</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([39.74, -105.0], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ea580c">Colorado<br><small>V:2 O:2</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([36.17, -115.14], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Las Vegas </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([36.17, -115.14], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Las Vegas<br><small>V:1 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([42.33, -83.05], {
+            color: '#ea580c',
+            fillColor: '#ea580c',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Michigan <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:31AM EST until February 28 at 1:00AM EST by NWS Marquette MI</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([42.33, -83.05], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Michigan <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:31AM EST until February 28 at 1:00AM EST by NWS Marquette MI</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([42.33, -83.05], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ea580c">Michigan<br><small>V:1 O:0</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([41.88, -87.63], {
+            color: '#ea580c',
+            fillColor: '#ea580c',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Chicago and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>6</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:35AM CST until February 27 at 6:00PM CST by NWS Quad Cities IA IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Fire Weather Watch</b><br><small>The Fire Weather Watch has been replaced. Please see the latest information from NWS St Louis MO on this developing situ</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 12:28AM CST until February 27 at 6:00PM CST by NWS St Louis MO</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([41.88, -87.63], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Chicago and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>6</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:35AM CST until February 27 at 6:00PM CST by NWS Quad Cities IA IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Fire Weather Watch</b><br><small>The Fire Weather Watch has been replaced. Please see the latest information from NWS St Louis MO on this developing situ</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 12:28AM CST until February 27 at 6:00PM CST by NWS St Louis MO</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([41.88, -87.63], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ea580c">Chicago and Nearby<br><small>V:2 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([33.95, -117.4], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 42000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Riverside </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>14</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>21</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([33.95, -117.4], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Riverside<br><small>V:7 O:14</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([28.54, -81.38], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Orlando </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([28.54, -81.38], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Orlando<br><small>V:6 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([38.58, -121.49], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Sacramento </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([38.58, -121.49], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Sacramento<br><small>V:1 O:5</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([33.45, -112.07], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Phoenix and Nearby </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([33.45, -112.07], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Phoenix and Nearby<br><small>V:0 O:7</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([37.56, -122.07], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 32000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Bay Area </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>14</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>16</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([37.56, -122.07], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Bay Area<br><small>V:2 O:14</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([39.41, -77.41], {
+            color: '#ca8a04',
+            fillColor: '#ca8a04',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Maryland <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Freezing Fog Advisory</b><br><small>Freezing Fog Advisory issued February 27 at 9:16AM EST until February 27 at 11:00AM EST by NWS Baltimore MD/Washington D</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([39.41, -77.41], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Maryland <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Freezing Fog Advisory</b><br><small>Freezing Fog Advisory issued February 27 at 9:16AM EST until February 27 at 11:00AM EST by NWS Baltimore MD/Washington D</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([39.41, -77.41], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ca8a04">Maryland<br><small>V:1 O:0</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([32.78, -96.8], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 20000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Dallas </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>9</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([32.78, -96.8], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Dallas<br><small>V:1 O:9</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([34.05, -118.24], {
+            color: '#ca8a04',
+            fillColor: '#ca8a04',
+            fillOpacity: 0.35,
+            radius: 50000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Los Angeles and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>28</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>41</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Wind Advisory</b><br><small>Wind Advisory issued February 26 at 12:54PM PST until February 27 at 2:00PM PST by NWS Los Angeles/Oxnard CA</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([34.05, -118.24], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Los Angeles and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>28</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>41</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Wind Advisory</b><br><small>Wind Advisory issued February 26 at 12:54PM PST until February 27 at 2:00PM PST by NWS Los Angeles/Oxnard CA</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([34.05, -118.24], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ca8a04">Los Angeles and Nearby<br><small>V:13 O:28</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([39.68, -75.75], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Delaware </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([39.68, -75.75], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Delaware<br><small>V:1 O:0</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([45.52, -122.68], {
+            color: '#ca8a04',
+            fillColor: '#ca8a04',
+            fillOpacity: 0.35,
+            radius: 26000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Portland and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([45.52, -122.68], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Portland and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([45.52, -122.68], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ca8a04">Portland and Nearby<br><small>V:7 O:6</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([29.42, -98.49], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>San Antonio </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([29.42, -98.49], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">San Antonio<br><small>V:1 O:3</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([34.11, -117.29], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 42000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>San Bernardino </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>20</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>21</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([34.11, -117.29], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">San Bernardino<br><small>V:1 O:20</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([32.72, -117.16], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>San Diego </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([32.72, -117.16], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">San Diego<br><small>V:2 O:4</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([47.61, -122.33], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 18000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Seattle and Nearby </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>9</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([47.61, -122.33], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Seattle and Nearby<br><small>V:3 O:6</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([45.63, -122.67], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Vancouver </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([45.63, -122.67], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Vancouver<br><small>V:1 O:5</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([35.37, -119.02], {
+            color: '#ca8a04',
+            fillColor: '#ca8a04',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Bakersfield <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 3:28AM PST until February 27 at 10:00AM PST by NWS Hanford CA</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([35.37, -119.02], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Bakersfield <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 3:28AM PST until February 27 at 10:00AM PST by NWS Hanford CA</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([35.37, -119.02], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ca8a04">Bakersfield<br><small>V:1 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([39.77, -86.16], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Indiana </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([39.77, -86.16], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Indiana<br><small>V:0 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([40.74, -74.17], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>New Jersey </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([40.74, -74.17], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">New Jersey<br><small>V:0 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([43.65, -79.38], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Toronto </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([43.65, -79.38], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Toronto<br><small>V:0 O:1</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([35.78, -78.64], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>North Carolina </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([35.78, -78.64], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">North Carolina<br><small>V:1 O:3</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([30.27, -97.74], {
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.35,
+            radius: 15000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Austin and Nearby </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
+        
+
+        L.marker([30.27, -97.74], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#16a34a">Austin and Nearby<br><small>V:4 O:3</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+
+        L.circle([33.75, -84.39], {
+            color: '#ea580c',
+            fillColor: '#ea580c',
+            fillOpacity: 0.35,
+            radius: 22000,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Georgia <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>11</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:48AM EST until February 28 at 7:00PM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:03AM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:01AM EST until February 27 at 12:00PM EST by NWS Peachtree City GA</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([33.75, -84.39], {
+            icon: L.divIcon({
+                className: 'warning-marker',
+                html: '<div class="warning-pulse">⚠️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Georgia <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>11</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:48AM EST until February 28 at 7:00PM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:03AM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:01AM EST until February 27 at 12:00PM EST by NWS Peachtree City GA</small></div></div>        </div>        ', {maxWidth: 350});
+        
+
+        L.marker([33.75, -84.39], {
+            icon: L.divIcon({
+                className: 'region-label',
+                html: '<div class="label-text" style="color:#ea580c">Georgia<br><small>V:1 O:10</small></div>',
+                iconSize: [120, 40],
+                iconAnchor: [60, -15]
+            })
+        }).addTo(map);
+        
+        
+        // Legend
+        var legend = L.control({position: 'bottomright'});
         legend.onAdd = function(map) {
             var div = L.DomUtil.create('div', 'legend');
             div.innerHTML = `
-                <h4>Risk Levels</h4>
-                <div class="legend-item"><span class="legend-circle" style="background:#dc2626;"></span> CRITICAL</div>
-                <div class="legend-item"><span class="legend-circle" style="background:#ea580c;"></span> SEVERE</div>
-                <div class="legend-item"><span class="legend-circle" style="background:#eab308;"></span> MODERATE</div>
-                <div class="legend-item"><span class="legend-circle" style="background:#22c55e;"></span> LOW</div>
-                <hr style="border-color:#334155;margin:8px 0;">
-                <div class="legend-item">⚠️ Vacant in Risk Zone</div>
-                <div class="legend-item" style="font-size:11px;color:#94a3b8;">Circle size = property count</div>
+                <h4>Risk Level 风险等级</h4>
+                <div class="legend-item"><span class="legend-dot" style="background:#dc2626"></span> CRITICAL 极端</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#ea580c"></span> SEVERE 严重</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#ca8a04"></span> MODERATE 中等</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span> LOW 低</div>
+                <hr style="margin:6px 0">
+                <div class="legend-item">⚠️ Vacant in Risk Zone 空置预警</div>
             `;
             return div;
         };
         legend.addTo(map);
-        
-        // Add priority vacant panel
-        var priorityVacant = [{"address": "7901 Golden Pond Cir, Kissimmee, FL 34747, USA", "region": "Orlando", "risk": "SEVERE", "events": ["Red Flag Warning"]}, {"address": "8655 La Isla Dr, Kissimmee, FL 34747, USA", "region": "Orlando", "risk": "SEVERE", "events": ["Red Flag Warning"]}, {"address": "9022 Rhodes St, Kissimmee, FL 34747, USA", "region": "Orlando", "risk": "SEVERE", "events": ["Red Flag Warning"]}, {"address": "1550 Plunker Dr, Davenport, FL 33896, USA", "region": "Orlando", "risk": "SEVERE", "events": ["Red Flag Warning"]}, {"address": "8859 Geneve Ct, Kissimmee, FL 34747, USA", "region": "Orlando", "risk": "SEVERE", "events": ["Red Flag Warning"]}, {"address": "2478 Dubai St, Kissimmee, FL 34747, USA", "region": "Orlando", "risk": "SEVERE", "events": ["Red Flag Warning"]}, {"address": "7026 Randado Ct, San Antonio, TX 78242, USA", "region": "San Antonio", "risk": "MODERATE", "events": ["Dense Fog Advisory"]}, {"address": "3304 Sunny Gate Ln, Folsom, CA 95630, USA", "region": "Sacramento", "risk": "MODERATE", "events": ["Dense Fog Advisory"]}, {"address": "46 Los Felis Dr, Pomona, CA 91767, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "5107 Linda Pl, Longmont, CO 80503, USA", "region": "Colorado", "risk": "SEVERE", "events": ["Fire Weather Watch"]}, {"address": "1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "945 E Wonder Ln, Glendora, CA 91740, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "9303 Alondra Blvd Apt 4, Bellflower, CA 90706, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "1090 Wood Duck Ave, Santa Clara, CA 95051, USA", "region": "Bay Area", "risk": "SEVERE", "events": ["Red Flag Warning", "Dense Fog Advisory", "Fire Weather Watch"]}, {"address": "606 Windsor Park Dr, Bakersfield, CA 93311, USA", "region": "Bakersfield", "risk": "MODERATE", "events": ["Dense Fog Advisory"]}, {"address": "13711 117th Ave NE, Kirkland, WA 98034, USA", "region": "Seattle and Nearby", "risk": "MODERATE", "events": ["Winter Weather Advisory"]}, {"address": "11843 Apple Grove Ln, Sylmar, CA 91342, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "37058 Alton Drive, Palmdale, CA 93550, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "6406 224th Ave NE, Redmond, WA 98053, USA", "region": "Seattle and Nearby", "risk": "MODERATE", "events": ["Winter Weather Advisory"]}, {"address": "2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "1452 Lochner Dr, San Jose, CA 95127, USA", "region": "Bay Area", "risk": "SEVERE", "events": ["Red Flag Warning", "Dense Fog Advisory", "Fire Weather Watch"]}, {"address": "4389 Maple Ln, Arcadia, CA 91006, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "137 W Winnie Way, Arcadia, CA 91007, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "49 Aria St, South El Monte, CA 91733, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "5330 Johnson St, Arvada, CO 80002, USA", "region": "Colorado", "risk": "SEVERE", "events": ["Fire Weather Watch"]}, {"address": "15335 Lemay St, Van Nuys, CA 91406, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "26707 Beartown Ln, Valencia, CA 91381, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "2011 Stearns Dr, Los Angeles, CA 90034, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "122 Brisbane St, Monrovia, CA 91016, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "12543 SE 72nd St, Newcastle, WA 98056, USA", "region": "Seattle and Nearby", "risk": "MODERATE", "events": ["Winter Weather Advisory"]}, {"address": "14527 Addison St, Sherman Oaks, CA 91403, USA", "region": "Los Angeles and Nearby", "risk": "MODERATE", "events": ["Lake Wind Advisory"]}, {"address": "306 Ashton Ave, San Francisco, CA 94112, USA", "region": "Bay Area", "risk": "SEVERE", "events": ["Red Flag Warning", "Dense Fog Advisory", "Fire Weather Watch"]}, {"address": "1497 Shinn Ct, Fremont, CA 94536, USA", "region": "Bay Area", "risk": "SEVERE", "events": ["Red Flag Warning", "Dense Fog Advisory", "Fire Weather Watch"]}];
-        
-        if (priorityVacant.length > 0) {
-            var infoPanel = document.createElement('div');
-            infoPanel.id = 'info-panel';
-            var panelHtml = '<h4>⚠️ Priority Vacant Properties (' + priorityVacant.length + ')</h4>';
-            priorityVacant.forEach(function(p) {
-                panelHtml += '<div class="priority-item">';
-                panelHtml += '<span class="risk-badge risk-' + p.risk + '">' + p.risk + '</span>';
-                panelHtml += p.address.split(',')[0] + '<br>';
-                panelHtml += '<span style="color:#64748b;">' + p.region + '</span>';
-                panelHtml += '</div>';
-            });
-            infoPanel.innerHTML = panelHtml;
-            document.body.appendChild(infoPanel);
-        }
     </script>
 </body>
 </html>
