@@ -1,878 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2M Weather Alert Map - 2026-02-27</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        
-        #header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-            color: white;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        #header h1 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        #header .subtitle {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        .header-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 13px;
-        }
-        .header-stat {
-            background: rgba(255,255,255,0.15);
-            padding: 4px 10px;
-            border-radius: 4px;
-        }
-        .header-stat b { color: #fbbf24; }
-        
-        #map { height: calc(100vh - 100px); width: 100%; }
-        
-        .legend {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            font-size: 13px;
-            line-height: 1.8;
-        }
-        .legend h4 { margin-bottom: 6px; font-size: 14px; }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .legend-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        
-        .popup-content { min-width: 220px; }
-        .popup-content h3 {
-            font-size: 15px;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .risk-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 8px;
-        }
-        .risk-critical { background: #dc2626; }
-        .risk-severe { background: #ea580c; }
-        .risk-moderate { background: #ca8a04; }
-        .risk-low { background: #16a34a; }
-        
-        .stats { margin: 6px 0; }
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 2px 0;
-            font-size: 13px;
-        }
-        .stat-label { color: #555; }
-        .stat-value { font-weight: 600; }
-        .vacant-count { color: #dc2626; }
-        .occupied-count { color: #16a34a; }
-        
-        .alerts-section {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #eee;
-        }
-        .alerts-section h4 { font-size: 12px; color: #666; margin-bottom: 4px; }
-        .alert-item {
-            font-size: 11px;
-            padding: 3px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .region-label {
-            background: none !important;
-            border: none !important;
-        }
-        .label-text {
-            text-align: center;
-            font-size: 11px;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
-            white-space: nowrap;
-        }
-        
-        .warning-marker {
-            background: none !important;
-            border: none !important;
-        }
-        .warning-pulse {
-            font-size: 22px;
-            animation: pulse 1.5s ease-in-out infinite;
-            filter: drop-shadow(0 0 4px rgba(220, 38, 38, 0.6));
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
-        }
-        
-        .warning-icon {
-            font-size: 16px;
-        }
-        .warning-icon.pulse {
-            animation: pulse 1.5s ease-in-out infinite;
-            display: inline-block;
-        }
-        
-        #footer {
-            background: #f8fafc;
-            padding: 8px 20px;
-            font-size: 11px;
-            color: #64748b;
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px solid #e2e8f0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M2M Weather Alert Map - 2026-02-28</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  #map { width: 100%; height: 100vh; }
+  
+  .header-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white; padding: 12px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .header-bar h1 { font-size: 18px; font-weight: 600; }
+  .header-bar .date { font-size: 13px; opacity: 0.8; }
+  .header-bar .urgent-badge {
+    background: #dc2626; padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; animation: pulse 2s infinite;
+  }
+  
+  .legend {
+    position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+    background: white; border-radius: 12px; padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); min-width: 220px;
+  }
+  .legend h3 { font-size: 14px; margin-bottom: 10px; color: #1e293b; }
+  .legend-item { display: flex; align-items: center; margin: 6px 0; font-size: 13px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+  
+  .stats-panel {
+    position: fixed; top: 60px; right: 20px; z-index: 1000;
+    background: white; border-radius: 12px; padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); min-width: 200px;
+  }
+  .stats-panel h3 { font-size: 14px; margin-bottom: 10px; color: #1e293b; }
+  .stat-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 13px; }
+  .stat-value { font-weight: 600; }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  @keyframes warningPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+  }
+  
+  .warning-icon {
+    animation: warningPulse 1.5s ease-in-out infinite;
+    font-size: 20px;
+    text-shadow: 0 0 8px rgba(220, 38, 38, 0.6);
+  }
+  
+  .leaflet-popup-content { margin: 8px 12px; }
+</style>
 </head>
 <body>
-    <div id="header">
-        <div>
-            <h1>Month2Month Weather Alert Map</h1>
-            <div class="subtitle">天气预警与物业空置状态监控 | Updated: 2026-02-27</div>
-        </div>
-        <div class="header-stats">
-            <div class="header-stat">Properties: <b>280</b></div>
-            <div class="header-stat">Vacant: <b>75</b></div>
-            <div class="header-stat">Occupied: <b>205</b></div>
-            <div class="header-stat">⚠️ Priority Regions: <b>10</b></div>
-            <div class="header-stat">🔴 Severe/Critical: <b>5</b></div>
-        </div>
-    </div>
-    
-    <div id="map"></div>
-    
-    <div id="footer">
-        <span>Data: NWS Active Alerts API + M2M PMS | Auto-generated by Month2Month Operations</span>
-        <span>© 2026 Month2Month Inc.</span>
-    </div>
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([37.5, -98.0], 4);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(map);
-        
-        // Add markers
-        
-        L.circle([33.72, -117.83], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 50000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Orange County </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>49</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>56</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
 
-        L.marker([33.72, -117.83], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Orange County<br><small>V:7 O:49</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([32.78, -79.93], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>South Carolina </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([32.78, -79.93], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">South Carolina<br><small>V:1 O:0</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([44.98, -93.27], {
-            color: '#ea580c',
-            fillColor: '#ea580c',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Minnesota <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:45AM CST until February 28 at 12:00AM CST by NWS Duluth MN</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([44.98, -93.27], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Minnesota <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:45AM CST until February 28 at 12:00AM CST by NWS Duluth MN</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div><div class=\'alert-item\'><b>High Wind Watch</b><br><small>The High Wind Watch has been replaced. Please see the latest information from NWS Duluth MN on this developing situation</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([44.98, -93.27], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ea580c">Minnesota<br><small>V:2 O:0</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([29.76, -95.37], {
-            color: '#ca8a04',
-            fillColor: '#ca8a04',
-            fillOpacity: 0.35,
-            radius: 30000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Houston <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>15</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 8:59AM CST until February 27 at 11:00AM CST by NWS Houston/Galveston TX</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([29.76, -95.37], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Houston <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>15</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 8:59AM CST until February 27 at 11:00AM CST by NWS Houston/Galveston TX</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([29.76, -95.37], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ca8a04">Houston<br><small>V:5 O:10</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([39.74, -105.0], {
-            color: '#ea580c',
-            fillColor: '#ea580c',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Colorado <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 4:40AM MST until February 27 at 6:00PM MST by NWS Denver CO</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:39AM MST until February 27 at 6:00PM MST by NWS Pueblo CO</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([39.74, -105.0], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Colorado <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 4:40AM MST until February 27 at 6:00PM MST by NWS Denver CO</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:39AM MST until February 27 at 6:00PM MST by NWS Pueblo CO</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([39.74, -105.0], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ea580c">Colorado<br><small>V:2 O:2</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([36.17, -115.14], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Las Vegas </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([36.17, -115.14], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Las Vegas<br><small>V:1 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([42.33, -83.05], {
-            color: '#ea580c',
-            fillColor: '#ea580c',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Michigan <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:31AM EST until February 28 at 1:00AM EST by NWS Marquette MI</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([42.33, -83.05], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Michigan <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>High Wind Warning</b><br><small>High Wind Warning issued February 27 at 1:31AM EST until February 28 at 1:00AM EST by NWS Marquette MI</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([42.33, -83.05], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ea580c">Michigan<br><small>V:1 O:0</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([41.88, -87.63], {
-            color: '#ea580c',
-            fillColor: '#ea580c',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Chicago and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>6</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:35AM CST until February 27 at 6:00PM CST by NWS Quad Cities IA IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Fire Weather Watch</b><br><small>The Fire Weather Watch has been replaced. Please see the latest information from NWS St Louis MO on this developing situ</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 12:28AM CST until February 27 at 6:00PM CST by NWS St Louis MO</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([41.88, -87.63], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Chicago and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>6</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:35AM CST until February 27 at 6:00PM CST by NWS Quad Cities IA IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 1:22AM CST until February 27 at 6:00PM CST by NWS Lincoln IL</small></div><div class=\'alert-item\'><b>Fire Weather Watch</b><br><small>The Fire Weather Watch has been replaced. Please see the latest information from NWS St Louis MO on this developing situ</small></div><div class=\'alert-item\'><b>Red Flag Warning</b><br><small>Red Flag Warning issued February 27 at 12:28AM CST until February 27 at 6:00PM CST by NWS St Louis MO</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([41.88, -87.63], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ea580c">Chicago and Nearby<br><small>V:2 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([33.95, -117.4], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 42000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Riverside </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>14</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>21</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([33.95, -117.4], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Riverside<br><small>V:7 O:14</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([28.54, -81.38], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Orlando </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([28.54, -81.38], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Orlando<br><small>V:6 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([38.58, -121.49], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Sacramento </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([38.58, -121.49], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Sacramento<br><small>V:1 O:5</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([33.45, -112.07], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Phoenix and Nearby </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([33.45, -112.07], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Phoenix and Nearby<br><small>V:0 O:7</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([37.56, -122.07], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 32000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Bay Area </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>14</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>16</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([37.56, -122.07], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Bay Area<br><small>V:2 O:14</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([39.41, -77.41], {
-            color: '#ca8a04',
-            fillColor: '#ca8a04',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Maryland <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Freezing Fog Advisory</b><br><small>Freezing Fog Advisory issued February 27 at 9:16AM EST until February 27 at 11:00AM EST by NWS Baltimore MD/Washington D</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([39.41, -77.41], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Maryland <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Freezing Fog Advisory</b><br><small>Freezing Fog Advisory issued February 27 at 9:16AM EST until February 27 at 11:00AM EST by NWS Baltimore MD/Washington D</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([39.41, -77.41], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ca8a04">Maryland<br><small>V:1 O:0</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([32.78, -96.8], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 20000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Dallas </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>9</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([32.78, -96.8], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Dallas<br><small>V:1 O:9</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([34.05, -118.24], {
-            color: '#ca8a04',
-            fillColor: '#ca8a04',
-            fillOpacity: 0.35,
-            radius: 50000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Los Angeles and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>28</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>41</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Wind Advisory</b><br><small>Wind Advisory issued February 26 at 12:54PM PST until February 27 at 2:00PM PST by NWS Los Angeles/Oxnard CA</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([34.05, -118.24], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Los Angeles and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>28</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>41</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Wind Advisory</b><br><small>Wind Advisory issued February 26 at 12:54PM PST until February 27 at 2:00PM PST by NWS Los Angeles/Oxnard CA</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([34.05, -118.24], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ca8a04">Los Angeles and Nearby<br><small>V:13 O:28</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([39.68, -75.75], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Delaware </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([39.68, -75.75], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Delaware<br><small>V:1 O:0</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([45.52, -122.68], {
-            color: '#ca8a04',
-            fillColor: '#ca8a04',
-            fillOpacity: 0.35,
-            radius: 26000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Portland and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([45.52, -122.68], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Portland and Nearby <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>13</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>2</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 6:25AM PST until February 27 at 12:00PM PST by NWS Portland OR</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([45.52, -122.68], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ca8a04">Portland and Nearby<br><small>V:7 O:6</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([29.42, -98.49], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>San Antonio </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([29.42, -98.49], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">San Antonio<br><small>V:1 O:3</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([34.11, -117.29], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 42000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>San Bernardino </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>20</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>21</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([34.11, -117.29], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">San Bernardino<br><small>V:1 O:20</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([32.72, -117.16], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>San Diego </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([32.72, -117.16], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">San Diego<br><small>V:2 O:4</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([47.61, -122.33], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 18000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Seattle and Nearby </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>9</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([47.61, -122.33], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Seattle and Nearby<br><small>V:3 O:6</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([45.63, -122.67], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Vancouver </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>5</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>6</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([45.63, -122.67], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Vancouver<br><small>V:1 O:5</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([35.37, -119.02], {
-            color: '#ca8a04',
-            fillColor: '#ca8a04',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Bakersfield <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 3:28AM PST until February 27 at 10:00AM PST by NWS Hanford CA</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([35.37, -119.02], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Bakersfield <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-moderate\'>MODERATE (中等)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>2</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>1</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Dense Fog Advisory</b><br><small>Dense Fog Advisory issued February 27 at 3:28AM PST until February 27 at 10:00AM PST by NWS Hanford CA</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([35.37, -119.02], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ca8a04">Bakersfield<br><small>V:1 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([39.77, -86.16], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Indiana </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([39.77, -86.16], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Indiana<br><small>V:0 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([40.74, -74.17], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>New Jersey </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([40.74, -74.17], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">New Jersey<br><small>V:0 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([43.65, -79.38], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Toronto </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>0</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([43.65, -79.38], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Toronto<br><small>V:0 O:1</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([35.78, -78.64], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>North Carolina </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([35.78, -78.64], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">North Carolina<br><small>V:1 O:3</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([30.27, -97.74], {
-            color: '#16a34a',
-            fillColor: '#16a34a',
-            fillOpacity: 0.35,
-            radius: 15000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Austin and Nearby </h3>            <div class=\'risk-badge risk-low\'>LOW (低)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>4</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>3</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>7</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>0</span>                </div>            </div>                    </div>        ', {maxWidth: 350});
-        
-
-        L.marker([30.27, -97.74], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#16a34a">Austin and Nearby<br><small>V:4 O:3</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-
-        L.circle([33.75, -84.39], {
-            color: '#ea580c',
-            fillColor: '#ea580c',
-            fillOpacity: 0.35,
-            radius: 22000,
-            weight: 2
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Georgia <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>11</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:48AM EST until February 28 at 7:00PM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:03AM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:01AM EST until February 27 at 12:00PM EST by NWS Peachtree City GA</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([33.75, -84.39], {
-            icon: L.divIcon({
-                className: 'warning-marker',
-                html: '<div class="warning-pulse">⚠️</div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
-            })
-        }).addTo(map).bindPopup('        <div class=\'popup-content\'>            <h3>Georgia <span class=\'warning-icon pulse\'>⚠️</span></h3>            <div class=\'risk-badge risk-severe\'>SEVERE (严重)</div>            <div class=\'stats\'>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>⚠️ 空置 Vacant:</span>                    <span class=\'stat-value vacant-count\'>1</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>已入住 Occupied:</span>                    <span class=\'stat-value occupied-count\'>10</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>总计 Total:</span>                    <span class=\'stat-value\'>11</span>                </div>                <div class=\'stat-row\'>                    <span class=\'stat-label\'>活跃预警 Active Alerts:</span>                    <span class=\'stat-value\'>3</span>                </div>            </div>            <div class="alerts-section"><h4>Weather Alerts:</h4><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:48AM EST until February 28 at 7:00PM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:03AM EST by NWS Peachtree City GA</small></div><div class=\'alert-item\'><b>Flood Warning</b><br><small>Flood Warning issued February 27 at 6:01AM EST until February 27 at 12:00PM EST by NWS Peachtree City GA</small></div></div>        </div>        ', {maxWidth: 350});
-        
-
-        L.marker([33.75, -84.39], {
-            icon: L.divIcon({
-                className: 'region-label',
-                html: '<div class="label-text" style="color:#ea580c">Georgia<br><small>V:1 O:10</small></div>',
-                iconSize: [120, 40],
-                iconAnchor: [60, -15]
-            })
-        }).addTo(map);
-        
-        
-        // Legend
-        var legend = L.control({position: 'bottomright'});
-        legend.onAdd = function(map) {
-            var div = L.DomUtil.create('div', 'legend');
-            div.innerHTML = `
-                <h4>Risk Level 风险等级</h4>
-                <div class="legend-item"><span class="legend-dot" style="background:#dc2626"></span> CRITICAL 极端</div>
-                <div class="legend-item"><span class="legend-dot" style="background:#ea580c"></span> SEVERE 严重</div>
-                <div class="legend-item"><span class="legend-dot" style="background:#ca8a04"></span> MODERATE 中等</div>
-                <div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span> LOW 低</div>
-                <hr style="margin:6px 0">
-                <div class="legend-item">⚠️ Vacant in Risk Zone 空置预警</div>
-            `;
-            return div;
-        };
-        legend.addTo(map);
-    </script>
+<div class="header-bar">
+  <div>
+    <h1>⚠️ M2M Weather Alert Map</h1>
+    <div class="date">2026-02-28 | 280 Properties | Data from NWS</div>
+  </div>
+  <div class="urgent-badge">⚠️ URGENT: Vacant Properties in SEVERE Zone</div>
+</div>
+
+<div class="stats-panel">
+  <h3>Property Status</h3>
+  <div class="stat-row"><span>Total Properties</span><span class="stat-value">280</span></div>
+  <div class="stat-row"><span style="color:#dc2626;">Vacant (空置)</span><span class="stat-value" style="color:#dc2626;">55</span></div>
+  <div class="stat-row"><span style="color:#16a34a;">Occupied (已入住)</span><span class="stat-value" style="color:#16a34a;">215</span></div>
+  <hr style="margin:8px 0;border-color:#e5e7eb;">
+  <h3>Weather Risk</h3>
+  <div class="stat-row"><span>⚠️ High Priority</span><span class="stat-value" style="color:#dc2626;">40</span></div>
+  <div class="stat-row"><span>CRITICAL Regions</span><span class="stat-value">0</span></div>
+  <div class="stat-row"><span>SEVERE Regions</span><span class="stat-value">2</span></div>
+  <div class="stat-row"><span>MODERATE Regions</span><span class="stat-value">14</span></div>
+  <div class="stat-row"><span>LOW Regions</span><span class="stat-value">14</span></div>
+</div>
+
+<div class="legend">
+  <h3>Legend</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#dc2626;"></div> CRITICAL Risk</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ea580c;"></div> SEVERE Risk</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ca8a04;"></div> MODERATE Risk</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#16a34a;"></div> LOW Risk</div>
+  <hr style="margin:8px 0;border-color:#e5e7eb;">
+  <div class="legend-item"><span class="warning-icon" style="margin-right:8px;">⚠️</span> Vacant at Risk</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed;border:2px solid #5b21b6;"></div> Vacant Property</div>
+</div>
+
+<div id="map"></div>
+
+<script>
+const map = L.map('map', {
+  center: [37.5, -96],
+  zoom: 5,
+  zoomControl: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// Region circle markers
+const regionMarkers = [
+    {"lat": 33.6681966, "lon": -117.8515274, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 50000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Orange County<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 8</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">47</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #58: 77 Hanging Garden, Irvine, CA 92620, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #3474: 507 J St, Newport Beach, CA 92661, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #40818: 48 Bamboo, Irvine, CA 92620, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41252: 138 Stallion, Irvine, CA 92602, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41333: 17 Riveroaks, Irvine, CA 92602, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41997: 6 Del Carlo, Irvine, CA 92606, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42513: 478 E Yale Loop #16, Irvine, CA 92614, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42537: 9 Goldfinch, Irvine, CA 92603, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "Orange County", "risk": "MODERATE", "hasWarning": true, "vacant": 8, "occupied": 47},
+    {"lat": 28.3234176, "lon": -81.6050264, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 17500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Orlando<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 4</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">3</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">3 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #22: 7901 Golden Pond Cir, Kissimmee, FL 34747, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #7020: 1550 Plunker Dr, Davenport, FL 33896, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #10560: 2478 Dubai St, Kissimmee, FL 34747, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #10155: 8859 Geneve Ct, Kissimmee, FL 34747, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 8:41AM CST until February 28 at 10:00AM CST by NWS Mobile AL</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Special Weather Statement</b> (Moderate)<br>Special Weather Statement issued February 28 at 9:14AM EST by NWS Miami FL</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Rip Current Statement</b> (Moderate)<br>Rip Current Statement issued February 28 at 12:45AM EST until March 1 at 1:00AM EST by NWS Tallahassee FL</div></div>     </div>     ", "region": "Orlando", "risk": "MODERATE", "hasWarning": true, "vacant": 4, "occupied": 3},
+    {"lat": 33.9581966, "lon": -117.6077093, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 50000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Riverside<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 6</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">13</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41351: 5910 Sendero Ave, Eastvale, CA 92880, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41378: 14563 Gulfstream Lane, Moreno Valley, CA 92553, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41613: 12675 Elmhurst Dr, Moreno Valley, CA 92555, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41703: 29223 Obsidian Ct, Nuevo, CA 92567, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42084: 21585 Del Amo St, Moreno Valley, CA 92557, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42255: 1705 Parkplace Ln, Riverside, CA 92501, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "Riverside", "risk": "MODERATE", "hasWarning": true, "vacant": 6, "occupied": 13},
+    {"lat": 29.4748939, "lon": -95.533908, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 37500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Houston<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 2</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">13</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">1 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41010: 6602 Sterling Shores Ln, Rosenberg, TX 77471, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42288: 29635 Burcreek Ln, Fulshear, TX 77441, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 8:59AM CST until February 28 at 10:00AM CST by NWS Houston/Galveston TX</div></div>     </div>     ", "region": "Houston", "risk": "MODERATE", "hasWarning": true, "vacant": 2, "occupied": 13},
+    {"lat": 45.5387766, "lon": -122.7704507, "color": "#16a34a", "fillOpacity": 0.2, "radius": 32500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Portland and Nearby</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">5</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">8</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41532: 2377 NW Birkendene St, Portland, OR 97229, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42048: 9831 NW Bartholomew Dr, Portland, OR 97229, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42057: 521 N Cook St, Portland, OR 97227, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42201: 17274 SW Arborcrest Way lot 34, Beaverton, OR 97003, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42366: 15501 Diamond Head Rd, Lake Oswego, OR 97034, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Portland and Nearby", "risk": "LOW", "hasWarning": false, "vacant": 5, "occupied": 8},
+    {"lat": 29.35965, "lon": -98.609735, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">San Antonio<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">3</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">1 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41019: 7026 Randado Ct, San Antonio, TX 78242, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 8:59AM CST until February 28 at 10:00AM CST by NWS Houston/Galveston TX</div></div>     </div>     ", "region": "San Antonio", "risk": "MODERATE", "hasWarning": true, "vacant": 1, "occupied": 3},
+    {"lat": 33.996667, "lon": -117.6694313, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 50000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">San Bernardino<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">20</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41829: 1509 Granada Rd, Upland, CA 91786, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "San Bernardino", "risk": "MODERATE", "hasWarning": true, "vacant": 1, "occupied": 20},
+    {"lat": 37.4505892, "lon": -122.1302269, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 40000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Bay Area</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">14</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>              <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "Bay Area", "risk": "MODERATE", "hasWarning": false, "vacant": 0, "occupied": 14},
+    {"lat": 34.107876, "lon": -118.0324027, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 50000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Los Angeles and Nearby<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 9</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">28</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41751: 1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41808: 12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41877: 11843 Apple Grove Ln, Sylmar, CA 91342, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41910: 2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42090: 4389 Maple Ln, Arcadia, CA 91006, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42204: 137 W Winnie Way, Arcadia, CA 91007, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42210: 49 Aria St, South El Monte, CA 91733, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42318: 15335 Lemay St, Van Nuys, CA 91406, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42321: 26707 Beartown Ln, Valencia, CA 91381, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "Los Angeles and Nearby", "risk": "MODERATE", "hasWarning": true, "vacant": 9, "occupied": 28},
+    {"lat": 33.2529148, "lon": -97.1432784, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 25000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Dallas</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">9</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">1 alert(s)</span>       </div>              <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 8:59AM CST until February 28 at 10:00AM CST by NWS Houston/Galveston TX</div></div>     </div>     ", "region": "Dallas", "risk": "MODERATE", "hasWarning": false, "vacant": 0, "occupied": 9},
+    {"lat": 38.6372214, "lon": -121.0919746, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Sacramento<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">5</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41384: 3304 Sunny Gate Ln, Folsom, CA 95630, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "Sacramento", "risk": "MODERATE", "hasWarning": true, "vacant": 1, "occupied": 5},
+    {"lat": 32.8287084, "lon": -80.1053096, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">South Carolina</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>              <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "South Carolina", "risk": "LOW", "hasWarning": false, "vacant": 0, "occupied": 1},
+    {"lat": 32.96975763886958, "lon": -117.1288463435987, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">San Diego<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">5</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42453: 10512 Cara Cara Dr, San Diego, CA 92126, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "San Diego", "risk": "MODERATE", "hasWarning": true, "vacant": 1, "occupied": 5},
+    {"lat": 33.73487710000001, "lon": -112.1140522, "color": "#16a34a", "fillOpacity": 0.2, "radius": 17500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Phoenix and Nearby</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">7</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>              <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Phoenix and Nearby", "risk": "LOW", "hasWarning": false, "vacant": 0, "occupied": 7},
+    {"lat": 33.966995, "lon": -84.16035099999999, "color": "#ea580c", "fillOpacity": 0.4, "radius": 27500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Georgia<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">10</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fef2f2;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ea580c;\">Risk: SEVERE</span>         <span style=\"float:right;font-size:12px;\">1 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41934: 427 Third Ave, Scottdale, GA 30079, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Flood Warning</b> (Severe)<br>Flood Warning issued February 28 at 6:53AM EST until February 28 at 7:00PM EST by NWS Peachtree City GA</div></div>     </div>     ", "region": "Georgia", "risk": "SEVERE", "hasWarning": true, "vacant": 1, "occupied": 10},
+    {"lat": 40.1387906, "lon": -105.1675408, "color": "#ea580c", "fillOpacity": 0.4, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Colorado<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 2</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">2</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fef2f2;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ea580c;\">Risk: SEVERE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41709: 5107 Linda Pl, Longmont, CO 80503, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42222: 5330 Johnson St, Arvada, CO 80002, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Red Flag Warning</b> (Severe)<br>Red Flag Warning issued February 28 at 4:45AM MST until February 28 at 6:00PM MST by NWS Denver CO</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Avalanche Advisory</b> (Unknown)<br>Avalanche Advisory issued February 27 at 5:49PM MST by NWS Denver CO</div></div>     </div>     ", "region": "Colorado", "risk": "SEVERE", "hasWarning": true, "vacant": 2, "occupied": 2},
+    {"lat": 30.4569647, "lon": -97.57862229999999, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 17500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Austin and Nearby<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 2</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">5</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">1 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42114: 13001 Powderhorn St, Austin, TX 78727, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42141: 9424 Morgan Creek Dr, Austin, TX 78717, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 8:59AM CST until February 28 at 10:00AM CST by NWS Houston/Galveston TX</div></div>     </div>     ", "region": "Austin and Nearby", "risk": "MODERATE", "hasWarning": true, "vacant": 2, "occupied": 5},
+    {"lat": 45.6094277, "lon": -122.4957704, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Vancouver</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">5</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41784: 1603 SE 171st Pl, Vancouver, WA 98683, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Vancouver", "risk": "LOW", "hasWarning": false, "vacant": 1, "occupied": 5},
+    {"lat": 42.3080575, "lon": -87.96399459999999, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Chicago and Nearby</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">2</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41814: 246 Cater Ln, Libertyville, IL 60048, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42189: 1717 River Birch Way, Libertyville, IL 60048, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Chicago and Nearby", "risk": "LOW", "hasWarning": false, "vacant": 2, "occupied": 1},
+    {"lat": 35.34944718514957, "lon": -119.1154978779086, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Bakersfield<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">2 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41844: 606 Windsor Park Dr, Bakersfield, CA 93311, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Dense Fog Advisory</b> (Moderate)<br>Dense Fog Advisory issued February 28 at 4:47AM PST until February 28 at 10:00AM PST by NWS Hanford CA</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Wind Advisory</b> (Moderate)<br>Wind Advisory issued February 28 at 12:17AM PST until March 2 at 10:00PM PST by NWS Las Vegas NV</div></div>     </div>     ", "region": "Bakersfield", "risk": "MODERATE", "hasWarning": true, "vacant": 1, "occupied": 1},
+    {"lat": 47.7949897, "lon": -122.1846739, "color": "#16a34a", "fillOpacity": 0.2, "radius": 22500, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Seattle and Nearby</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">3</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">6</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41850: 13711 117th Ave NE, Kirkland, WA 98034, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41901: 6406 224th Ave NE, Redmond, WA 98053, USA</div><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42396: 12543 SE 72nd St, Newcastle, WA 98056, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Seattle and Nearby", "risk": "LOW", "hasWarning": false, "vacant": 3, "occupied": 6},
+    {"lat": 35.617196, "lon": -78.37630399999999, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">North Carolina</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">3</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #41970: 2543 Wyntercrest Ln, Durham, NC 27713, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "North Carolina", "risk": "LOW", "hasWarning": false, "vacant": 1, "occupied": 3},
+    {"lat": 39.650595, "lon": -86.1825862, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Indiana</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>              <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Indiana", "risk": "LOW", "hasWarning": false, "vacant": 0, "occupied": 1},
+    {"lat": 39.6653964, "lon": -75.7223617, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Delaware</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>              <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Delaware", "risk": "LOW", "hasWarning": false, "vacant": 0, "occupied": 1},
+    {"lat": 40.765904, "lon": -74.1538123, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">New Jersey</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>              <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "New Jersey", "risk": "LOW", "hasWarning": false, "vacant": 0, "occupied": 1},
+    {"lat": 42.1580178, "lon": -83.8075211, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Michigan</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">0</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42177: 2770 Silo Dr, Saline Township, MI 48176, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Michigan", "risk": "LOW", "hasWarning": false, "vacant": 1, "occupied": 0},
+    {"lat": 39.4021649, "lon": -77.312777, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Maryland</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">0</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">1 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42357: 6242 Walleye Pl, New Market, MD 21774, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Test Message</b> (Unknown)<br></div></div>     </div>     ", "region": "Maryland", "risk": "LOW", "hasWarning": false, "vacant": 1, "occupied": 0},
+    {"lat": 36.0093463, "lon": -115.2730201, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Las Vegas</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42378: 9867 Big Window St, Las Vegas, NV 89178, USA</div></div>       <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Las Vegas", "risk": "LOW", "hasWarning": false, "vacant": 1, "occupied": 1},
+    {"lat": 43.6745142, "lon": -79.39892929999999, "color": "#16a34a", "fillOpacity": 0.2, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Toronto</h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">0</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#f0fdf4;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#16a34a;\">Risk: LOW</span>         <span style=\"float:right;font-size:12px;\">0 alert(s)</span>       </div>              <div style=\"color:#6b7280;font-size:12px;\">No active weather alerts</div>     </div>     ", "region": "Toronto", "risk": "LOW", "hasWarning": false, "vacant": 0, "occupied": 1},
+    {"lat": 44.9126415, "lon": -93.46124549999999, "color": "#ca8a04", "fillOpacity": 0.3, "radius": 15000, "popup": "     <div style=\"min-width:280px;max-width:360px;\">       <h3 style=\"margin:0 0 8px;font-size:16px;color:#1e293b;\">Minnesota<span style=\"background:#dc2626;color:white;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;\">\u26a0\ufe0f VACANT AT RISK</span></h3>       <div style=\"display:flex;gap:12px;margin-bottom:8px;\">         <div style=\"flex:1;text-align:center;padding:8px;background:#fef2f2;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#dc2626;\">\u26a0\ufe0f 1</div>           <div style=\"font-size:11px;color:#991b1b;\">Vacant \u7a7a\u7f6e</div>         </div>         <div style=\"flex:1;text-align:center;padding:8px;background:#f0fdf4;border-radius:6px;\">           <div style=\"font-size:24px;font-weight:bold;color:#16a34a;\">1</div>           <div style=\"font-size:11px;color:#166534;\">Occupied \u5df2\u5165\u4f4f</div>         </div>       </div>       <div style=\"padding:6px 10px;background:#fffbeb;border-radius:6px;margin-bottom:8px;\">         <span style=\"font-weight:bold;color:#ca8a04;\">Risk: MODERATE</span>         <span style=\"float:right;font-size:12px;\">6 alert(s)</span>       </div>       <div style=\"margin-bottom:8px;\"><b style=\"color:#991b1b;\">Vacant Properties at Risk:</b><div style=\"margin:2px 0;font-size:11px;color:#b91c1c;\">\u26a0\ufe0f #42528: 14222 Bellevue Dr, Minnetonka, MN 55345, USA</div></div>       <div><b>Active Alerts:</b><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Winter Weather Advisory</b> (Moderate)<br>Winter Weather Advisory issued February 28 at 8:59AM CST until February 28 at 12:00PM CST by NWS Grand Forks ND</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Winter Weather Advisory</b> (Moderate)<br>Winter Weather Advisory issued February 28 at 8:23AM CST until February 28 at 3:00PM CST by NWS Aberdeen SD</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Winter Weather Advisory</b> (Moderate)<br>Winter Weather Advisory issued February 28 at 7:36AM CST until February 28 at 5:00PM CST by NWS Twin Cities/Chanhassen M</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Winter Weather Advisory</b> (Moderate)<br>Winter Weather Advisory issued February 28 at 7:36AM CST until February 28 at 9:00PM CST by NWS Twin Cities/Chanhassen M</div><div style=\"margin:4px 0;padding:4px;background:#fff3cd;border-radius:4px;font-size:12px;\"><b>Winter Weather Advisory</b> (Moderate)<br>Winter Weather Advisory issued February 28 at 7:31AM CST until February 28 at 9:00PM CST by NWS La Crosse WI</div></div>     </div>     ", "region": "Minnesota", "risk": "MODERATE", "hasWarning": true, "vacant": 1, "occupied": 1}
+];
+
+regionMarkers.forEach(m => {
+  const circle = L.circle([m.lat, m.lon], {
+    color: m.color,
+    fillColor: m.color,
+    fillOpacity: m.fillOpacity,
+    radius: m.radius,
+    weight: 2
+  }).addTo(map);
+  
+  circle.bindPopup(m.popup, { maxWidth: 380 });
+  
+  // Add warning icon for regions with vacant properties at risk
+  if (m.hasWarning) {
+    const warningIcon = L.divIcon({
+      html: '<div class="warning-icon">⚠️</div>',
+      className: '',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+    L.marker([m.lat, m.lon], { icon: warningIcon }).addTo(map)
+      .bindPopup(m.popup, { maxWidth: 380 });
+  }
+});
+
+// Individual property markers for high-priority vacant properties
+const propertyMarkers = [
+    {"lat": 28.3234176, "lon": -81.6050264, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #22</div>       <div style=\"font-size:12px;\"><b>Address:</b> 7901 Golden Pond Cir, Kissimmee, FL 34747, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "22"},
+    {"lat": 33.6864443, "lon": -117.7516637, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #58</div>       <div style=\"font-size:12px;\"><b>Address:</b> 77 Hanging Garden, Irvine, CA 92620, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "58"},
+    {"lat": 33.59940150000001, "lon": -117.8878034, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #3474</div>       <div style=\"font-size:12px;\"><b>Address:</b> 507 J St, Newport Beach, CA 92661, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "3474"},
+    {"lat": 28.261766, "lon": -81.64582709999999, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #7020</div>       <div style=\"font-size:12px;\"><b>Address:</b> 1550 Plunker Dr, Davenport, FL 33896, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "7020"},
+    {"lat": 28.3162709, "lon": -81.6458246, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #10560</div>       <div style=\"font-size:12px;\"><b>Address:</b> 2478 Dubai St, Kissimmee, FL 34747, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "10560"},
+    {"lat": 28.3068419, "lon": -81.6424242, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #10155</div>       <div style=\"font-size:12px;\"><b>Address:</b> 8859 Geneve Ct, Kissimmee, FL 34747, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "10155"},
+    {"lat": 33.6992522, "lon": -117.7621904, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #40818</div>       <div style=\"font-size:12px;\"><b>Address:</b> 48 Bamboo, Irvine, CA 92620, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "40818"},
+    {"lat": 29.553496, "lon": -95.7629212, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41010</div>       <div style=\"font-size:12px;\"><b>Address:</b> 6602 Sterling Shores Ln, Rosenberg, TX 77471, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41010"},
+    {"lat": 29.35965, "lon": -98.609735, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41019</div>       <div style=\"font-size:12px;\"><b>Address:</b> 7026 Randado Ct, San Antonio, TX 78242, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41019"},
+    {"lat": 33.7341338, "lon": -117.7470771, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41252</div>       <div style=\"font-size:12px;\"><b>Address:</b> 138 Stallion, Irvine, CA 92602, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41252"},
+    {"lat": 33.9781123, "lon": -117.5880985, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41351</div>       <div style=\"font-size:12px;\"><b>Address:</b> 5910 Sendero Ave, Eastvale, CA 92880, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41351"},
+    {"lat": 33.7214095, "lon": -117.7822976, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41333</div>       <div style=\"font-size:12px;\"><b>Address:</b> 17 Riveroaks, Irvine, CA 92602, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41333"},
+    {"lat": 33.90912490000001, "lon": -117.2281719, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41378</div>       <div style=\"font-size:12px;\"><b>Address:</b> 14563 Gulfstream Lane, Moreno Valley, CA 92553, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41378"},
+    {"lat": 38.6372214, "lon": -121.0919746, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41384</div>       <div style=\"font-size:12px;\"><b>Address:</b> 3304 Sunny Gate Ln, Folsom, CA 95630, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41384"},
+    {"lat": 33.9370133, "lon": -117.2022701, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41613</div>       <div style=\"font-size:12px;\"><b>Address:</b> 12675 Elmhurst Dr, Moreno Valley, CA 92555, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41613"},
+    {"lat": 33.78875449085626, "lon": -117.1527414226318, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41703</div>       <div style=\"font-size:12px;\"><b>Address:</b> 29223 Obsidian Ct, Nuevo, CA 92567, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41703"},
+    {"lat": 40.1387906, "lon": -105.1675408, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41709</div>       <div style=\"font-size:12px;\"><b>Address:</b> 5107 Linda Pl, Longmont, CO 80503, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ea580c;font-weight:bold;\">SEVERE</span></div>     </div>     ", "risk": "SEVERE", "house_id": "41709"},
+    {"lat": 33.9947337, "lon": -117.8214877, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41751</div>       <div style=\"font-size:12px;\"><b>Address:</b> 1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41751"},
+    {"lat": 33.9192535, "lon": -117.9954166, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41808</div>       <div style=\"font-size:12px;\"><b>Address:</b> 12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41808"},
+    {"lat": 34.1181504, "lon": -117.6793034, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41829</div>       <div style=\"font-size:12px;\"><b>Address:</b> 1509 Granada Rd, Upland, CA 91786, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41829"},
+    {"lat": 35.34944718514957, "lon": -119.1154978779086, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41844</div>       <div style=\"font-size:12px;\"><b>Address:</b> 606 Windsor Park Dr, Bakersfield, CA 93311, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41844"},
+    {"lat": 34.2860814, "lon": -118.3941513, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41877</div>       <div style=\"font-size:12px;\"><b>Address:</b> 11843 Apple Grove Ln, Sylmar, CA 91342, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41877"},
+    {"lat": 33.9718462, "lon": -117.8375584, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41910</div>       <div style=\"font-size:12px;\"><b>Address:</b> 2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41910"},
+    {"lat": 33.7878073, "lon": -84.2603501, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41934</div>       <div style=\"font-size:12px;\"><b>Address:</b> 427 Third Ave, Scottdale, GA 30079, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ea580c;font-weight:bold;\">SEVERE</span></div>     </div>     ", "risk": "SEVERE", "house_id": "41934"},
+    {"lat": 33.6903521, "lon": -117.8043298, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #41997</div>       <div style=\"font-size:12px;\"><b>Address:</b> 6 Del Carlo, Irvine, CA 92606, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "41997"},
+    {"lat": 33.9514097, "lon": -117.2869229, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42084</div>       <div style=\"font-size:12px;\"><b>Address:</b> 21585 Del Amo St, Moreno Valley, CA 92557, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42084"},
+    {"lat": 34.1114697, "lon": -118.0075058, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42090</div>       <div style=\"font-size:12px;\"><b>Address:</b> 4389 Maple Ln, Arcadia, CA 91006, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42090"},
+    {"lat": 30.4219455, "lon": -97.690021, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42114</div>       <div style=\"font-size:12px;\"><b>Address:</b> 13001 Powderhorn St, Austin, TX 78727, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42114"},
+    {"lat": 30.4595371, "lon": -97.78465179999999, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42141</div>       <div style=\"font-size:12px;\"><b>Address:</b> 9424 Morgan Creek Dr, Austin, TX 78717, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42141"},
+    {"lat": 34.1210745, "lon": -118.0364781, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42204</div>       <div style=\"font-size:12px;\"><b>Address:</b> 137 W Winnie Way, Arcadia, CA 91007, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42204"},
+    {"lat": 34.0601284, "lon": -118.0587137, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42210</div>       <div style=\"font-size:12px;\"><b>Address:</b> 49 Aria St, South El Monte, CA 91733, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42210"},
+    {"lat": 39.7941847, "lon": -105.1075534, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42222</div>       <div style=\"font-size:12px;\"><b>Address:</b> 5330 Johnson St, Arvada, CO 80002, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ea580c;font-weight:bold;\">SEVERE</span></div>     </div>     ", "risk": "SEVERE", "house_id": "42222"},
+    {"lat": 34.0026363, "lon": -117.3686875, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42255</div>       <div style=\"font-size:12px;\"><b>Address:</b> 1705 Parkplace Ln, Riverside, CA 92501, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42255"},
+    {"lat": 29.7017683, "lon": -95.8841454, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42288</div>       <div style=\"font-size:12px;\"><b>Address:</b> 29635 Burcreek Ln, Fulshear, TX 77441, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42288"},
+    {"lat": 34.1923005, "lon": -118.4674508, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42318</div>       <div style=\"font-size:12px;\"><b>Address:</b> 15335 Lemay St, Van Nuys, CA 91406, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42318"},
+    {"lat": 34.4106323, "lon": -118.6017454, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42321</div>       <div style=\"font-size:12px;\"><b>Address:</b> 26707 Beartown Ln, Valencia, CA 91381, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42321"},
+    {"lat": 32.896639, "lon": -117.162344, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42453</div>       <div style=\"font-size:12px;\"><b>Address:</b> 10512 Cara Cara Dr, San Diego, CA 92126, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42453"},
+    {"lat": 33.667312, "lon": -117.799819, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42513</div>       <div style=\"font-size:12px;\"><b>Address:</b> 478 E Yale Loop #16, Irvine, CA 92614, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42513"},
+    {"lat": 44.9126415, "lon": -93.46124549999999, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42528</div>       <div style=\"font-size:12px;\"><b>Address:</b> 14222 Bellevue Dr, Minnetonka, MN 55345, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42528"},
+    {"lat": 33.629288, "lon": -117.7987864, "popup": "     <div style=\"min-width:200px;\">       <h4 style=\"margin:0 0 4px;color:#dc2626;\">\u26a0\ufe0f Vacant Property</h4>       <div style=\"font-size:12px;\"><b>ID:</b> #42537</div>       <div style=\"font-size:12px;\"><b>Address:</b> 9 Goldfinch, Irvine, CA 92603, USA</div>       <div style=\"font-size:12px;\"><b>Available Since:</b> 2026-02-28</div>       <div style=\"font-size:12px;\"><b>Risk:</b> <span style=\"color:#ca8a04;font-weight:bold;\">MODERATE</span></div>     </div>     ", "risk": "MODERATE", "house_id": "42537"}
+];
+
+const vacantIcon = L.divIcon({
+  html: '<div style="width:10px;height:10px;background:#7c3aed;border:2px solid #5b21b6;border-radius:50%;"></div>',
+  className: '',
+  iconSize: [10, 10],
+  iconAnchor: [5, 5]
+});
+
+propertyMarkers.forEach(pm => {
+  L.marker([pm.lat, pm.lon], { icon: vacantIcon }).addTo(map)
+    .bindPopup(pm.popup, { maxWidth: 300 });
+});
+
+// Fit bounds to show all markers
+if (regionMarkers.length > 0) {
+  const bounds = L.latLngBounds(regionMarkers.map(m => [m.lat, m.lon]));
+  map.fitBounds(bounds, { padding: [60, 60] });
+}
+</script>
 </body>
 </html>
