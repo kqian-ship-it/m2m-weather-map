@@ -3,365 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2M Weather Alert Map - 2026-03-05</title>
+    <title>M2M Weather Alert Map - 2026-03-06</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
-        #map { height: 100vh; width: 100%; }
+        #map { width: 100%; height: 100vh; }
         
-        .header-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+        .header-overlay {
+            position: absolute;
+            top: 10px;
+            left: 60px;
             z-index: 1000;
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            color: white;
-            padding: 10px 20px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-width: 420px;
+        }
+        
+        .header-overlay h1 {
+            font-size: 16px;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .header-overlay .date {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .header-overlay .stats {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        
+        .header-overlay .stat {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            gap: 4px;
         }
         
-        .header-bar h1 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .header-bar .subtitle {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .header-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 13px;
-        }
-        
-        .header-stats .stat {
-            background: rgba(255,255,255,0.15);
-            padding: 4px 10px;
-            border-radius: 12px;
-        }
-        
-        .stat.urgent {
-            background: #dc2626;
-            animation: pulse-bg 2s infinite;
-        }
-        
-        @keyframes pulse-bg {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        .header-overlay .stat .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
         }
         
         .legend {
-            position: fixed;
+            position: absolute;
             bottom: 30px;
-            right: 20px;
+            right: 10px;
             z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
-            font-size: 13px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
-        .legend h4 { margin-bottom: 8px; font-size: 14px; }
+        .legend h3 {
+            font-size: 13px;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
         
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin: 4px 0;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #475569;
         }
         
-        .legend-dot {
+        .legend-circle {
             width: 14px;
             height: 14px;
             border-radius: 50%;
+            border: 2px solid;
             display: inline-block;
         }
         
-        .sidebar {
-            position: fixed;
-            top: 55px;
-            right: 0;
-            width: 360px;
-            height: calc(100vh - 55px);
-            z-index: 999;
-            background: white;
-            box-shadow: -2px 0 15px rgba(0,0,0,0.15);
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            padding: 15px;
-        }
-        
-        .sidebar.open { transform: translateX(0); }
-        
-        .sidebar-toggle {
-            position: fixed;
-            top: 65px;
-            right: 10px;
-            z-index: 1001;
-            background: #1e293b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .sidebar-toggle:hover { background: #334155; }
-        
-        .sidebar h3 {
-            font-size: 15px;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .priority-item {
-            padding: 8px;
-            margin: 4px 0;
-            background: #fef3c7;
-            border-radius: 6px;
-            font-size: 12px;
-            border-left: 3px solid #eab308;
-        }
-        
-        .priority-item .risk-tag {
+        .warning-icon {
             display: inline-block;
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-size: 10px;
+            animation: pulse 1.5s ease-in-out infinite;
+            font-size: 18px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+        
+        .leaflet-popup-content {
+            margin: 8px 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .popup-title {
+            font-size: 14px;
             font-weight: 700;
-            color: white;
-            margin-right: 4px;
-        }
-        
-        .risk-tag.risk-critical { background: #dc2626; }
-        .risk-tag.risk-severe { background: #ea580c; }
-        .risk-tag.risk-moderate { background: #eab308; color: #1e293b; }
-        .risk-tag.risk-low { background: #22c55e; }
-        
-        .region-tag {
-            font-size: 10px;
-            color: #64748b;
-            display: block;
-            margin-top: 2px;
-        }
-        
-        .more-items {
-            text-align: center;
-            color: #64748b;
-            font-size: 12px;
-            padding: 8px;
-        }
-        
-        /* Popup styles */
-        .popup-content h3 {
-            font-size: 15px;
+            color: #1e293b;
             margin-bottom: 6px;
         }
         
-        .risk-badge {
+        .popup-risk {
             display: inline-block;
-            padding: 2px 10px;
-            border-radius: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
             color: white;
             margin-bottom: 8px;
         }
         
-        .risk-badge.risk-critical { background: #dc2626; }
-        .risk-badge.risk-severe { background: #ea580c; }
-        .risk-badge.risk-moderate { background: #eab308; color: #1e293b; }
-        .risk-badge.risk-low { background: #22c55e; }
+        .popup-stats {
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.6;
+        }
         
-        .stats { margin: 8px 0; }
-        .stat-row { padding: 3px 0; font-size: 13px; }
-        .stat-row.vacant-warning {
+        .popup-stats .vacant-warn {
             color: #dc2626;
             font-weight: 600;
-            background: #fef2f2;
-            padding: 4px 6px;
-            border-radius: 4px;
         }
         
-        .alerts-section { margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px; }
-        .alerts-section h4 { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-        
-        .alert-item {
+        .popup-alerts {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
             font-size: 11px;
-            padding: 3px 6px;
-            margin: 2px 0;
-            border-radius: 4px;
-            background: #f8fafc;
+            color: #64748b;
         }
         
-        .alert-item.risk-critical { border-left: 3px solid #dc2626; }
-        .alert-item.risk-severe { border-left: 3px solid #ea580c; }
-        .alert-item.risk-moderate { border-left: 3px solid #eab308; }
-        .alert-item.risk-low { border-left: 3px solid #22c55e; }
-        
-        .no-alert { font-size: 12px; color: #94a3b8; }
-        
-        /* Warning icon animation */
-        .warning-icon {
-            animation: pulse-warning 1.5s infinite;
+        .popup-alerts .alert-event {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 1px 6px;
+            border-radius: 3px;
+            margin: 2px 2px;
+            font-size: 10px;
         }
         
-        @keyframes pulse-warning {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.8; }
+        .custom-marker {
+            position: relative;
         }
         
-        .leaflet-popup-content { min-width: 220px; }
+        .marker-warning {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            font-size: 16px;
+            animation: pulse 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
     </style>
 </head>
 <body>
-    <div class="header-bar">
-        <div>
-            <h1>Month2Month Weather Alert Map</h1>
-            <div class="subtitle">Report Date: 2026-03-05 | Updated: 2026-03-05 15:11 UTC</div>
-        </div>
-        <div class="header-stats">
-            <span class="stat">Total: 280</span>
-            <span class="stat">Vacant: 84</span>
-            <span class="stat">Occupied: 196</span>
-            <span class="stat urgent">🚨 Priority: 53</span>
-            <span class="stat">Alerts: 17</span>
+    <div id="map"></div>
+    
+    <div class="header-overlay">
+        <h1>M2M Weather Alert Dashboard</h1>
+        <div class="date">Report Date: 2026-03-06 | Data Source: NWS API</div>
+        <div class="stats">
+            <div class="stat"><span class="dot" style="background:#22c55e"></span> Total: 280</div>
+            <div class="stat"><span class="dot" style="background:#ef4444"></span> Vacant: 72</div>
+            <div class="stat"><span class="dot" style="background:#3b82f6"></span> Occupied: 199</div>
+            <div class="stat"><span class="warning-icon">⚠️</span> Priority: 34</div>
         </div>
     </div>
-    
-    <button class="sidebar-toggle" onclick="toggleSidebar()">⚠️ Priority List (53)</button>
-    
-    <div class="sidebar" id="sidebar">
-        <h3>⚠️ Priority Properties (Vacant in Risk Zones)</h3>
-        <div style="font-size:12px;color:#64748b;margin-bottom:10px;">
-            SEVERE: 4 | 
-            MODERATE: 49
-        </div>
-        <div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#25</b> 101 Thornhurst, Irvine, CA 92620, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#58</b> 77 Hanging Garden, Irvine, CA 92620, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#3474</b> 507 J St, Newport Beach, CA 92661, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#9441</b> 173 Terrapin, Irvine, CA 92618, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#40809</b> 14496 Meadowbrook Ln, Eastvale, CA 92880, USA <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#40938</b> 7143 Leighton Dr, Corona, CA 92880, USA <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41252</b> 138 Stallion, Irvine, CA 92602, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41276</b> 613 Towergrove Dr, Corona, CA 92879, USA <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41327</b> 8049 Jamestown Cir, Fontana, CA 92336, USA <span class='region-tag'>San Bernardino</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41333</b> 17 Riveroaks, Irvine, CA 92602, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41351</b> 5910 Sendero Ave, Eastvale, CA 92880, USA <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41363</b> 197 Augustine, Irvine, CA 92618, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41378</b> 14563 Gulfstream Lane, Moreno Valley, CA 9255 <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41414</b> 4835 South Monarch Pl, Ontario, CA 91762, USA <span class='region-tag'>San Bernardino</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41613</b> 12675 Elmhurst Dr, Moreno Valley, CA 92555, U <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41637</b> 46 Los Felis Dr, Pomona, CA 91767, USA <span class='region-tag'>Los Angeles and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41703</b> 29223 Obsidian Ct, Nuevo, CA 92567, USA <span class='region-tag'>Riverside</span></div><div class='priority-item'><span class='risk-tag risk-severe'>SEVERE</span> <b>#41709</b> 5107 Linda Pl, Longmont, CO 80503, USA <span class='region-tag'>Colorado</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41790</b> 181 Pin Ln, Lake Forest, CA 92630, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41808</b> 12203 Santa Gertrudes Ave #57, La Mirada, CA  <span class='region-tag'>Los Angeles and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41814</b> 246 Cater Ln, Libertyville, IL 60048, USA <span class='region-tag'>Chicago and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41820</b> 9303 Alondra Blvd Apt 4, Bellflower, CA 90706 <span class='region-tag'>Los Angeles and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41829</b> 1509 Granada Rd, Upland, CA 91786, USA <span class='region-tag'>San Bernardino</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41850</b> 13711 117th Ave NE, Kirkland, WA 98034, USA <span class='region-tag'>Seattle and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41901</b> 6406 224th Ave NE, Redmond, WA 98053, USA <span class='region-tag'>Seattle and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41910</b> 2910 Malaga Cir unit a, Diamond Bar, CA 91765 <span class='region-tag'>Los Angeles and Nearby</span></div><div class='priority-item'><span class='risk-tag risk-severe'>SEVERE</span> <b>#41958</b> 6211 N Malaya St, Aurora, CO 80019, USA <span class='region-tag'>Colorado</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#41997</b> 6 Del Carlo, Irvine, CA 92606, USA <span class='region-tag'>Orange County</span></div><div class='priority-item'><span class='risk-tag risk-severe'>SEVERE</span> <b>#42036</b> 35 Glen Crossing Rd, Edgecliff Village, TX 76 <span class='region-tag'>Dallas</span></div><div class='priority-item'><span class='risk-tag risk-moderate'>MODERATE</span> <b>#42066</b> 1928 Beacon Way SE, Renton, WA 98058, USA <span class='region-tag'>Seattle and Nearby</span></div><div class='more-items'>... and 23 more</div>
-    </div>
-    
-    <div id="map" style="margin-top: 55px; height: calc(100vh - 55px);"></div>
     
     <div class="legend">
-        <h4>Risk Level</h4>
-        <div class="legend-item"><span class="legend-dot" style="background:#dc2626"></span> CRITICAL</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#ea580c"></span> SEVERE</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#eab308"></span> MODERATE</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span> LOW</div>
-        <hr style="margin:8px 0">
-        <div class="legend-item">⚠️ Vacant in Risk Zone</div>
+        <h3>Risk Levels</h3>
+        <div class="legend-item">
+            <span class="legend-circle" style="background:rgba(220,38,38,0.3);border-color:#dc2626"></span>
+            CRITICAL
+        </div>
+        <div class="legend-item">
+            <span class="legend-circle" style="background:rgba(234,88,12,0.3);border-color:#ea580c"></span>
+            SEVERE
+        </div>
+        <div class="legend-item">
+            <span class="legend-circle" style="background:rgba(234,179,8,0.3);border-color:#eab308"></span>
+            MODERATE
+        </div>
+        <div class="legend-item">
+            <span class="legend-circle" style="background:rgba(34,197,94,0.3);border-color:#22c55e"></span>
+            LOW
+        </div>
+        <div class="legend-item" style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
+            <span class="warning-icon" style="font-size:14px">⚠️</span>
+            Vacant in Risk Zone
+        </div>
     </div>
     
     <script>
-        var map = L.map('map').setView([37.5, -98.0], 4);
+        const markers = [{"region": "Orange County", "lat": 33.7175, "lon": -117.8311, "risk": "MODERATE", "color": "#eab308", "total": 56, "vacant": 12, "occupied": 43, "unknown": 1, "priority_vacant": 12, "has_priority": true, "alert_events": ["Wind Advisory"], "alert_headlines": ["Wind Advisory issued March 6 at 1:04AM PST until March 8 at 5:00PM PDT by NWS San Diego CA"]}, {"region": "Orlando", "lat": 28.5383, "lon": -81.3792, "risk": "LOW", "color": "#22c55e", "total": 7, "vacant": 4, "occupied": 3, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Riverside", "lat": 33.9533, "lon": -117.3962, "risk": "MODERATE", "color": "#eab308", "total": 21, "vacant": 7, "occupied": 12, "unknown": 2, "priority_vacant": 7, "has_priority": true, "alert_events": ["Wind Advisory", "Air Quality Alert"], "alert_headlines": ["Wind Advisory issued March 6 at 1:04AM PST until March 8 at 5:00PM PDT by NWS San Diego CA", "Wind Advisory issued March 6 at 1:04AM PST until March 8 at 5:00PM PDT by NWS San Diego CA", "Air Quality Alert issued March 5 at 5:47PM PST by NWS San Diego CA"]}, {"region": "Houston", "lat": 29.7604, "lon": -95.3698, "risk": "LOW", "color": "#22c55e", "total": 15, "vacant": 1, "occupied": 14, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Portland and Nearby", "lat": 45.5152, "lon": -122.6784, "risk": "LOW", "color": "#22c55e", "total": 13, "vacant": 6, "occupied": 6, "unknown": 1, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "San Antonio", "lat": 29.4241, "lon": -98.4936, "risk": "LOW", "color": "#22c55e", "total": 4, "vacant": 1, "occupied": 3, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Los Angeles and Nearby", "lat": 34.0522, "lon": -118.2437, "risk": "LOW", "color": "#22c55e", "total": 41, "vacant": 10, "occupied": 28, "unknown": 3, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "San Bernardino", "lat": 34.1083, "lon": -117.2898, "risk": "SEVERE", "color": "#ea580c", "total": 21, "vacant": 5, "occupied": 16, "unknown": 0, "priority_vacant": 5, "has_priority": true, "alert_events": ["High Wind Warning", "Wind Advisory", "Air Quality Alert"], "alert_headlines": ["Wind Advisory issued March 6 at 2:36AM PST until March 7 at 10:00PM PST by NWS Hanford CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA"]}, {"region": "Bay Area", "lat": 37.7749, "lon": -122.4194, "risk": "MODERATE", "color": "#eab308", "total": 16, "vacant": 3, "occupied": 11, "unknown": 2, "priority_vacant": 3, "has_priority": true, "alert_events": ["Wind Advisory"], "alert_headlines": ["Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 1:15AM PST until March 7 at 10:00PM PST by NWS Las Vegas NV"]}, {"region": "Dallas", "lat": 32.7767, "lon": -96.797, "risk": "LOW", "color": "#22c55e", "total": 10, "vacant": 2, "occupied": 8, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Sacramento", "lat": 38.5816, "lon": -121.4944, "risk": "LOW", "color": "#22c55e", "total": 6, "vacant": 1, "occupied": 5, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "South Carolina", "lat": 34.0007, "lon": -81.0348, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "San Diego", "lat": 32.7157, "lon": -117.1611, "risk": "SEVERE", "color": "#ea580c", "total": 6, "vacant": 1, "occupied": 5, "unknown": 0, "priority_vacant": 1, "has_priority": true, "alert_events": ["High Wind Warning", "Wind Advisory", "Air Quality Alert"], "alert_headlines": ["Wind Advisory issued March 6 at 2:36AM PST until March 7 at 10:00PM PST by NWS Hanford CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA"]}, {"region": "Georgia", "lat": 33.749, "lon": -84.388, "risk": "LOW", "color": "#22c55e", "total": 11, "vacant": 1, "occupied": 10, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Phoenix and Nearby", "lat": 33.4484, "lon": -112.074, "risk": "LOW", "color": "#22c55e", "total": 7, "vacant": 0, "occupied": 7, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Colorado", "lat": 39.7392, "lon": -104.9903, "risk": "MODERATE", "color": "#eab308", "total": 4, "vacant": 2, "occupied": 2, "unknown": 0, "priority_vacant": 2, "has_priority": true, "alert_events": ["Winter Weather Advisory"], "alert_headlines": ["Winter Weather Advisory issued March 6 at 8:01AM MST until March 6 at 8:00PM MST by NWS Denver CO"]}, {"region": "Austin and Nearby", "lat": 30.2672, "lon": -97.7431, "risk": "LOW", "color": "#22c55e", "total": 7, "vacant": 2, "occupied": 5, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Vancouver", "lat": 48.7519, "lon": -122.4787, "risk": "LOW", "color": "#22c55e", "total": 6, "vacant": 2, "occupied": 4, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Chicago and Nearby", "lat": 41.8781, "lon": -87.6298, "risk": "MODERATE", "color": "#eab308", "total": 3, "vacant": 2, "occupied": 1, "unknown": 0, "priority_vacant": 2, "has_priority": true, "alert_events": ["Dense Fog Advisory"], "alert_headlines": ["Dense Fog Advisory issued March 6 at 9:05AM CST until March 6 at 10:00AM CST by NWS Chicago IL"]}, {"region": "Bakersfield", "lat": 35.3733, "lon": -119.0187, "risk": "LOW", "color": "#22c55e", "total": 2, "vacant": 1, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Seattle and Nearby", "lat": 47.6062, "lon": -122.3321, "risk": "LOW", "color": "#22c55e", "total": 9, "vacant": 4, "occupied": 5, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "North Carolina", "lat": 35.2271, "lon": -80.8431, "risk": "LOW", "color": "#22c55e", "total": 4, "vacant": 0, "occupied": 4, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Indiana", "lat": 39.7684, "lon": -86.1581, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Delaware", "lat": 39.7391, "lon": -75.5398, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "New Jersey", "lat": 40.0583, "lon": -74.4057, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Michigan", "lat": 42.3314, "lon": -83.0458, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 1, "occupied": 0, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Maryland", "lat": 39.0458, "lon": -76.6413, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 1, "occupied": 0, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Las Vegas", "lat": 36.1699, "lon": -115.1398, "risk": "MODERATE", "color": "#eab308", "total": 2, "vacant": 2, "occupied": 0, "unknown": 0, "priority_vacant": 2, "has_priority": true, "alert_events": ["Wind Advisory"], "alert_headlines": ["Wind Advisory issued March 6 at 1:15AM PST until March 7 at 10:00PM PST by NWS Las Vegas NV"]}, {"region": "Toronto", "lat": 43.6532, "lon": -79.3832, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Minnesota", "lat": 44.9778, "lon": -93.265, "risk": "LOW", "color": "#22c55e", "total": 2, "vacant": 1, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}];
+        
+        const map = L.map('map', {
+            center: [37.5, -98.0],
+            zoom: 4,
+            zoomControl: true
+        });
         
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
             subdomains: 'abcd',
-            maxZoom: 20
+            maxZoom: 19
         }).addTo(map);
         
-        function addRegionMarker(lat, lon, color, radius, popupHtml, hasWarning, risk) {
-            var circle = L.circleMarker([lat, lon], {
+        const riskColors = {
+            'CRITICAL': '#dc2626',
+            'SEVERE': '#ea580c',
+            'MODERATE': '#eab308',
+            'LOW': '#22c55e'
+        };
+        
+        markers.forEach(m => {
+            const radius = Math.max(12, Math.min(30, m.total * 1.2));
+            
+            // Create circle marker
+            const circle = L.circleMarker([m.lat, m.lon], {
                 radius: radius,
-                fillColor: color,
-                color: '#fff',
+                fillColor: m.color,
+                color: m.color,
                 weight: 2,
-                opacity: 1,
-                fillOpacity: 0.7
+                opacity: 0.9,
+                fillOpacity: 0.35
             }).addTo(map);
             
-            circle.bindPopup(popupHtml, { maxWidth: 300 });
-            
-            if (hasWarning) {
-                var warningIcon = L.divIcon({
-                    className: 'warning-icon',
-                    html: '<div style="font-size:20px;text-shadow:0 0 6px rgba(0,0,0,0.3);">⚠️</div>',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                });
-                L.marker([lat + 0.3, lon + 0.3], { icon: warningIcon }).addTo(map);
+            // Build popup content
+            let vacantLine = '';
+            if (m.has_priority) {
+                vacantLine = `<div class="popup-stats"><span class="vacant-warn">⚠️ Vacant: ${m.vacant}</span> | Occupied: ${m.occupied}</div>`;
+            } else {
+                vacantLine = `<div class="popup-stats">Vacant: ${m.vacant} | Occupied: ${m.occupied}</div>`;
             }
-        }
-        
-        
-    addRegionMarker(33.7175, -117.8311, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ Orange County</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>14</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>42</b></div>    <div class=\'stat-row\'>📊 Total: <b>56</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (1)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Wind Advisory</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(28.5383, -81.3792, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Orlando</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>4</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>3</b></div>    <div class=\'stat-row\'>📊 Total: <b>7</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(33.9533, -117.3962, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ Riverside</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>9</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>12</b></div>    <div class=\'stat-row\'>📊 Total: <b>21</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (2)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Wind Advisory</div><div class=\'alert-item risk-low\'><b>[LOW]</b> Air Quality Alert</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(29.7604, -95.3698, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Houston</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>14</b></div>    <div class=\'stat-row\'>📊 Total: <b>15</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(45.5152, -122.6784, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Portland and Nearby</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>7</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>6</b></div>    <div class=\'stat-row\'>📊 Total: <b>13</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(29.4241, -98.4936, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>San Antonio</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>3</b></div>    <div class=\'stat-row\'>📊 Total: <b>4</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(34.0522, -118.2437, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ Los Angeles and Nearby</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>14</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>27</b></div>    <div class=\'stat-row\'>📊 Total: <b>41</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (1)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Wind Advisory</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(34.1083, -117.2898, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ San Bernardino</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>4</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>17</b></div>    <div class=\'stat-row\'>📊 Total: <b>21</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (3)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Wind Advisory</div><div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Wind Advisory</div><div class=\'alert-item risk-low\'><b>[LOW]</b> Air Quality Alert</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(37.5585, -122.2711, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Bay Area</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>5</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>11</b></div>    <div class=\'stat-row\'>📊 Total: <b>16</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(32.7767, -96.797, '#ea580c', 30, '<div class=\'popup-content\'>  <h3>⚠️ Dallas</h3>  <div class=\'risk-badge risk-severe\'>SEVERE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>8</b></div>    <div class=\'stat-row\'>📊 Total: <b>10</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (2)</h4>    <div class=\'alert-item risk-severe\'><b>[SEVERE]</b> Fire Weather Watch</div><div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Dense Fog Advisory</div>  </div></div>', true, 'SEVERE');
-
-    addRegionMarker(38.5816, -121.4944, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Sacramento</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>5</b></div>    <div class=\'stat-row\'>📊 Total: <b>6</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(32.7765, -79.9311, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>South Carolina</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>0</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>1</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(32.7157, -117.1611, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>San Diego</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>5</b></div>    <div class=\'stat-row\'>📊 Total: <b>6</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(33.749, -84.388, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Georgia</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>10</b></div>    <div class=\'stat-row\'>📊 Total: <b>11</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(33.4484, -112.074, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Phoenix and Nearby</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>0</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>7</b></div>    <div class=\'stat-row\'>📊 Total: <b>7</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(39.7392, -104.9903, '#ea580c', 30, '<div class=\'popup-content\'>  <h3>⚠️ Colorado</h3>  <div class=\'risk-badge risk-severe\'>SEVERE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>2</b></div>    <div class=\'stat-row\'>📊 Total: <b>4</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (2)</h4>    <div class=\'alert-item risk-severe\'><b>[SEVERE]</b> Winter Storm Warning</div><div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Winter Weather Advisory</div>  </div></div>', true, 'SEVERE');
-
-    addRegionMarker(30.2672, -97.7431, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Austin and Nearby</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>5</b></div>    <div class=\'stat-row\'>📊 Total: <b>7</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(45.6387, -122.6615, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Vancouver</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>4</b></div>    <div class=\'stat-row\'>📊 Total: <b>6</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(41.8781, -87.6298, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ Chicago and Nearby</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>1</b></div>    <div class=\'stat-row\'>📊 Total: <b>3</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (1)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Dense Fog Advisory</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(35.3733, -119.0187, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Bakersfield</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>0</b></div>    <div class=\'stat-row\'>📊 Total: <b>2</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(47.6062, -122.3321, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ Seattle and Nearby</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>4</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>5</b></div>    <div class=\'stat-row\'>📊 Total: <b>9</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (1)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Winter Weather Advisory</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(35.7796, -78.6382, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>North Carolina</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>0</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>4</b></div>    <div class=\'stat-row\'>📊 Total: <b>4</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(39.7684, -86.1581, '#ea580c', 30, '<div class=\'popup-content\'>  <h3>Indiana</h3>  <div class=\'risk-badge risk-severe\'>SEVERE</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>0</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>1</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (3)</h4>    <div class=\'alert-item risk-severe\'><b>[SEVERE]</b> Flood Warning</div><div class=\'alert-item risk-severe\'><b>[SEVERE]</b> Flood Watch</div><div class=\'alert-item risk-severe\'><b>[SEVERE]</b> Flood Warning</div>  </div></div>', false, 'SEVERE');
-
-    addRegionMarker(39.6837, -75.7497, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Delaware</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>0</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(40.7282, -74.0776, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>New Jersey</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>0</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>1</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(42.3314, -83.0458, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Michigan</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>0</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(39.4143, -77.4105, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Maryland</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>0</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(36.1699, -115.1398, '#eab308', 25, '<div class=\'popup-content\'>  <h3>⚠️ Las Vegas</h3>  <div class=\'risk-badge risk-moderate\'>MODERATE</div>  <div class=\'stats\'>    <div class=\'stat-row vacant-warning\'>      ⚠️ Vacant: <b>2</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>0</b></div>    <div class=\'stat-row\'>📊 Total: <b>2</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (1)</h4>    <div class=\'alert-item risk-moderate\'><b>[MODERATE]</b> Wind Advisory</div>  </div></div>', true, 'MODERATE');
-
-    addRegionMarker(43.6532, -79.3832, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Toronto</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>0</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>1</b></div>    <div class=\'stat-row\'>📊 Total: <b>1</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-
-    addRegionMarker(44.9778, -93.265, '#22c55e', 20, '<div class=\'popup-content\'>  <h3>Minnesota</h3>  <div class=\'risk-badge risk-low\'>LOW</div>  <div class=\'stats\'>    <div class=\'stat-row \'>      🏠 Vacant: <b>1</b>    </div>    <div class=\'stat-row\'>👤 Occupied: <b>1</b></div>    <div class=\'stat-row\'>📊 Total: <b>2</b></div>  </div>  <div class=\'alerts-section\'>    <h4>Active Alerts (0)</h4>    <div class=\'no-alert\'>No active alerts</div>  </div></div>', false, 'LOW');
-        
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
+            
+            let alertsHtml = '';
+            if (m.alert_events.length > 0) {
+                const eventTags = m.alert_events.map(e => `<span class="alert-event">${e}</span>`).join('');
+                alertsHtml = `<div class="popup-alerts"><strong>Active Alerts:</strong><br>${eventTags}</div>`;
+            }
+            
+            const popupContent = `
+                <div class="popup-title">${m.region}</div>
+                <span class="popup-risk" style="background:${m.color}">${m.risk}</span>
+                <div class="popup-stats">Total Properties: ${m.total}</div>
+                ${vacantLine}
+                ${alertsHtml}
+            `;
+            
+            circle.bindPopup(popupContent, { maxWidth: 280 });
+            
+            // Add warning icon for priority vacant regions
+            if (m.has_priority) {
+                const warningIcon = L.divIcon({
+                    html: `<div class="marker-warning">⚠️</div>`,
+                    className: 'custom-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [0, 30]
+                });
+                
+                L.marker([m.lat, m.lon], { icon: warningIcon }).addTo(map);
+            }
+            
+            // Add count label
+            const labelIcon = L.divIcon({
+                html: `<div style="
+                    font-size: 10px;
+                    font-weight: 700;
+                    color: ${m.color};
+                    text-align: center;
+                    text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
+                    white-space: nowrap;
+                    margin-top: ${radius + 4}px;
+                ">${m.total}</div>`,
+                className: '',
+                iconSize: [40, 20],
+                iconAnchor: [20, -radius]
+            });
+            
+            L.marker([m.lat, m.lon], { icon: labelIcon, interactive: false }).addTo(map);
+        });
     </script>
 </body>
 </html>
