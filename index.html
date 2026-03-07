@@ -3,297 +3,2626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2M Weather Alert Map - 2026-03-06</title>
+    <title>M2M Weather Alert Map - 2026-03-07 10:09 UTC</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        
-        #map { width: 100%; height: 100vh; }
-        
-        .header-overlay {
-            position: absolute;
-            top: 10px;
-            left: 60px;
-            z-index: 1000;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
+        #map { width: 100%; height: calc(100vh - 60px); }
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: white;
             padding: 12px 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            max-width: 420px;
-        }
-        
-        .header-overlay h1 {
-            font-size: 16px;
-            color: #1e293b;
-            margin-bottom: 4px;
-        }
-        
-        .header-overlay .date {
-            font-size: 12px;
-            color: #64748b;
-        }
-        
-        .header-overlay .stats {
             display: flex;
-            gap: 12px;
-            margin-top: 8px;
-            font-size: 12px;
-        }
-        
-        .header-overlay .stat {
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 4px;
+            height: 60px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        
-        .header-overlay .stat .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .header h1 { font-size: 18px; font-weight: 600; }
+        .header .meta { font-size: 12px; opacity: 0.85; }
         
         .legend {
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
-            z-index: 1000;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 14px 18px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-        
-        .legend h3 {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             font-size: 13px;
-            color: #1e293b;
-            margin-bottom: 8px;
+            line-height: 1.8;
         }
-        
+        .legend h4 {
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #1e3a5f;
+        }
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 5px;
-            font-size: 12px;
-            color: #475569;
         }
-        
-        .legend-circle {
+        .legend-dot {
             width: 14px;
             height: 14px;
             border-radius: 50%;
             border: 2px solid;
-            display: inline-block;
+            flex-shrink: 0;
         }
         
         .warning-icon {
-            display: inline-block;
             animation: pulse 1.5s ease-in-out infinite;
-            font-size: 18px;
+            font-size: 20px;
         }
-        
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
+            50% { opacity: 0.6; transform: scale(1.3); }
         }
         
-        .leaflet-popup-content {
-            margin: 8px 12px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        .popup-content {
+            min-width: 220px;
         }
-        
-        .popup-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 6px;
+        .popup-content h3 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: #1e3a5f;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 4px;
         }
-        
-        .popup-risk {
+        .popup-content .risk-badge {
             display: inline-block;
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: white;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        
-        .popup-stats {
-            font-size: 12px;
-            color: #475569;
+        .popup-content .stats {
+            font-size: 13px;
             line-height: 1.6;
         }
-        
-        .popup-stats .vacant-warn {
+        .popup-content .alert-item {
+            font-size: 12px;
+            padding: 4px 0;
+            border-top: 1px solid #f3f4f6;
+            color: #4b5563;
+        }
+        .popup-content .priority-flag {
             color: #dc2626;
-            font-weight: 600;
+            font-weight: 700;
         }
         
-        .popup-alerts {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 11px;
-            color: #64748b;
+        .stats-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 58, 95, 0.95);
+            color: white;
+            padding: 8px 20px;
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            z-index: 1000;
         }
-        
-        .popup-alerts .alert-event {
-            display: inline-block;
-            background: #fef3c7;
-            color: #92400e;
-            padding: 1px 6px;
-            border-radius: 3px;
-            margin: 2px 2px;
-            font-size: 10px;
+        .stats-bar .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .custom-marker {
-            position: relative;
-        }
-        
-        .marker-warning {
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            font-size: 16px;
-            animation: pulse 1.5s ease-in-out infinite;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        .stats-bar .stat-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div>
+            <h1>Month2Month Weather Alert Map</h1>
+            <div class="meta">Real-time NWS weather alerts with vacancy classification</div>
+        </div>
+        <div class="meta" style="text-align: right;">
+            <div>Updated: 2026-03-07 10:09 UTC</div>
+            <div>280 Active Properties | 30 Regions</div>
+        </div>
+    </div>
     <div id="map"></div>
-    
-    <div class="header-overlay">
-        <h1>M2M Weather Alert Dashboard</h1>
-        <div class="date">Report Date: 2026-03-06 | Data Source: NWS API</div>
-        <div class="stats">
-            <div class="stat"><span class="dot" style="background:#22c55e"></span> Total: 280</div>
-            <div class="stat"><span class="dot" style="background:#ef4444"></span> Vacant: 72</div>
-            <div class="stat"><span class="dot" style="background:#3b82f6"></span> Occupied: 199</div>
-            <div class="stat"><span class="warning-icon">⚠️</span> Priority: 34</div>
-        </div>
+    <div class="stats-bar">
+        <div class="stat"><div class="stat-dot" style="background: #dc2626;"></div> CRITICAL: 0</div>
+        <div class="stat"><div class="stat-dot" style="background: #ea580c;"></div> SEVERE: 0</div>
+        <div class="stat"><div class="stat-dot" style="background: #d97706;"></div> MODERATE: 7</div>
+        <div class="stat"><div class="stat-dot" style="background: #16a34a;"></div> LOW: 23</div>
+        <div class="stat" style="margin-left: auto;">Total Vacant: 57 | Occupied: 214</div>
     </div>
-    
-    <div class="legend">
-        <h3>Risk Levels</h3>
-        <div class="legend-item">
-            <span class="legend-circle" style="background:rgba(220,38,38,0.3);border-color:#dc2626"></span>
-            CRITICAL
-        </div>
-        <div class="legend-item">
-            <span class="legend-circle" style="background:rgba(234,88,12,0.3);border-color:#ea580c"></span>
-            SEVERE
-        </div>
-        <div class="legend-item">
-            <span class="legend-circle" style="background:rgba(234,179,8,0.3);border-color:#eab308"></span>
-            MODERATE
-        </div>
-        <div class="legend-item">
-            <span class="legend-circle" style="background:rgba(34,197,94,0.3);border-color:#22c55e"></span>
-            LOW
-        </div>
-        <div class="legend-item" style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
-            <span class="warning-icon" style="font-size:14px">⚠️</span>
-            Vacant in Risk Zone
-        </div>
-    </div>
-    
     <script>
-        const markers = [{"region": "Orange County", "lat": 33.7175, "lon": -117.8311, "risk": "MODERATE", "color": "#eab308", "total": 56, "vacant": 12, "occupied": 43, "unknown": 1, "priority_vacant": 12, "has_priority": true, "alert_events": ["Wind Advisory"], "alert_headlines": ["Wind Advisory issued March 6 at 1:04AM PST until March 8 at 5:00PM PDT by NWS San Diego CA"]}, {"region": "Orlando", "lat": 28.5383, "lon": -81.3792, "risk": "LOW", "color": "#22c55e", "total": 7, "vacant": 4, "occupied": 3, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Riverside", "lat": 33.9533, "lon": -117.3962, "risk": "MODERATE", "color": "#eab308", "total": 21, "vacant": 7, "occupied": 12, "unknown": 2, "priority_vacant": 7, "has_priority": true, "alert_events": ["Wind Advisory", "Air Quality Alert"], "alert_headlines": ["Wind Advisory issued March 6 at 1:04AM PST until March 8 at 5:00PM PDT by NWS San Diego CA", "Wind Advisory issued March 6 at 1:04AM PST until March 8 at 5:00PM PDT by NWS San Diego CA", "Air Quality Alert issued March 5 at 5:47PM PST by NWS San Diego CA"]}, {"region": "Houston", "lat": 29.7604, "lon": -95.3698, "risk": "LOW", "color": "#22c55e", "total": 15, "vacant": 1, "occupied": 14, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Portland and Nearby", "lat": 45.5152, "lon": -122.6784, "risk": "LOW", "color": "#22c55e", "total": 13, "vacant": 6, "occupied": 6, "unknown": 1, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "San Antonio", "lat": 29.4241, "lon": -98.4936, "risk": "LOW", "color": "#22c55e", "total": 4, "vacant": 1, "occupied": 3, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Los Angeles and Nearby", "lat": 34.0522, "lon": -118.2437, "risk": "LOW", "color": "#22c55e", "total": 41, "vacant": 10, "occupied": 28, "unknown": 3, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "San Bernardino", "lat": 34.1083, "lon": -117.2898, "risk": "SEVERE", "color": "#ea580c", "total": 21, "vacant": 5, "occupied": 16, "unknown": 0, "priority_vacant": 5, "has_priority": true, "alert_events": ["High Wind Warning", "Wind Advisory", "Air Quality Alert"], "alert_headlines": ["Wind Advisory issued March 6 at 2:36AM PST until March 7 at 10:00PM PST by NWS Hanford CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA"]}, {"region": "Bay Area", "lat": 37.7749, "lon": -122.4194, "risk": "MODERATE", "color": "#eab308", "total": 16, "vacant": 3, "occupied": 11, "unknown": 2, "priority_vacant": 3, "has_priority": true, "alert_events": ["Wind Advisory"], "alert_headlines": ["Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 1:15AM PST until March 7 at 10:00PM PST by NWS Las Vegas NV"]}, {"region": "Dallas", "lat": 32.7767, "lon": -96.797, "risk": "LOW", "color": "#22c55e", "total": 10, "vacant": 2, "occupied": 8, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Sacramento", "lat": 38.5816, "lon": -121.4944, "risk": "LOW", "color": "#22c55e", "total": 6, "vacant": 1, "occupied": 5, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "South Carolina", "lat": 34.0007, "lon": -81.0348, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "San Diego", "lat": 32.7157, "lon": -117.1611, "risk": "SEVERE", "color": "#ea580c", "total": 6, "vacant": 1, "occupied": 5, "unknown": 0, "priority_vacant": 1, "has_priority": true, "alert_events": ["High Wind Warning", "Wind Advisory", "Air Quality Alert"], "alert_headlines": ["Wind Advisory issued March 6 at 2:36AM PST until March 7 at 10:00PM PST by NWS Hanford CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA", "Wind Advisory issued March 6 at 2:03AM PST until March 7 at 3:00PM PST by NWS Los Angeles/Oxnard CA"]}, {"region": "Georgia", "lat": 33.749, "lon": -84.388, "risk": "LOW", "color": "#22c55e", "total": 11, "vacant": 1, "occupied": 10, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Phoenix and Nearby", "lat": 33.4484, "lon": -112.074, "risk": "LOW", "color": "#22c55e", "total": 7, "vacant": 0, "occupied": 7, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Colorado", "lat": 39.7392, "lon": -104.9903, "risk": "MODERATE", "color": "#eab308", "total": 4, "vacant": 2, "occupied": 2, "unknown": 0, "priority_vacant": 2, "has_priority": true, "alert_events": ["Winter Weather Advisory"], "alert_headlines": ["Winter Weather Advisory issued March 6 at 8:01AM MST until March 6 at 8:00PM MST by NWS Denver CO"]}, {"region": "Austin and Nearby", "lat": 30.2672, "lon": -97.7431, "risk": "LOW", "color": "#22c55e", "total": 7, "vacant": 2, "occupied": 5, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Vancouver", "lat": 48.7519, "lon": -122.4787, "risk": "LOW", "color": "#22c55e", "total": 6, "vacant": 2, "occupied": 4, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Chicago and Nearby", "lat": 41.8781, "lon": -87.6298, "risk": "MODERATE", "color": "#eab308", "total": 3, "vacant": 2, "occupied": 1, "unknown": 0, "priority_vacant": 2, "has_priority": true, "alert_events": ["Dense Fog Advisory"], "alert_headlines": ["Dense Fog Advisory issued March 6 at 9:05AM CST until March 6 at 10:00AM CST by NWS Chicago IL"]}, {"region": "Bakersfield", "lat": 35.3733, "lon": -119.0187, "risk": "LOW", "color": "#22c55e", "total": 2, "vacant": 1, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Seattle and Nearby", "lat": 47.6062, "lon": -122.3321, "risk": "LOW", "color": "#22c55e", "total": 9, "vacant": 4, "occupied": 5, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "North Carolina", "lat": 35.2271, "lon": -80.8431, "risk": "LOW", "color": "#22c55e", "total": 4, "vacant": 0, "occupied": 4, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Indiana", "lat": 39.7684, "lon": -86.1581, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Delaware", "lat": 39.7391, "lon": -75.5398, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "New Jersey", "lat": 40.0583, "lon": -74.4057, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Michigan", "lat": 42.3314, "lon": -83.0458, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 1, "occupied": 0, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Maryland", "lat": 39.0458, "lon": -76.6413, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 1, "occupied": 0, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Las Vegas", "lat": 36.1699, "lon": -115.1398, "risk": "MODERATE", "color": "#eab308", "total": 2, "vacant": 2, "occupied": 0, "unknown": 0, "priority_vacant": 2, "has_priority": true, "alert_events": ["Wind Advisory"], "alert_headlines": ["Wind Advisory issued March 6 at 1:15AM PST until March 7 at 10:00PM PST by NWS Las Vegas NV"]}, {"region": "Toronto", "lat": 43.6532, "lon": -79.3832, "risk": "LOW", "color": "#22c55e", "total": 1, "vacant": 0, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}, {"region": "Minnesota", "lat": 44.9778, "lon": -93.265, "risk": "LOW", "color": "#22c55e", "total": 2, "vacant": 1, "occupied": 1, "unknown": 0, "priority_vacant": 0, "has_priority": false, "alert_events": [], "alert_headlines": []}];
+        var map = L.map('map').setView([37.5, -98.0], 4);
         
-        const map = L.map('map', {
-            center: [37.5, -98.0],
-            zoom: 4,
-            zoomControl: true
-        });
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
         }).addTo(map);
-        
-        const riskColors = {
-            'CRITICAL': '#dc2626',
-            'SEVERE': '#ea580c',
-            'MODERATE': '#eab308',
-            'LOW': '#22c55e'
-        };
-        
-        markers.forEach(m => {
-            const radius = Math.max(12, Math.min(30, m.total * 1.2));
-            
-            // Create circle marker
-            const circle = L.circleMarker([m.lat, m.lon], {
-                radius: radius,
-                fillColor: m.color,
-                color: m.color,
-                weight: 2,
-                opacity: 0.9,
-                fillOpacity: 0.35
-            }).addTo(map);
-            
-            // Build popup content
-            let vacantLine = '';
-            if (m.has_priority) {
-                vacantLine = `<div class="popup-stats"><span class="vacant-warn">⚠️ Vacant: ${m.vacant}</span> | Occupied: ${m.occupied}</div>`;
-            } else {
-                vacantLine = `<div class="popup-stats">Vacant: ${m.vacant} | Occupied: ${m.occupied}</div>`;
-            }
-            
-            let alertsHtml = '';
-            if (m.alert_events.length > 0) {
-                const eventTags = m.alert_events.map(e => `<span class="alert-event">${e}</span>`).join('');
-                alertsHtml = `<div class="popup-alerts"><strong>Active Alerts:</strong><br>${eventTags}</div>`;
-            }
-            
-            const popupContent = `
-                <div class="popup-title">${m.region}</div>
-                <span class="popup-risk" style="background:${m.color}">${m.risk}</span>
-                <div class="popup-stats">Total Properties: ${m.total}</div>
-                ${vacantLine}
-                ${alertsHtml}
-            `;
-            
-            circle.bindPopup(popupContent, { maxWidth: 280 });
-            
-            // Add warning icon for priority vacant regions
-            if (m.has_priority) {
-                const warningIcon = L.divIcon({
-                    html: `<div class="marker-warning">⚠️</div>`,
-                    className: 'custom-marker',
-                    iconSize: [30, 30],
-                    iconAnchor: [0, 30]
-                });
-                
-                L.marker([m.lat, m.lon], { icon: warningIcon }).addTo(map);
-            }
-            
-            // Add count label
-            const labelIcon = L.divIcon({
-                html: `<div style="
-                    font-size: 10px;
-                    font-weight: 700;
-                    color: ${m.color};
-                    text-align: center;
-                    text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
-                    white-space: nowrap;
-                    margin-top: ${radius + 4}px;
-                ">${m.total}</div>`,
+
+        L.circleMarker([33.697583, -117.7620681], {
+            radius: 35,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Orange County</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 9 |                 <strong>Occupied:</strong> 46                | <strong>Unknown:</strong> 1            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (2):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div><div class="alert-item"><strong>[LOW]</strong> Air Quality Alert</div>            </div>        </div>    ');
+    
+        L.marker([33.847583, -117.61206809999999], {
+            icon: L.divIcon({
+                html: '<div class="warning-icon">⚠️</div>',
                 className: '',
-                iconSize: [40, 20],
-                iconAnchor: [20, -radius]
-            });
-            
-            L.marker([m.lat, m.lon], { icon: labelIcon, interactive: false }).addTo(map);
-        });
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Orange County</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 9 |                 <strong>Occupied:</strong> 46                | <strong>Unknown:</strong> 1            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (2):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div><div class="alert-item"><strong>[LOW]</strong> Air Quality Alert</div>            </div>        </div>    ');
+        
+        L.circleMarker([28.3234176, -81.6050264], {
+            radius: 16.4,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Orlando</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 3 |                 <strong>Occupied:</strong> 4                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([33.9581966, -117.6077093], {
+            radius: 33.2,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Riverside</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 5 |                 <strong>Occupied:</strong> 14                | <strong>Unknown:</strong> 2            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (2):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div><div class="alert-item"><strong>[LOW]</strong> Air Quality Alert</div>            </div>        </div>    ');
+    
+        L.marker([34.1081966, -117.45770929999999], {
+            icon: L.divIcon({
+                html: '<div class="warning-icon">⚠️</div>',
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Riverside</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 5 |                 <strong>Occupied:</strong> 14                | <strong>Unknown:</strong> 2            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (2):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div><div class="alert-item"><strong>[LOW]</strong> Air Quality Alert</div>            </div>        </div>    ');
+        
+        L.circleMarker([29.4741224, -95.5335341], {
+            radius: 26.0,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Houston</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 14                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([45.5387766, -122.7704507], {
+            radius: 23.6,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Portland and Nearby</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 5 |                 <strong>Occupied:</strong> 7                | <strong>Unknown:</strong> 1            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([29.35965, -98.609735], {
+            radius: 12.8,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>San Antonio</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 3                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([34.107876, -118.0324027], {
+            radius: 35,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Los Angeles and Nearby</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 7 |                 <strong>Occupied:</strong> 31                | <strong>Unknown:</strong> 3            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div>            </div>        </div>    ');
+    
+        L.marker([34.257875999999996, -117.8824027], {
+            icon: L.divIcon({
+                html: '<div class="warning-icon">⚠️</div>',
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Los Angeles and Nearby</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 7 |                 <strong>Occupied:</strong> 31                | <strong>Unknown:</strong> 3            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div>            </div>        </div>    ');
+        
+        L.circleMarker([33.996667, -117.6694313], {
+            radius: 33.2,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>San Bernardino</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 3 |                 <strong>Occupied:</strong> 18                            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (2):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div><div class="alert-item"><strong>[LOW]</strong> Air Quality Alert</div>            </div>        </div>    ');
+    
+        L.marker([34.146667, -117.5194313], {
+            icon: L.divIcon({
+                html: '<div class="warning-icon">⚠️</div>',
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>San Bernardino</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 3 |                 <strong>Occupied:</strong> 18                            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (2):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div><div class="alert-item"><strong>[LOW]</strong> Air Quality Alert</div>            </div>        </div>    ');
+        
+        L.circleMarker([37.4351055, -122.1242596], {
+            radius: 27.2,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Bay Area</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 12                | <strong>Unknown:</strong> 2            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([33.2529148, -97.1432784], {
+            radius: 20.0,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Dallas</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 8                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([38.6372214, -121.0919746], {
+            radius: 15.2,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Sacramento</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 5                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([32.8287084, -80.1053096], {
+            radius: 12,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>South Carolina</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Special Weather Statement</div>            </div>        </div>    ');
+    
+        L.circleMarker([32.96975763886958, -117.1288463435987], {
+            radius: 15.2,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>San Diego</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 5                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([33.966995, -84.16035099999999], {
+            radius: 21.2,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Georgia</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 10                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([33.73487710000001, -112.1140522], {
+            radius: 16.4,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Phoenix and Nearby</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 7                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([40.1387906, -105.1675408], {
+            radius: 12.8,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Colorado</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 2                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([30.4569647, -97.57862229999999], {
+            radius: 16.4,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Austin and Nearby</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 7                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([45.6094277, -122.4957704], {
+            radius: 15.2,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Vancouver</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 4                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([42.3080575, -87.96399459999999], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Chicago and Nearby</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([35.34944718514957, -119.1154978779086], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Bakersfield</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([47.7949897, -122.1846739], {
+            radius: 18.799999999999997,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Seattle and Nearby</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 4 |                 <strong>Occupied:</strong> 5                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([35.617196, -78.37630399999999], {
+            radius: 12.8,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>North Carolina</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 4                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([39.650595, -86.1825862], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Indiana</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([39.6653964, -75.7223617], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Delaware</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([40.765904, -74.1538123], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>New Jersey</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([42.1580178, -83.8075211], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Michigan</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 0                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([39.4021649, -77.312777], {
+            radius: 12,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Maryland</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 0                            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Special Weather Statement</div>            </div>        </div>    ');
+    
+        L.marker([39.5521649, -77.16277699999999], {
+            icon: L.divIcon({
+                html: '<div class="warning-icon">⚠️</div>',
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Maryland</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 0                            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Special Weather Statement</div>            </div>        </div>    ');
+        
+        L.circleMarker([36.0093463, -115.2730201], {
+            radius: 12,
+            color: '#d97706',
+            fillColor: '#fcd34d',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Las Vegas</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 0                            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div>            </div>        </div>    ');
+    
+        L.marker([36.159346299999996, -115.12302009999999], {
+            icon: L.divIcon({
+                html: '<div class="warning-icon">⚠️</div>',
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Las Vegas</h3>            <span class="risk-badge" style="background: #d97706;">MODERATE</span>            <div class="stats">                ⚠️ <strong>Vacant:</strong> 2 |                 <strong>Occupied:</strong> 0                            </div>            <div class="priority-flag">⚠️ Vacant properties at risk!</div>            <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (1):</strong>                <div class="alert-item"><strong>[MODERATE]</strong> Wind Advisory</div>            </div>        </div>    ');
+        
+        L.circleMarker([43.6745142, -79.39892929999999], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Toronto</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 0 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([44.9126415, -93.46124549999999], {
+            radius: 12,
+            color: '#16a34a',
+            fillColor: '#86efac',
+            fillOpacity: 0.6,
+            weight: 2
+        }).addTo(map).bindPopup('        <div class="popup-content">            <h3>Minnesota</h3>            <span class="risk-badge" style="background: #16a34a;">LOW</span>            <div class="stats">                 <strong>Vacant:</strong> 1 |                 <strong>Occupied:</strong> 1                            </div>                        <div style="margin-top: 6px;">                <strong style="font-size: 12px;">Active Alerts (0):</strong>                <div class="alert-item" style="color: #16a34a;">No active weather alerts</div>            </div>        </div>    ');
+    
+        L.circleMarker([33.697583, -117.7620681], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 63 Secret Garden, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6681966, -117.8515274], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1125 Scholarship, Irvine, CA 92612, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6694199, -117.8173361], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5 Rockwood, Irvine, CA 92614, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6672297, -117.8515681], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2117 Scholarship, Irvine, CA 92612, USA | Risk: MODERATE');
+    
+        L.circleMarker([28.3234176, -81.6050264], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7901 Golden Pond Cir, Kissimmee, FL 34747, USA | Risk: LOW');
+    
+        L.circleMarker([33.707491, -117.749444], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 101 Thornhurst, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.689846, -117.7577609], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 75 Gardenstone Path, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6864443, -117.7516637], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 77 Hanging Garden, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6872274, -117.7509331], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 95 Hanging Garden, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6955904, -117.7459914], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 78 Talisman, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6780999, -117.7972309], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 21 Lakefront, Irvine, CA 92604, USA | Risk: MODERATE');
+    
+        L.circleMarker([28.3282223, -81.62711929999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8655 La Isla Dr, Kissimmee, FL 34747, USA | Risk: LOW');
+    
+        L.circleMarker([28.3124373, -81.64762209999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 9022 Rhodes St, Kissimmee, FL 34747, USA | Risk: LOW');
+    
+        L.circleMarker([33.701485, -117.727787], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 109 Bright Poppy, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6872136, -117.732435], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 104 Electra, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.59940150000001, -117.8878034], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 507 J St, Newport Beach, CA 92661, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6670116, -117.8178137], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 20 Rockrose Way, Irvine, CA 92612, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6845162, -117.7559144], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 64 Thornapple, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7085418, -118.0457746], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4731 Oceanridge Dr, Huntington Beach, CA 92649, USA | Risk: MODERATE');
+    
+        L.circleMarker([28.261766, -81.64582709999999], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 1550 Plunker Dr, Davenport, FL 33896, USA | Risk: LOW');
+    
+        L.circleMarker([33.7115533, -117.7410451], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 101 Ovation, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6827386, -117.7380252], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 159 Terrapin, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7369671, -117.7510589], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 231 Rodeo, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7179639, -117.7407963], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 105 Cordial, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7114522, -117.7444134], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 61 Crestwick, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6820709, -117.7385972], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 173 Terrapin, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6672935, -117.7866458], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 205 Cherrybrook Ln, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([28.3068419, -81.6424242], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 8859 Geneve Ct, Kissimmee, FL 34747, USA | Risk: LOW');
+    
+        L.circleMarker([28.3162709, -81.6458246], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 2478 Dubai St, Kissimmee, FL 34747, USA | Risk: LOW');
+    
+        L.circleMarker([33.7302458, -117.764092], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5 La Canada, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6992522, -117.7621904], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 48 Bamboo, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([29.4741224, -95.5335341], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8718 Myrtle Bend Dr, Missouri City, TX 77459, USA | Risk: LOW');
+    
+        L.circleMarker([29.4748939, -95.533908], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8710 Crossing Oak Ln, Missouri City, TX 77459, USA | Risk: LOW');
+    
+        L.circleMarker([33.9581966, -117.6077093], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 7143 Leighton Dr, Corona, CA 92880, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.5387766, -122.7704507], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 9021 NW Bartholomew Dr, Portland, OR 97229, USA | Risk: LOW');
+    
+        L.circleMarker([29.553496, -95.7629212], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6602 Sterling Shores Ln, Rosenberg, TX 77471, USA | Risk: LOW');
+    
+        L.circleMarker([29.4759149, -95.53338289999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2142 Ironwood Pass Dr, Missouri City, TX 77459, USA | Risk: LOW');
+    
+        L.circleMarker([29.35965, -98.609735], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 7026 Randado Ct, San Antonio, TX 78242, USA | Risk: LOW');
+    
+        L.circleMarker([28.2819875, -81.6478789], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 850 Sticks St, Championsgate, FL 33896, USA | Risk: LOW');
+    
+        L.circleMarker([34.107876, -118.0324027], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2617 Glamis Ct, Arcadia, CA 91007, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.996667, -117.6694313], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6203 Winona St, Chino, CA 91710, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.4351055, -122.1242596], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 820 Colorado Ave, Palo Alto, CA 94303, USA | Risk: LOW');
+    
+        L.circleMarker([37.4505892, -122.1302269], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 546 Hilbar Ln, Palo Alto, CA 94303, USA | Risk: LOW');
+    
+        L.circleMarker([29.4756443, -95.5349691], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2151 Long Spring Dr, Sienna Plantation, TX 77459, USA | Risk: LOW');
+    
+        L.circleMarker([33.673581, -117.6844821], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 129 Lavender, Lake Forest, CA 92630, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.2529148, -97.1432784], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3604 Beatriz Dr, Denton, TX 76207, USA | Risk: LOW');
+    
+        L.circleMarker([29.4721062, -95.5331241], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8719 Fox Trail Dr, Missouri City, TX 77459, USA | Risk: LOW');
+    
+        L.circleMarker([29.3417998, -98.41886699999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3514 Booker Trl, San Antonio, TX 78223, USA | Risk: LOW');
+    
+        L.circleMarker([29.9025534, -95.7089858], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 19738 Tacoma Bluff Drive, Cypress, TX 77433, USA | Risk: LOW');
+    
+        L.circleMarker([33.7341338, -117.7470771], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 138 Stallion, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([29.7006298, -95.8450141], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6411 Tea Tree Dr, Katy, TX 77494, USA | Risk: LOW');
+    
+        L.circleMarker([33.8880018, -117.5296952], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 613 Towergrove Dr, Corona, CA 92879, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1049225, -117.6969143], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 863 Harvest Ave, Upland, CA 91786, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.2230232, -121.876832], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 6429 McAbee Rd, San Jose, CA 95120, USA | Risk: LOW');
+    
+        L.circleMarker([34.1067654, -117.5127908], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 8049 Jamestown Cir, Fontana, CA 92336, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7214095, -117.7822976], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 17 Riveroaks, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0869094, -117.3758547], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 630 W Woodcrest St, Rialto, CA 92376, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9781123, -117.5880985], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 5910 Sendero Ave, Eastvale, CA 92880, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9248807, -117.2739208], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 13479 Arbor Park Lane, Moreno Valley, CA 92551, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6793271, -117.7484416], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 197 Augustine, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.6664128, -118.2400112], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 43130 62nd St W, Lancaster, CA 93536, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1057879, -118.035051], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5657 McCulloch Ave #106, Temple City, CA 91780, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0454279, -117.2299638], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 11466 Gower St, Loma Linda, CA 92354, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.90912490000001, -117.2281719], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 14563 Gulfstream Lane, Moreno Valley, CA 92553, USA | Risk: MODERATE');
+    
+        L.circleMarker([38.6372214, -121.0919746], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 3304 Sunny Gate Ln, Folsom, CA 95630, USA | Risk: LOW');
+    
+        L.circleMarker([34.6704216, -118.2382733], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 43341 Harbor St, Lancaster, CA 93536, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.014483, -117.417999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6599 Bryce Canyon Ct, Jurupa Valley, CA 92509, USA | Risk: MODERATE');
+    
+        L.circleMarker([29.3566285, -98.6057392], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5406 Elm Valley Dr, San Antonio, TX 78242, USA | Risk: LOW');
+    
+        L.circleMarker([34.1529954, -117.4840511], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5554 Pheasant Dr, Fontana, CA 92336, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9854643, -117.5809932], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 4835 South Monarch Pl, Ontario, CA 91762, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7329961, -117.77629], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 107 Waterman, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.3463892, -121.9980182], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1088 Wood Duck Ave, Santa Clara, CA 95051, USA | Risk: LOW');
+    
+        L.circleMarker([34.124283, -117.689907], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1644 Coral Bells Pl, Upland, CA 91784, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7341338, -117.7470771], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 132 Stallion, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7349398, -117.7404354], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 126 Donati, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.3284908, -121.9763041], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 300 Salsbury Dr, Santa Clara, CA 95051, USA | Risk: LOW');
+    
+        L.circleMarker([32.8287084, -80.1053096], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 782 Jancus St, Charleston, SC 29414, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9636202, -117.6419329], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7473 Brahman Ln, Chino, CA 91708, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.648379, -117.5849171], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 108 Wild Horse, Rancho Santa Margarita, CA 92688, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.5401234, -122.775598], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 2377 NW Birkendene St, Portland, OR 97229, USA | Risk: LOW');
+    
+        L.circleMarker([32.96975763886958, -117.1288463435987], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 13850 Bruyere Ct, San Diego, CA 92129, USA | Risk: LOW');
+    
+        L.circleMarker([34.007984, -117.315523], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 19907 Sunkissed Ridge Dr, Riverside, CA 92507, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9715651, -117.2592298], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 10311 Penguin Ct, Moreno Valley, CA 92557, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6625556, -117.6816069], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 228 Siena, Lake Forest, CA 92630, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.1450363, -96.6914023], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5801 Fuder Dr, Mckinney, TX 75070, USA | Risk: LOW');
+    
+        L.circleMarker([34.6854175, -118.2200161], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 44149 Buckeye Ct, Lancaster, CA 93536, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9370133, -117.2022701], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 12675 Elmhurst Dr, Moreno Valley, CA 92555, USA | Risk: MODERATE');
+    
+        L.circleMarker([38.6387558, -121.0919298], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3200 Sunny Gate Ln, Folsom, CA 95630, USA | Risk: LOW');
+    
+        L.circleMarker([33.968186, -117.8434739], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 21075 Blossom Way, Diamond Bar, CA 91765, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.966995, -84.16035099999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4065 Spinnaker Dr, Duluth, GA 30096, USA | Risk: LOW');
+    
+        L.circleMarker([33.73487710000001, -112.1140522], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2510 W Big Oak St, Phoenix, AZ 85085, USA | Risk: LOW');
+    
+        L.circleMarker([34.0383495, -117.8593712], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1210 N Country Hollow Dr, Walnut, CA 91789, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.7112093, -112.1427653], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3853 W Fallen Leaf Ln, Glendale, AZ 85310, USA | Risk: LOW');
+    
+        L.circleMarker([33.8678482, -112.1571565], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4509 W Venture Ct, Anthem, AZ 85086, USA | Risk: LOW');
+    
+        L.circleMarker([33.7330446, -112.1751802], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5414 W Straight Arrow Ln, Phoenix, AZ 85083, USA | Risk: LOW');
+    
+        L.circleMarker([33.78875449085626, -117.1527414226318], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 29223 Obsidian Ct, Nuevo, CA 92567, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.74135330666064, -112.1135987572086], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2519 W Desert Vista Trl, Phoenix, AZ 85085, USA | Risk: LOW');
+    
+        L.circleMarker([40.1387906, -105.1675408], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 5107 Linda Pl, Longmont, CO 80503, USA | Risk: LOW');
+    
+        L.circleMarker([40.166686, -105.058227], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 521 High Point Dr, Longmont, CO 80504, USA | Risk: LOW');
+    
+        L.circleMarker([29.5142328, -95.80121079999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4715 Purple Fountain Drive, Rosenberg, TX 77469, USA | Risk: LOW');
+    
+        L.circleMarker([30.4569647, -97.57862229999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3105 Honey Peach Way, Pflugerville, TX 78660, USA | Risk: LOW');
+    
+        L.circleMarker([29.7292031, -95.88852729999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 29914 Reagans Ranch Dr, Katy, TX 77494, USA | Risk: LOW');
+    
+        L.circleMarker([34.0558546, -117.8753494], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 917 S Easthills Dr, West Covina, CA 91791, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.8178592, -118.0190081], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6548 Sequoia Dr, Buena Park, CA 90620, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9947337, -117.8214877], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1427 Pecan Grove Dr, Diamond Bar, CA 91765, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1070775, -117.8445704], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 945 E Wonder Ln, Glendora, CA 91740, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.6810163, -118.2410813], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6127 W Avenue J9, Lancaster, CA 93536, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.1795578, -96.8715435], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2137 Goliad Cir, Frisco, TX 75034, USA | Risk: LOW');
+    
+        L.circleMarker([45.5322172, -122.891924], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8493 NE Windstone St, Hillsboro, OR 97006, USA | Risk: LOW');
+    
+        L.circleMarker([33.7179976, -117.7476468], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 113 Baja, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.6094277, -122.4957704], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1603 SE 171st Pl, Vancouver, WA 98683, USA | Risk: LOW');
+    
+        L.circleMarker([33.6701938, -117.6666541], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 181 Pin Ln, Lake Forest, CA 92630, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.108962, -117.4648484], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 15637 Curry Pl, Fontana, CA 92336, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.6491951, -118.2544415], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7030 W Ave L12, Lancaster, CA 93536, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9192535, -117.9954166], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 12203 Santa Gertrudes Ave #57, La Mirada, CA 90638, USA | Risk: MODERATE');
+    
+        L.circleMarker([42.3080575, -87.96399459999999], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 246 Cater Ln, Libertyville, IL 60048, USA | Risk: LOW');
+    
+        L.circleMarker([34.1118768, -117.498702], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 14033 Yorktown Ct, Fontana, CA 92336, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.8053821, -117.89772], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1690 S Lewis St, Anaheim, CA 92805, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1181504, -117.6793034], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 1509 Granada Rd, Upland, CA 91786, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9540205, -84.1695817], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4589 Brook Farms Dr, Duluth, GA 30096, USA | Risk: LOW');
+    
+        L.circleMarker([37.3464239, -121.9980716], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1090 Wood Duck Ave, Santa Clara, CA 95051, USA | Risk: LOW');
+    
+        L.circleMarker([35.34944718514957, -119.1154978779086], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 606 Windsor Park Dr, Bakersfield, CA 93311, USA | Risk: LOW');
+    
+        L.circleMarker([47.7949897, -122.1846739], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3610 223rd Pl SE, Bothell, WA 98021, USA | Risk: LOW');
+    
+        L.circleMarker([47.7232048, -122.184649], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 13711 117th Ave NE, Kirkland, WA 98034, USA | Risk: LOW');
+    
+        L.circleMarker([34.0870903, -83.9752323], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3658 Silver Fox Path, Buford, GA 30519, USA | Risk: LOW');
+    
+        L.circleMarker([45.5430947, -122.8024148], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3289 NW Kinsley Terrace, Portland, OR 97229, USA | Risk: LOW');
+    
+        L.circleMarker([34.2860814, -118.3941513], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 11843 Apple Grove Ln, Sylmar, CA 91342, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.5542436, -118.0919034], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 37058 Alton Drive, Palmdale, CA 93550, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.4303862, -122.1065577], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3743 Klamath Ln, Palo Alto, CA 94303, USA | Risk: LOW');
+    
+        L.circleMarker([47.66279, -122.039037], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 6406 224th Ave NE, Redmond, WA 98053, USA | Risk: LOW');
+    
+        L.circleMarker([37.7861476, -122.3942911], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 50 Lansing St #407, San Francisco, CA 94105, USA | Risk: LOW');
+    
+        L.circleMarker([47.3985435, -122.2050508], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 22720 SE 101st Pl, Kent, WA 98031, USA | Risk: LOW');
+    
+        L.circleMarker([33.9718462, -117.8375584], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 2910 Malaga Cir unit a, Diamond Bar, CA 91765, USA | Risk: MODERATE');
+    
+        L.circleMarker([35.35119460000001, -119.118461], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 10410 Bichester Ct, Bakersfield, CA 93311, USA | Risk: LOW');
+    
+        L.circleMarker([33.9729197, -84.0805553], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1775 Stoneoak Cir, Lawrenceville, GA 30043, USA | Risk: LOW');
+    
+        L.circleMarker([32.922536, -117.1611889], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 11022 Alonda Ct, San Diego, CA 92126, USA | Risk: LOW');
+    
+        L.circleMarker([45.5260678, -122.9215442], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 487 NE 58th Ave, Hillsboro, OR 97124, USA | Risk: LOW');
+    
+        L.circleMarker([33.7878073, -84.2603501], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 427 Third Ave, Scottdale, GA 30079, USA | Risk: LOW');
+    
+        L.circleMarker([34.0875758, -84.2045955], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5590 Cannonero Dr, Alpharetta, GA 30005, USA | Risk: LOW');
+    
+        L.circleMarker([35.617196, -78.37630399999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 70 Echo Canyon Dr, Clayton, NC 27527, USA | Risk: LOW');
+    
+        L.circleMarker([33.8998823, -83.9581827], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 211 Clark Lake Ln, Grayson, GA 30017, USA | Risk: LOW');
+    
+        L.circleMarker([39.8097229, -104.7427968], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 6211 N Malaya St, Aurora, CO 80019, USA | Risk: LOW');
+    
+        L.circleMarker([33.9564793, -117.5737747], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7232 Cari Ct, Eastvale, CA 92880, USA | Risk: MODERATE');
+    
+        L.circleMarker([32.9441382, -117.2310592], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 12588 Carmel Creek Rd #27, San Diego, CA 92130, USA | Risk: LOW');
+    
+        L.circleMarker([35.9437061, -78.888792], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2543 Wyntercrest Ln, Durham, NC 27713, USA | Risk: LOW');
+    
+        L.circleMarker([35.9412374, -78.8427991], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4 Suncrest Ct, Durham, NC 27703, USA | Risk: LOW');
+    
+        L.circleMarker([38.6541082, -121.495624], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1618 Pagoda Lane, Sacramento, CA 95834, USA | Risk: LOW');
+    
+        L.circleMarker([33.8938296, -84.18041780000001], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5772 Williams Rd, Norcross, GA 30093, USA | Risk: LOW');
+    
+        L.circleMarker([45.6690238, -122.5976167], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7401 NE 65th St, Vancouver, WA 98662, USA | Risk: LOW');
+    
+        L.circleMarker([33.6903521, -117.8043298], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 6 Del Carlo, Irvine, CA 92606, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.882123, -84.11592999999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4122 Fulson Dr, Lilburn, GA 30047, USA | Risk: LOW');
+    
+        L.circleMarker([33.8714583, -84.5940874], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1345 Velvet Creek Way SW, Marietta, GA 30008, USA | Risk: LOW');
+    
+        L.circleMarker([45.6310519, -122.5014946], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1207 NE 166th Ave, Vancouver, WA 98684, USA | Risk: LOW');
+    
+        L.circleMarker([33.5248633, -117.6935064], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7 Genoa, Laguna Niguel, CA 92677, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.8984522, -117.3246675], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8371 Attica Dr, Riverside, CA 92508, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0538496, -117.235667], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 26074 Lugo Dr, Loma Linda, CA 92354, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0329467, -117.7512062], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2101 Rio Grande, Pomona, CA 91766, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.8908319, -117.7549753], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 20461 Vía Trovador, Yorba Linda, CA 92887, USA | Risk: MODERATE');
+    
+        L.circleMarker([32.6558118, -97.3322256], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 35 Glen Crossing Rd, Edgecliff Village, TX 76134, USA | Risk: LOW');
+    
+        L.circleMarker([34.1003325, -117.6760724], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1424 W Winn Dr, Upland, CA 91786, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.60605040000001, -111.9404885], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6511 E Eugie Terrace, Scottsdale, AZ 85254, USA | Risk: LOW');
+    
+        L.circleMarker([45.5388942, -122.7781388], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 9831 NW Bartholomew Dr, Portland, OR 97229, USA | Risk: LOW');
+    
+        L.circleMarker([39.650595, -86.1825862], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7907 Shannon Lakes Way, Indianapolis, IN 46217, USA | Risk: LOW');
+    
+        L.circleMarker([45.753664, -122.623245], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 18214 NE 47th Ave, Vancouver, WA 98686, USA | Risk: LOW');
+    
+        L.circleMarker([47.4628012, -122.1800418], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 1928 Beacon Way SE, Renton, WA 98058, USA | Risk: LOW');
+    
+        L.circleMarker([39.6653964, -75.7223617], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 18 Montrose Dr, Newark, DE 19713, USA | Risk: LOW');
+    
+        L.circleMarker([33.9789945, -118.0912127], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7033 Passons Blvd, Pico Rivera, CA 90660, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9514097, -117.2869229], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 21585 Del Amo St, Moreno Valley, CA 92557, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6267442, -117.7067074], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 24282 Sunnybrook Cir, Lake Forest, CA 92630, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1114697, -118.0075058], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 4389 Maple Ln, Arcadia, CA 91006, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.238135, -117.309464], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4397 Cadence Wy, Oceanside, CA 92057, USA | Risk: LOW');
+    
+        L.circleMarker([34.001953, -117.9565918], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 16103 Wedgeworth Dr, Hacienda Heights, CA 91745, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6236184, -111.9450996], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6245 E Janice Wy, Scottsdale, AZ 85254, USA | Risk: LOW');
+    
+        L.circleMarker([34.6226459, -118.2056255], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4138 Club Vista Dr, Palmdale, CA 93551, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.4814642, -117.2930045], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 16996 Torino Dr, Victorville, CA 92395, USA | Risk: MODERATE');
+    
+        L.circleMarker([30.4219455, -97.690021], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 13001 Powderhorn St, Austin, TX 78727, USA | Risk: LOW');
+    
+        L.circleMarker([33.9961523, -117.816466], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1428 Spruce Tree Dr, Diamond Bar, CA 91765, USA | Risk: MODERATE');
+    
+        L.circleMarker([32.781657, -117.1442752], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2858 Avella Cir, San Diego, CA 92108, USA | Risk: LOW');
+    
+        L.circleMarker([33.9718127, -117.5535289], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6397 Peacock Ct, Eastvale, CA 91752, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6559144, -117.6177056], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 9 El Guiro, Rancho Santa Margarita, CA 92688, USA | Risk: MODERATE');
+    
+        L.circleMarker([30.5004611, -97.7302251], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8105 Luckenwald Cv, Round Rock, TX 78681, USA | Risk: LOW');
+    
+        L.circleMarker([34.080721, -117.5638438], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 11002 Getaway Dr, Rancho Cucamonga, CA 91730, USA | Risk: MODERATE');
+    
+        L.circleMarker([30.4595371, -97.78465179999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 9424 Morgan Creek Dr, Austin, TX 78717, USA | Risk: LOW');
+    
+        L.circleMarker([33.83263760000001, -117.5629654], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 688 Black Oak Cir, Corona, CA 92881, USA | Risk: MODERATE');
+    
+        L.circleMarker([30.5403045, -97.5291036], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 132 Canley Lp, Hutto, TX 78634, USA | Risk: LOW');
+    
+        L.circleMarker([30.4040336, -97.6160767], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2920 Tweedy Trail, Pflugerville, TX 78660, USA | Risk: LOW');
+    
+        L.circleMarker([30.479954, -97.8206598], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2214 S Lakeline Blvd #108, Cedar Park, TX 78613, USA | Risk: LOW');
+    
+        L.circleMarker([33.6996465, -117.7675898], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 130 Cartier Aisle, Irvine, CA 92620, USA | Risk: MODERATE');
+    
+        L.circleMarker([40.765904, -74.1538123], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 13 Wilkinson Terrace, Kearny, NJ 07032, USA | Risk: LOW');
+    
+        L.circleMarker([34.4421967, -118.4569252], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 18244 Cumulus Ct, Santa Clarita, CA 91350, USA | Risk: MODERATE');
+    
+        L.circleMarker([42.1580178, -83.8075211], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 2770 Silo Dr, Saline Township, MI 48176, USA | Risk: LOW');
+    
+        L.circleMarker([45.6313086, -122.4991375], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 16804 NE 12th St, Vancouver, WA 98684, USA | Risk: LOW');
+    
+        L.circleMarker([34.6171737, -118.1911864], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3423 Racquet Ln, Palmdale, CA 93551, USA | Risk: MODERATE');
+    
+        L.circleMarker([42.3302593, -87.9648981], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 1717 River Birch Way, Libertyville, IL 60048, USA | Risk: LOW');
+    
+        L.circleMarker([33.5750091, -117.1425142], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 29626 Yorkton Rd, Murrieta, CA 92563, USA | Risk: MODERATE');
+    
+        L.circleMarker([29.5638304, -95.58497299999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4519 Sterling Heights Ln, Sugar Land, TX 77479, USA | Risk: LOW');
+    
+        L.circleMarker([33.5925124, -117.7342906], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6 Saddleridge, Aliso Viejo, CA 92656, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.4985183, -122.8549738], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 17274 SW Arborcrest Way lot 34, Beaverton, OR 97003, USA | Risk: LOW');
+    
+        L.circleMarker([34.1210745, -118.0364781], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 137 W Winnie Way, Arcadia, CA 91007, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0601284, -118.0587137], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 49 Aria St, South El Monte, CA 91733, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9068426, -117.7805687], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3750 Forest Glen Rd, Yorba Linda, CA 92886, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.5471001, -117.6881776], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 28651 Placida Ave, Laguna Niguel, CA 92677, USA | Risk: MODERATE');
+    
+        L.circleMarker([39.7941847, -105.1075534], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5330 Johnson St, Arvada, CO 80002, USA | Risk: LOW');
+    
+        L.circleMarker([33.6794555, -117.7940324], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 20 Coldbrook, Irvine, CA 92604, USA | Risk: MODERATE');
+    
+        L.circleMarker([47.5928765, -122.0574095], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1894 211th Ave SE, Sammamish, WA 98075, USA | Risk: LOW');
+    
+        L.circleMarker([45.5387766, -122.7704508], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1620 NW Barnsley Ct, Portland, OR 97229, USA | Risk: LOW');
+    
+        L.circleMarker([33.591941, -84.584606], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8317 Hunters Grv Rd, Union City, GA 30291, USA | Risk: LOW');
+    
+        L.circleMarker([34.0026363, -117.3686875], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 1705 Parkplace Ln, Riverside, CA 92501, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.6065225, -122.535219], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 2008 SE 134th Ave, Vancouver, WA 98683, USA | Risk: LOW');
+    
+        L.circleMarker([47.34909700000001, -122.314989], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1407 S 281st St, Des Moines, WA 98003, USA | Risk: LOW');
+    
+        L.circleMarker([33.6666823, -117.7124071], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 136 Sentosa, Irvine, CA 92618, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.8496203, -117.9252474], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 527 W Victor Ave, Anaheim, CA 92801, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.101229, -96.8815712], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5124 Reed Dr, The Colony, TX 75056, USA | Risk: LOW');
+    
+        L.circleMarker([29.5581017, -95.5657927], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 6518 Portuguese Bend Dr, Missouri City, TX 77459, USA | Risk: LOW');
+    
+        L.circleMarker([37.4087114, -121.8938593], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 370 Riesling Ave unit 20, Milpitas, CA 95035, USA | Risk: LOW');
+    
+        L.circleMarker([29.7017683, -95.8841454], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 29635 Burcreek Ln, Fulshear, TX 77441, USA | Risk: LOW');
+    
+        L.circleMarker([33.73552590000001, -117.7676854], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 39 Meadow Valley, Irvine, CA 92602, USA | Risk: MODERATE');
+    
+        L.circleMarker([29.9440515, -95.1809834], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 15410 Rosehill Summit Ln, Houston, TX 77044, USA | Risk: LOW');
+    
+        L.circleMarker([34.1923305, -118.4674404], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 15333 Lemay St, Van Nuys, CA 91406, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1923005, -118.4674508], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 15335 Lemay St, Van Nuys, CA 91406, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.4106323, -118.6017454], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 26707 Beartown Ln, Valencia, CA 91381, USA | Risk: MODERATE');
+    
+        L.circleMarker([41.6532768, -88.19370029999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 12632 S Talbot Cir, Plainfield, IL 60585, USA | Risk: LOW');
+    
+        L.circleMarker([29.5037869, -98.5917465], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5406 Tomas Cir, San Antonio, TX 78240, USA | Risk: LOW');
+    
+        L.circleMarker([35.7325689, -78.6174418], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3622 Brideveil Ct, Raleigh, NC 27610, USA | Risk: LOW');
+    
+        L.circleMarker([37.2990505, -121.9724628], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1376 Klamath Dr, San Jose, CA 95130, USA | Risk: LOW');
+    
+        L.circleMarker([34.1550804, -118.0063838], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 224 Melrose Ave, Monrovia, CA 91016, USA | Risk: MODERATE');
+    
+        L.circleMarker([38.4035183, -121.3647507], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 9042 El Oro Plaza Dr, Elk Grove, CA 95624, USA | Risk: LOW');
+    
+        L.circleMarker([39.4021649, -77.312777], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 6242 Walleye Pl, New Market, MD 21774, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1118768, -117.498702], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 7476 Peppertree Ln, Fontana, CA 92336, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.4148568, -122.6896558], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 15501 Diamond Head Rd, Lake Oswego, OR 97034, USA | Risk: LOW');
+    
+        L.circleMarker([34.1196839, -118.0030104], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 122 Brisbane St, Monrovia, CA 91016, USA | Risk: MODERATE');
+    
+        L.circleMarker([38.4761642, -121.453901], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 114 Decathlon Cir, Sacramento, CA 95823, USA | Risk: LOW');
+    
+        L.circleMarker([45.4119196, -122.8019799], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 12099 SW Aspen Ridge Dr, Tigard, OR 97224, USA | Risk: LOW');
+    
+        L.circleMarker([36.0093463, -115.2730201], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 9867 Big Window St, Las Vegas, NV 89178, USA | Risk: MODERATE');
+    
+        L.circleMarker([36.0647292, -114.9737352], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 258 Homeward Way, Henderson, NV 89011, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.38714239999999, -121.8341062], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3410 Pepper Tree Ln, San Jose, CA 95127, USA | Risk: LOW');
+    
+        L.circleMarker([34.0647394, -117.7701486], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 761 Lewis St, Pomona, CA 91768, USA | Risk: MODERATE');
+    
+        L.circleMarker([47.5384468, -122.172246], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 12543 SE 72nd St, Newcastle, WA 98056, USA | Risk: LOW');
+    
+        L.circleMarker([34.1265743, -118.059525], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 850 Arcadia Ave unit 4, Arcadia, CA 91007, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1072897, -118.2752966], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3834 Evans St W, Los Angeles, CA 90027, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.1614601, -118.4497689], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 14527 Addison St, Sherman Oaks, CA 91403, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.2689272, -96.8401919], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 3520 Osage River Trail, Prosper, TX 75078, USA | Risk: LOW');
+    
+        L.circleMarker([33.7073033, -117.1179202], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 31097 Linden Flower Rd, Winchester, CA 92596, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.9837634, -117.7208689], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 14833 Maywood Dr, Chino Hills, CA 91709, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.953409, -117.61698], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 8594 Exposition St, Chino, CA 91708, USA | Risk: MODERATE');
+    
+        L.circleMarker([37.7238654, -122.4621379], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 306 Ashton Ave, San Francisco, CA 94112, USA | Risk: LOW');
+    
+        L.circleMarker([33.9830938, -117.5956692], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2634 E Scarlett Ln, Ontario, CA 91762, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.0778775, -96.7762941], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 4301 Jenkins Dr, Plano, TX 75024, USA | Risk: LOW');
+    
+        L.circleMarker([32.896639, -117.162344], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 10512 Cara Cara Dr, San Diego, CA 92126, USA | Risk: LOW');
+    
+        L.circleMarker([32.9765332, -96.9005736], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2205 Grand Canyon Ct, Carrollton, TX 75006, USA | Risk: LOW');
+    
+        L.circleMarker([43.6745142, -79.39892929999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 270 Davenport Rd unit 5, Toronto, ON M5R 1J8, Canada | Risk: LOW');
+    
+        L.circleMarker([34.003457, -117.5860829], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 3002 E Oak Knoll Loop, Ontario, CA 91761, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.5058824, -122.823407], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 14255 SW Compass Dr, Beaverton, OR 97005, USA | Risk: LOW');
+    
+        L.circleMarker([33.7302505, -117.1636558], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 26877 Chance Dr, Menifee, CA 92585, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.050475, -117.9588504], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1417 Marengo Court, West Covina, CA 91790, USA | Risk: MODERATE');
+    
+        L.circleMarker([38.4699856, -121.321509], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 9986 Aspen Meadows Ct, Sacramento, CA 95829, USA | Risk: LOW');
+    
+        L.circleMarker([33.6743402, -117.8479311], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 2602 Rivington, Irvine, CA 92612, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0166914, -117.8118668], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 416 Camaritas Dr, Diamond Bar, CA 91765, USA | Risk: MODERATE');
+    
+        L.circleMarker([32.9414708, -97.25263740000001], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 116 Johnson Rd, Keller, TX 76248, USA | Risk: LOW');
+    
+        L.circleMarker([47.6811862, -122.1954796], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 639 8th Ave, Kirkland, WA 98033, USA | Risk: LOW');
+    
+        L.circleMarker([29.8966024, -95.74030499999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 21318 Monterrico Bay Dr, Cypress, TX 77433, USA | Risk: LOW');
+    
+        L.circleMarker([32.958771, -96.39084749999999], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 583 Bradley Dr, Rockwall, TX 75087, USA | Risk: LOW');
+    
+        L.circleMarker([33.667312, -117.799819], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 478 E Yale Loop #16, Irvine, CA 92614, USA | Risk: MODERATE');
+    
+        L.circleMarker([34.0745215, -117.7652566], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 1615 California Pl, Pomona, CA 91768, USA | Risk: MODERATE');
+    
+        L.circleMarker([33.6489057, -117.8645717], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 436 Baypointe #436, Newport Beach, CA 92660, USA | Risk: MODERATE');
+    
+        L.circleMarker([45.5255981, -122.7991499], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 685 NW Falling Waters Ln unit 103, Portland, OR 97229, USA | Risk: LOW');
+    
+        L.circleMarker([37.4744444, -122.2268618], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 415 Oak Ave, Redwood City, CA 94061, USA | Risk: LOW');
+    
+        L.circleMarker([44.9126415, -93.46124549999999], {
+            radius: 5,
+            color: '#16a34a',
+            fillColor: '#16a34a',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('Vacant | 14222 Bellevue Dr, Minnetonka, MN 55345, USA | Risk: LOW');
+    
+        L.circleMarker([37.6491779, -122.4805567], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 437 Norfolk Dr, Pacifica, CA 94044, USA | Risk: LOW');
+    
+        L.circleMarker([44.9277476, -93.6746161], {
+            radius: 3,
+            color: '#6b7280',
+            fillColor: '#6b7280',
+            fillOpacity: 0.3,
+            weight: 1
+        }).addTo(map).bindPopup('Occupied | 5912 Bartlett Blvd, Mound, MN 55364, USA | Risk: LOW');
+    
+        L.circleMarker([33.629288, -117.7987864], {
+            radius: 5,
+            color: '#d97706',
+            fillColor: '#d97706',
+            fillOpacity: 0.9,
+            weight: 1
+        }).addTo(map).bindPopup('⚠️ PRIORITY - Vacant | 9 Goldfinch, Irvine, CA 92603, USA | Risk: MODERATE');
+    
+        // Legend
+        var legend = L.control({position: 'topright'});
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>Weather Risk Level</h4>
+                <div class="legend-item"><div class="legend-dot" style="background: #fca5a5; border-color: #dc2626;"></div> CRITICAL</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #fdba74; border-color: #ea580c;"></div> SEVERE</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #fcd34d; border-color: #d97706;"></div> MODERATE</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #86efac; border-color: #16a34a;"></div> LOW</div>
+                <hr style="margin: 6px 0; border-color: #e5e7eb;">
+                <div class="legend-item"><span style="font-size: 16px;">⚠️</span> Vacant at Risk</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #6b7280; border-color: #6b7280; opacity: 0.3;"></div> Occupied</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
     </script>
 </body>
 </html>
